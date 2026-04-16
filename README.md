@@ -5,7 +5,7 @@
 
 ## 🛠 Stos technologiczny
 * **Backend:** .NET 10 / ASP.NET Core Web API
-* **Baza danych:** Microsoft SQL Server
+* **Baza danych:** PostgreSQL
 * **ORM:** Entity Framework Core
 * **Frontend:** React
 * **Testy:** xUnit / Moq 
