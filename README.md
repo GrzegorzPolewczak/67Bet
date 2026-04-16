@@ -32,8 +32,36 @@ Głównym celem inżynierskim jest zaprojektowanie, zaimplementowanie i przetest
 
 ## 🏗️ Architektura i Stos Technologiczny
 
-Projekt został zrealizowany w oparciu o zasady **Clean Architecture**. Zastosowanie jednolitego stosu technologicznego dla całego backendu eliminuje wąskie gardła komunikacyjne między mikroserwisami.
+### Architektura Systemu: 
+Mikroserwisy w oparciu o zasady **Clean Architecture**. Zastosowanie jednolitego stosu technologicznego dla całego backendu eliminuje wąskie gardła komunikacyjne między mikroserwisami.
 
+Zdecydowano się na architekturę mikroserwisową, aby zapewnić skalowalność i separację odpowiedzialności poszczególnych modułów systemu bukmacherskiego.
+
+Podział na usługi: System zostanie podzielony na niezależne serwisy (np. IdentityService, BettingService, OddsService, WalletService).
+
+Technologie: Każdy mikroserwis oparty jest na .NET 10 z niezależną instancją bazy PostgreSQL.
+
+Komunikacja: Asynchroniczna wymiana danych przez REST API.
+
+### Środowisko i Narzędzia AI
+IDE: Visual Studio Code.
+
+Agent AI: Cline (autonomiczny agent wewnątrz VS Code).
+
+Model językowy: Google Gemini (podpięty przez API Key), wybrany ze względu na ogromne okno kontekstowe, pozwalające na analizę rozproszonej struktury mikroserwisów.
+
+Metodologia pracy: AI-Driven Development (AIDD)
+Praca nad systemem odbywa się w paradygmacie Human-in-the-loop, gdzie programista pełni rolę architekta i kontrolera jakości.
+
+Prompt Engineering (Chain-of-Thought): Logika biznesowa nie jest generowana "jednym strzałem". Złożone procesy, takie jak algorytm rozliczania kuponów wielokrotnych (AKO), są rozbijane na etapy:
+
+Analiza wymagań przez AI.
+
+Przygotowanie pseudokodu/kroków logicznych.
+
+Implementacja kodu przez Cline po akceptacji logiki.
+
+### Stos Technologiczny
 - **Frontend:** React (TypeScript), Tailwind CSS, Redux Toolkit, SignalR Client.
 - **Backend (Core & API):** .NET 10 (ASP.NET Core Web API), Entity Framework Core.
 - **AI & Data Ingestion:** **ML.NET** zintegrowane w ramach .NET Worker Services. Własne modele ładujące dane historyczne i korygujące kursy na żywo, działające jako usługi w tle.
