@@ -22,11 +22,26 @@ Głównym celem inżynierskim jest zaprojektowanie, zaimplementowanie i przetest
 
 ## ✨ Kluczowe Funkcjonalności
 
-- 🧠 **Native C# AI Oddsmaker:** Automatyczne szacowanie prawdopodobieństwa i generowanie kursów przy użyciu modeli uczenia maszynowego wytrenowanych i zaimplementowanych natywnie w **ML.NET**.
-- ⚡ **Live Betting (Real-Time):** Natychmiastowe odświeżanie kursów u klientów przy użyciu WebSockets (SignalR) – bez konieczności przeładowywania strony.
-- 🛠️ **Multisport & Custom Bets:** Obsługa klasycznych sportów (piłka nożna, MMA) dzięki polimorficznej bazie danych (JSONB) oraz unikalny moduł pozwalający użytkownikom zgłaszać własne propozycje zakładów do wyceny przez model predykcyjny.
-- 🔐 **Transakcyjny Portfel (Wallet):** Zabezpieczenie przed wyścigami (Race Conditions) dzięki `Optimistic Concurrency` – pełna spójność operacji wpłat, wypłat i zamrażania środków.
-- 🛡️ **Role-Based Access Control (RBAC):** Trzypoziomowy system uprawnień (Admin, Moderator, User) wspierany przez nowoczesne API ASP.NET Core Identity.
+System **67Bet** oferuje zaawansowane możliwości zarówno dla graczy, jak i administratorów, napędzane przez natywne rozwiązania AI.
+
+### 👤 Panel Użytkownika (Gracz)
+- **Zarządzanie Kontem:** Rejestracja, logowanie (ASP.NET Identity) oraz personalizacja profilu z pełną historią zakładów.
+- **Transakcyjny Portfel (Wallet):** Bezpieczne wpłaty i wypłaty chronione przed wyścigami (*Optimistic Concurrency*) z natychmiastową aktualizacją salda.
+- **Zaawansowane Obstawianie:**
+    - **Kupony Multi-Bet (AKO):** Możliwość łączenia wielu zdarzeń w jeden kupon z automatycznym przeliczaniem kursu skumulowanego.
+    - **Live Betting:** Obstawianie w czasie rzeczywistym dzięki WebSockets (SignalR).
+- **Custom Bet Request:** Unikalna funkcja zgłaszania własnych propozycji zakładów do indywidualnej wyceny przez model AI i akceptacji moderatora.
+
+### 🛡️ Panel Administratora & Moderatora
+- **Zarządzanie Custom Betami:** Przeglądanie propozycji od graczy, akceptacja/odrzucanie i opcjonalna korekta kursów wygenerowanych przez AI.
+- **Moderacja i Bezpieczeństwo:** System RBAC (Admin, Moderator, User), blokowanie kont, monitorowanie limitów i wykrywanie podejrzanych wzorców zakładów.
+- **Nadzór nad Ofertą:** Dynamiczne otwieranie i zamykanie rynków, ręczne wprowadzanie wyników zdarzeń oraz funkcja *Manual Override* dla kursów.
+- **Analityka Biznesowa:** Monitorowanie marży, obrotu (GGR) oraz skuteczności predykcyjnej modeli ML.NET.
+
+### ⚙️ Silnik Systemowy (Core)
+- 🧠 **Native AI Oddsmaker:** Autonomiczne generowanie kursów w oparciu o modele ML.NET trenowane na danych historycznych.
+- ⚡ **Real-time Engine:** Błyskawiczna dystrybucja zmian kursów bez konieczności przeładowywania strony (SignalR).
+- 🤖 **Settlement Engine:** Automatyczny system rozliczania tysięcy kuponów w ułamku sekundy po zatwierdzeniu wyniku zdarzenia.
 
 ---
 
