@@ -17,6 +17,7 @@ Główną ideą stojącą za platformą **67Bet** jest zdefiniowanie na nowo spo
 
 ### 🎯 Cel Projektu
 Głównym celem inżynierskim jest zaprojektowanie, zaimplementowanie i przetestowanie wysoce skalowalnej architektury webowej w ekosystemie **.NET 10**, która sprosta wyzwaniom narzucanym przez systemy czasu rzeczywistego (Real-time). Aplikacja musi gwarantować absolutną spójność danych finansowych (ACID), bezopóźnieniową dystrybucję zmieniających się kursów (SignalR) oraz odporność na problemy współbieżności (np. jednoczesne postawienie tysięcy zakładów na to samo zdarzenie).
+- 🛡️ **Role-Based Access Control (RBAC):** Dwuetapowy system uprawnień (Admin, User) wspierany przez nowoczesne API ASP.NET Core Identity.
 
 ---
 
@@ -30,14 +31,13 @@ System **67Bet** oferuje zaawansowane możliwości zarówno dla graczy, jak i ad
 - **Zaawansowane Obstawianie:**
     - **Kupony Multi-Bet (AKO):** Możliwość łączenia wielu zdarzeń w jeden kupon z automatycznym przeliczaniem kursu skumulowanego.
     - **Live Betting:** Obstawianie w czasie rzeczywistym dzięki WebSockets (SignalR).
-- **Custom Bet Request:** Unikalna funkcja zgłaszania własnych propozycji zakładów do indywidualnej wyceny przez model AI i akceptacji moderatora.
+- **Custom Bet Request:** Unikalna funkcja zgłaszania własnych propozycji zakładów do indywidualnej wyceny przez model AI i akceptacji administratora.
 
-### 🛡️ Panel Administratora & Moderatora
+### 🛡️ Panel Administratora
 - **Zarządzanie Custom Betami:** Przeglądanie propozycji od graczy, akceptacja/odrzucanie i opcjonalna korekta kursów wygenerowanych przez AI.
-- **Moderacja i Bezpieczeństwo:** System RBAC (Admin, Moderator, User), blokowanie kont, monitorowanie limitów i wykrywanie podejrzanych wzorców zakładów.
+- **Moderacja i Bezpieczeństwo:** System RBAC (Admin, User), blokowanie kont, monitorowanie limitów i wykrywanie podejrzanych wzorców zakładów.
 - **Nadzór nad Ofertą:** Dynamiczne otwieranie i zamykanie rynków, ręczne wprowadzanie wyników zdarzeń oraz funkcja *Manual Override* dla kursów.
 - **Analityka Biznesowa:** Monitorowanie marży, obrotu (GGR) oraz skuteczności predykcyjnej modeli ML.NET.
-
 ### ⚙️ Silnik Systemowy (Core)
 - 🧠 **Native AI Oddsmaker:** Autonomiczne generowanie kursów w oparciu o modele ML.NET trenowane na danych historycznych.
 - ⚡ **Real-time Engine:** Błyskawiczna dystrybucja zmian kursów bez konieczności przeładowywania strony (SignalR).
