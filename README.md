@@ -54,7 +54,7 @@ Zdecydowano się na architekturę mikroserwisową, aby zapewnić skalowalność 
 
 Podział na usługi: System zostanie podzielony na niezależne serwisy (np. IdentityService, BettingService, OddsService, WalletService).
 
-Technologie: Każdy mikroserwis oparty jest na .NET 10 z niezależną instancją bazy PostgreSQL.
+Technologie: Każdy mikroserwis oparty jest na .NET 9 z niezależną instancją bazy MySQL.
 
 Komunikacja: Asynchroniczna wymiana danych przez REST API.
 
@@ -78,10 +78,8 @@ Implementacja kodu przez Cline po akceptacji logiki.
 
 ### Stos Technologiczny
 - **Frontend:** React (TypeScript), Tailwind CSS, Redux Toolkit, SignalR Client.
-- **Backend (Core & API):** .NET 10 (ASP.NET Core Web API), Entity Framework Core.
-- **AI & Data Ingestion:** **ML.NET** zintegrowane w ramach .NET Worker Services. Własne modele ładujące dane historyczne i korygujące kursy na żywo, działające jako usługi w tle.
-- **Baza Danych & Cache:** PostgreSQL 16+ (jako główne źródło prawdy z natywnym wsparciem JSONB), Redis (do buforowania aktywnych rynków i sesji).
-
+- **Backend (Core & API):** .NET 9 (ASP.NET Core Web API), Entity Framework Core.
+- **Baza Danych & Cache:** MySQL (Główne dane), Redis (Cache dla kursów "live").
 ---
 
 ## 🗄️ Model Danych (High-Level)
