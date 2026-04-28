@@ -106,6 +106,8 @@ Diagram klas UML:
 
 ![Diagram klas UML](docs/class_diagram.svg)
 
+---
+
 ## 🚀 Uruchomienie lokalne (Development)
 
 ### Wymagania:
