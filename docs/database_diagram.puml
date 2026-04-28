@@ -1,0 +1,119 @@
+@startuml 67Bet_ERD
+!theme plain
+skinparam Linetype ortho
+
+package "Identity Service" {
+    entity "User" {
+        * id : UUID <<PK>>
+        --
+        username : VARCHAR(50)
+        email : VARCHAR(100)
+        password_hash : TEXT
+        role : ENUM(Admin, User)
+        created_at : TIMESTAMP
+    }
+}
+
+package "Wallet Service" {
+    entity "Wallet" {
+        * id : UUID <<PK>>
+        --
+        * user_id : UUID <<FK>>
+        balance : DECIMAL(18,2)
+        currency : VARCHAR(3)
+        version : INT <<Optimistic Locking>>
+    }
+
+    entity "Transaction" {
+        * id : UUID <<PK>>
+        --
+        * wallet_id : UUID <<FK>>
+        amount : DECIMAL(18,2)
+        type : ENUM(Deposit, Withdrawal, Stake, Payout)
+        status : ENUM(Pending, Completed, Failed)
+        created_at : TIMESTAMP
+    }
+}
+
+package "Betting & Odds Service" {
+    entity "Sport" {
+        * id : UUID <<PK>>
+        --
+        name : VARCHAR(50)
+    }
+
+    entity "Event" {
+        * id : UUID <<PK>>
+        --
+        * sport_id : UUID <<FK>>
+        name : VARCHAR(255)
+        start_time : TIMESTAMP
+        status : ENUM(Scheduled, Live, Finished, Cancelled)
+        metadata : JSONB <<Details like Teams, League>>
+    }
+
+    entity "Market" {
+        * id : UUID <<PK>>
+        --
+        * event_id : UUID <<FK>>
+        name : VARCHAR(100) <<e.g. Match Winner, Over 2.5>>
+        is_active : BOOLEAN
+    }
+
+    entity "Outcome" {
+        * id : UUID <<PK>>
+        --
+        * market_id : UUID <<FK>>
+        name : VARCHAR(100) <<e.g. Home, Away, Draw>>
+        probability : DECIMAL(5,4) <<AI Generated>>
+        current_price : DECIMAL(10,2) <<Final Odds>>
+        is_winner : BOOLEAN <<Nullable>>
+    }
+
+    entity "Ticket" {
+        * id : UUID <<PK>>
+        --
+        * user_id : UUID <<FK>>
+        total_odds : DECIMAL(10,2)
+        stake : DECIMAL(18,2)
+        potential_winning : DECIMAL(18,2)
+        status : ENUM(Pending, Won, Lost, Cancelled)
+        created_at : TIMESTAMP
+    }
+
+    entity "Bet" {
+        * id : UUID <<PK>>
+        --
+        * ticket_id : UUID <<FK>>
+        * outcome_id : UUID <<FK>>
+        fixed_price : DECIMAL(10,2)
+        status : ENUM(Pending, Won, Lost)
+    }
+}
+
+package "Custom Bet Service" {
+    entity "CustomBetRequest" {
+        * id : UUID <<PK>>
+        --
+        * user_id : UUID <<FK>>
+        description : TEXT
+        ai_suggested_odds : DECIMAL(10,2)
+        admin_final_odds : DECIMAL(10,2)
+        status : ENUM(Pending, Reviewing, Accepted, Rejected)
+        admin_note : TEXT
+        created_at : TIMESTAMP
+    }
+}
+
+' Relationships
+User ||--|| Wallet
+Wallet ||--o{ Transaction
+Sport ||--o{ Event
+Event ||--o{ Market
+Market ||--o{ Outcome
+User ||--o{ Ticket
+Ticket ||--o{ Bet
+Outcome ||--o{ Bet
+User ||--o{ CustomBetRequest
+
+@enduml
