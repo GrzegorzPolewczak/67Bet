@@ -131,3 +131,190 @@ Aby otworzyć i edytować diagram UML bezpośrednio w Visual Studio Code:
    ```bash
    git clone [https://github.com/TwojUsername/67Bet.git](https://github.com/TwojUsername/67Bet.git)
    cd 67Bet
+
+
+## 3. Szczegółowa specyfikacja funkcjonalna aplikacji 67Bet
+
+### 3.1. Opis ogólny aplikacji
+
+**67Bet** to aplikacja webowa symulująca działanie platformy bukmacherskiej. System umożliwia użytkownikom zakładanie kont, logowanie, przeglądanie wydarzeń sportowych, sprawdzanie kursów, tworzenie kuponów, obstawianie zakładów oraz zarządzanie wirtualnym portfelem. Aplikacja posiada również panel administratora, który pozwala zarządzać użytkownikami, wydarzeniami, rynkami zakładów, kursami oraz rozliczaniem kuponów.
+
+Celem aplikacji jest odwzorowanie najważniejszych procesów występujących w systemach bukmacherskich, takich jak:
+
+- obsługa kont użytkowników,
+- zarządzanie wydarzeniami sportowymi,
+- prezentacja kursów,
+- tworzenie kuponów zakładów,
+- obsługa zakładów pojedynczych i wielokrotnych,
+- obsługa wirtualnego portfela,
+- historia zakładów i transakcji,
+- administracyjne rozliczanie wyników,
+- kontrola dostępu na podstawie ról.
+
+System działa w środowisku testowym i edukacyjnym. Oznacza to, że aplikacja nie obsługuje prawdziwych płatności, prawdziwych wypłat ani rzeczywistego hazardu. Wszystkie środki widoczne w portfelu użytkownika mają charakter wirtualny i służą wyłącznie do symulacji działania platformy.
+
+---
+
+### 3.2. Zakres aplikacji
+
+Aplikacja obejmuje dwie główne części:
+
+1. **Część użytkownika**, czyli panel gracza.
+2. **Część administracyjną**, czyli panel administratora.
+
+Panel użytkownika pozwala korzystać z podstawowych funkcji bukmacherskich, takich jak przeglądanie wydarzeń, obstawianie kuponów i zarządzanie portfelem.
+
+Panel administratora służy do zarządzania danymi w systemie, w tym wydarzeniami sportowymi, rynkami, kursami, użytkownikami oraz rozliczeniami.
+
+W pierwszej wersji systemu zakłada się obsługę najważniejszych funkcji platformy bukmacherskiej. Aplikacja może być w przyszłości rozbudowana o dodatkowe funkcje, takie jak powiadomienia, bardziej rozbudowana analityka, zakłady live, automatyczne pobieranie wyników sportowych lub bardziej zaawansowane raportowanie.
+
+---
+
+### 3.3. Role użytkowników
+
+W systemie występują dwie główne role:
+
+- **Użytkownik**
+- **Administrator**
+
+Każda rola posiada inny zakres uprawnień i dostępnych funkcji.
+
+---
+
+### 3.3.1. Użytkownik
+
+Użytkownik to osoba korzystająca z aplikacji w celu obstawiania wydarzeń sportowych. Po założeniu konta i zalogowaniu użytkownik otrzymuje dostęp do panelu gracza.
+
+Użytkownik może:
+
+- zarejestrować konto,
+- zalogować się do systemu,
+- wylogować się z systemu,
+- edytować podstawowe dane profilu,
+- sprawdzić aktualne saldo portfela,
+- wykonać testową wpłatę środków,
+- wykonać testową wypłatę środków,
+- przeglądać listę wydarzeń sportowych,
+- filtrować wydarzenia według wybranych kryteriów,
+- sprawdzać szczegóły wydarzenia,
+- przeglądać dostępne rynki zakładów,
+- sprawdzać aktualne kursy,
+- dodawać typy do kuponu,
+- usuwać typy z kuponu przed zatwierdzeniem,
+- wpisywać stawkę zakładu,
+- sprawdzać potencjalną wygraną,
+- zatwierdzać kupon,
+- tworzyć kupony pojedyncze,
+- tworzyć kupony wielokrotne,
+- sprawdzać aktywne kupony,
+- przeglądać historię zakładów,
+- sprawdzać status rozliczenia kuponu,
+- przeglądać historię transakcji portfela.
+
+Użytkownik nie ma dostępu do funkcji administracyjnych. Nie może dodawać wydarzeń, zmieniać kursów, rozliczać kuponów ani zarządzać kontami innych użytkowników.
+
+---
+
+### 3.3.2. Administrator
+
+Administrator to użytkownik posiadający rozszerzone uprawnienia do zarządzania aplikacją. Administrator korzysta z osobnego panelu administracyjnego.
+
+Administrator może:
+
+- zalogować się do panelu administracyjnego,
+- przeglądać listę użytkowników,
+- sprawdzać szczegóły kont użytkowników,
+- blokować konta użytkowników,
+- odblokowywać konta użytkowników,
+- przeglądać historię aktywności użytkowników,
+- dodawać nowe wydarzenia sportowe,
+- edytować istniejące wydarzenia,
+- zmieniać status wydarzeń,
+- anulować wydarzenia,
+- dodawać rynki zakładów do wydarzeń,
+- edytować rynki zakładów,
+- zawieszać rynki zakładów,
+- zamykać rynki zakładów,
+- dodawać możliwe wyniki w ramach rynku,
+- aktualizować kursy,
+- wprowadzać wyniki wydarzeń,
+- rozliczać kupony,
+- przeglądać aktywne i zakończone kupony,
+- sprawdzać historię transakcji,
+- wykonywać korekty administracyjne w uzasadnionych przypadkach,
+- przeglądać podstawowe statystyki działania systemu.
+
+Administrator odpowiada za poprawność danych prezentowanych użytkownikom. Szczególnie ważne są operacje związane ze zmianą kursów, zamykaniem rynków i rozliczaniem kuponów, ponieważ mają one wpływ na saldo użytkowników oraz historię zakładów.
+
+---
+
+## 3.4. Moduły funkcjonalne aplikacji
+
+Aplikacja 67Bet składa się z kilku głównych modułów. Każdy moduł odpowiada za określony obszar działania systemu.
+
+---
+
+### 3.4.1. Moduł kont i autoryzacji
+
+Moduł kont i autoryzacji odpowiada za obsługę użytkowników, rejestrację, logowanie, role oraz kontrolę dostępu.
+
+#### Główne funkcje modułu
+
+- rejestracja nowego użytkownika,
+- logowanie użytkownika,
+- wylogowanie użytkownika,
+- przechowywanie danych profilu,
+- edycja profilu użytkownika,
+- zmiana hasła,
+- rozróżnienie ról użytkownika i administratora,
+- zabezpieczenie panelu administratora,
+- blokowanie kont,
+- odblokowywanie kont.
+
+#### Rejestracja
+
+Podczas rejestracji użytkownik podaje podstawowe dane wymagane do założenia konta. System powinien sprawdzić poprawność danych, w tym poprawność adresu e-mail, siłę hasła oraz unikalność konta.
+
+Po poprawnej rejestracji system tworzy konto użytkownika oraz przypisuje mu domyślną rolę użytkownika standardowego. Dodatkowo tworzony jest wirtualny portfel, który będzie wykorzystywany do obsługi środków w aplikacji.
+
+#### Logowanie
+
+Podczas logowania użytkownik podaje dane dostępowe. System sprawdza, czy konto istnieje, czy hasło jest poprawne oraz czy konto nie zostało zablokowane przez administratora.
+
+Po poprawnym logowaniu użytkownik otrzymuje dostęp do funkcji zgodnych ze swoją rolą.
+
+#### Kontrola dostępu
+
+Dostęp do funkcji systemu zależy od roli użytkownika. Zwykły użytkownik może korzystać z panelu gracza, natomiast administrator może korzystać z panelu administracyjnego.
+
+Przykładowe ograniczenia:
+
+- niezalogowany użytkownik nie może postawić zakładu,
+- użytkownik standardowy nie może wejść do panelu administratora,
+- użytkownik standardowy nie może zmieniać kursów,
+- użytkownik standardowy nie może rozliczać wydarzeń,
+- zablokowany użytkownik nie może korzystać z funkcji obstawiania.
+
+---
+
+### 3.4.2. Moduł profilu użytkownika
+
+Moduł profilu pozwala użytkownikowi przeglądać i zarządzać podstawowymi informacjami o swoim koncie.
+
+#### Funkcje profilu
+
+Użytkownik może:
+
+- sprawdzić swoje dane konta,
+- zmienić nazwę użytkownika,
+- zmienić hasło,
+- sprawdzić status konta,
+- sprawdzić datę utworzenia konta,
+- przejść do historii zakładów,
+- przejść do historii transakcji,
+- przejść do widoku portfela.
+
+---
+
+
+
