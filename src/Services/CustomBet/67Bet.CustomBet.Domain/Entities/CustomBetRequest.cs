@@ -1,3 +1,7 @@
+﻿/*
+ * Plik zawiera encję CustomBetRequest oraz interfejs ICustomBetRepository.
+ * Odpowiada za definicję wniosków o niestandardowe zakłady oraz kontrakt ich zapisu.
+ */
 using System;
 using _67Bet.Shared.Kernel;
 using System.Collections.Generic;
@@ -71,3 +75,4 @@ namespace _67Bet.CustomBet.Domain.Repositories
         Task UpdateAsync(CustomBetRequest request);
     }
 }
+

@@ -1,3 +1,7 @@
+﻿/*
+ * Implementacje repozytoriów dla modułu Wallet.
+ * Obsługuje zapis transakcji oraz aktualizację salda portfeli użytkowników.
+ */
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -104,3 +108,4 @@ namespace _67Bet.Wallet.Infrastructure.Repositories
         }
     }
 }
+

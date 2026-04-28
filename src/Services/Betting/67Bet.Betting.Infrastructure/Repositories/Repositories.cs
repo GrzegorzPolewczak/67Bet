@@ -1,3 +1,7 @@
+﻿/*
+ * Implementacje repozytoriów dla modułu Betting przy użyciu Entity Framework Core.
+ * Serwisy te odpowiadają za bezpośrednią komunikację z bazą danych PostgreSQL.
+ */
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,3 +132,4 @@ public class TicketRepository : ITicketRepository
         await _context.SaveChangesAsync();
     }
 }
+

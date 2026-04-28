@@ -1,3 +1,7 @@
+﻿/*
+ * Kontekst bazy danych dla modułu Betting.
+ * Definiuje mapowania ORM dla zdarzeń, rynków, wyników i kuponów.
+ */
 using Microsoft.EntityFrameworkCore;
 using _67Bet.Betting.Domain.Entities;
 
@@ -61,3 +65,4 @@ public class BettingDbContext : DbContext
         });
     }
 }
+
