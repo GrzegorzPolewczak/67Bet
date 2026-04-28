@@ -113,9 +113,8 @@ Aby otworzyć i edytować diagram UML bezpośrednio w Visual Studio Code:
 
 
 - zainstaluj rozszerzenie **PlantUML**.
-- zainstaluj **Javę**, jeżeli nie jest jeszcze zainstalowana.
+- zainstaluj **Javę**.
 - zainstaluj **Graphviz**, ponieważ PlantUML używa go do renderowania diagramów.
-
 
 ---
 
