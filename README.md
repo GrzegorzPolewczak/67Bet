@@ -90,6 +90,22 @@ Baza danych PostgreSQL została zaprojektowana z myślą o elastyczności. Zamia
 
 ---
 
+## 📐 Dokumentacja UML
+
+W ramach dokumentacji projektowej pierwszej wersji systemu przygotowano diagramy opisujące strukturę systemu 67Bet.
+
+Dokumentacja znajduje się w folderze `docs`.
+
+Pliki dokumentacji:
+
+- `docs/database_diagram.puml` — diagram struktury bazy danych
+- `docs/domain_model.md` — opis modelu domenowego systemu
+- `docs/class_diagram.puml` — pełny diagram klas UML obejmujący obecne oraz planowane elementy systemu
+
+Diagram klas UML:
+
+![Diagram klas UML](docs/class_diagram_readable.svg)
+
 ## 🚀 Uruchomienie lokalne (Development)
 
 ### Wymagania:
