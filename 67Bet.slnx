@@ -1,21 +1,28 @@
-<Solution>
+﻿<Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/Betting/">
     <Project Path="src/Services/Betting/67Bet.Betting.Domain/67Bet.Betting.Domain.csproj" />
+    <Project Path="src/Services/Betting/67Bet.Betting.Application/67Bet.Betting.Application.csproj" />
     <Project Path="src/Services/Betting/67Bet.Betting.Infrastructure/67Bet.Betting.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/CustomBet/">
     <Project Path="src/Services/CustomBet/67Bet.CustomBet.Domain/67Bet.CustomBet.Domain.csproj" />
+    <Project Path="src/Services/CustomBet/67Bet.CustomBet.Application/67Bet.CustomBet.Application.csproj" />
     <Project Path="src/Services/CustomBet/67Bet.CustomBet.Infrastructure/67Bet.CustomBet.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/Identity/">
     <Project Path="src/Services/Identity/67Bet.Identity.Domain/67Bet.Identity.Domain.csproj" />
+    <Project Path="src/Services/Identity/67Bet.Identity.Application/67Bet.Identity.Application.csproj" />
     <Project Path="src/Services/Identity/67Bet.Identity.Infrastructure/67Bet.Identity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Services/Odds/">
+    <Project Path="src/Services/Odds/67Bet.Odds.Application/67Bet.Odds.Application.csproj" />
   </Folder>
   <Folder Name="/src/Services/Wallet/">
     <Project Path="src/Services/Wallet/67Bet.Wallet.Domain/67Bet.Wallet.Domain.csproj" />
-    <Project Path="src/Services/Wallet/67Bet.Wallet.Infrastructure/67Bet.Wallet.Infrastructure.csproj" />
+    <Project Path="src/Services/Wallet/67Bet.Wallet.Application/67Bet.Wallet.Application.csproj" />
+    <Project Path="src/Services/Wallet/67Bet.Wallet.Infrastructure/67Bet.Wallet.Infrastructure.csproj" />   
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/67Bet.Shared.Kernel/67Bet.Shared.Kernel.csproj" />

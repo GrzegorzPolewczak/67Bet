@@ -1,3 +1,7 @@
+﻿/*
+ * Interfejsy repozytoriów dla modułu portfela (Wallet).
+ * Kontrakty dla operacji na portfelach i historii transakcji.
+ */
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,3 +26,4 @@ namespace _67Bet.Wallet.Domain.Repositories
         Task UpdateAsync(Transaction transaction);
     }
 }
+

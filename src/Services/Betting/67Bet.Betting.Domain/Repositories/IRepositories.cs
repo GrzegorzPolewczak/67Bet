@@ -1,3 +1,7 @@
+﻿/*
+ * Interfejsy repozytoriów dla modułu Betting.
+ * Definiują kontrakty dla operacji na sportach, wydarzeniach, rynkach i kuponach.
+ */
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,3 +38,4 @@ public interface ITicketRepository
     Task AddAsync(Ticket ticket);
     Task UpdateAsync(Ticket ticket);
 }
+

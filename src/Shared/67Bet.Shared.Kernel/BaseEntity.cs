@@ -1,3 +1,7 @@
+﻿/*
+ * Klasa bazowa dla wszystkich encji w systemie.
+ * Zapewnia unikalny identyfikator Guid oraz interfejsy znacznikowe dla DDD.
+ */
 using System;
 
 namespace _67Bet.Shared.Kernel;
@@ -9,3 +13,4 @@ public abstract class BaseEntity
 }
 
 public interface IAggregateRoot { }
+

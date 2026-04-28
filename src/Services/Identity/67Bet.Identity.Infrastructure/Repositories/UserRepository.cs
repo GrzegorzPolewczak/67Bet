@@ -1,3 +1,7 @@
+﻿/*
+ * Implementacja repozytorium UserRepository.
+ * Odpowiada za operacje CRUD na danych użytkowników w systemie.
+ */
 using Microsoft.EntityFrameworkCore;
 using _67Bet.Identity.Domain.Entities;
 using _67Bet.Identity.Domain.Repositories;
@@ -59,3 +63,4 @@ namespace _67Bet.Identity.Infrastructure.Repositories
         }
     }
 }
+

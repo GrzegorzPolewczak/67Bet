@@ -1,3 +1,7 @@
+﻿/*
+ * Implementacja repozytorium CustomBetRepository.
+ * Zarządza trwałym zapisem i odczytem wniosków o zakłady specjalne w bazie danych.
+ */
 using Microsoft.EntityFrameworkCore;
 using _67Bet.CustomBet.Domain.Entities;
 using _67Bet.CustomBet.Domain.Repositories;
@@ -72,3 +76,4 @@ namespace _67Bet.CustomBet.Infrastructure.Repositories
         }
     }
 }
+

@@ -1,3 +1,7 @@
+﻿/*
+ * Plik zawiera encję User oraz interfejs IUserRepository.
+ * Definiuje model użytkownika systemu oraz metody dostępu do danych tożsamościowych.
+ */
 using System;
 using _67Bet.Shared.Kernel;
 using System.Threading.Tasks;
@@ -49,3 +53,4 @@ namespace _67Bet.Identity.Domain.Repositories
         Task UpdateAsync(User user);
     }
 }
+
