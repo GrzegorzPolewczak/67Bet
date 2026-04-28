@@ -1,4 +1,4 @@
-﻿<Solution>
+<Solution>
   <Folder Name="/src/" />
   <Folder Name="/src/Services/" />
   <Folder Name="/src/Services/Betting/">
@@ -26,5 +26,8 @@
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/67Bet.Shared.Kernel/67Bet.Shared.Kernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/67Bet.UnitTests/67Bet.UnitTests.csproj" />
   </Folder>
 </Solution>
