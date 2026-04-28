@@ -104,7 +104,7 @@ Pliki dokumentacji:
 
 Diagram klas UML:
 
-![Diagram klas UML](docs/class_diagram_readable.svg)
+![Diagram klas UML](docs/class_diagram.svg)
 
 ## 🚀 Uruchomienie lokalne (Development)
 
