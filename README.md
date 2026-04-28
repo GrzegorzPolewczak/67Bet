@@ -111,11 +111,11 @@ Podgląd diagramu UML w Visual Studio Code
 
 Aby otworzyć i edytować diagram UML bezpośrednio w Visual Studio Code:
 
-1. Otwórz projekt w Visual Studio Code.
-2. Zainstaluj rozszerzenie **PlantUML**.
-3. Zainstaluj **Javę**, jeżeli nie jest jeszcze zainstalowana.
-4. Zainstaluj **Graphviz**, ponieważ PlantUML używa go do renderowania diagramów.
-5. Otwórz plik:
+
+- zainstaluj rozszerzenie **PlantUML**.
+- zainstaluj **Javę**, jeżeli nie jest jeszcze zainstalowana.
+- zainstaluj **Graphviz**, ponieważ PlantUML używa go do renderowania diagramów.
+
 
 ---
 
