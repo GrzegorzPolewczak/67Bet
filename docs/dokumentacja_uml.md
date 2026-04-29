@@ -1,23 +1,13 @@
 # Punkt 4 — Dokumentacja projektowa I wersji systemu UML
 
-## Cel dokumentacji
-
-Celem tego punktu jest przygotowanie dokumentacji projektowej pierwszej wersji systemu 67Bet w oparciu o diagramy UML wykonane w narzędziu PlantUML. Wymaganie minimalne obejmuje przygotowanie przynajmniej diagramu klas, dlatego do projektu dodano plik:
-
-```text
-docs/class_diagram.puml
-```
-
 Diagram klas przedstawia główne klasy domenowe, klasy pomocnicze, interfejsy repozytoriów, implementacje repozytoriów, konteksty bazy danych oraz planowaną warstwę logiki biznesowej wynikającą z założeń projektu.
 
 ## Ważne założenie interpretacyjne
 
-Diagram nie jest wyłącznie automatycznym odwzorowaniem aktualnego kodu. Jest to dokumentacja projektowa pierwszej wersji systemu, dlatego zawiera dwa typy elementów:
+Dokumentacja projektowa pierwszej wersji systemu, zawiera dwa typy elementów:
 
 - `<<implemented>>` — element istnieje już w kodzie projektu,
 - `<<planned>>` — element wynika z założeń projektu, ale może być dopiero planowany do implementacji w kolejnych etapach.
-
-Dzięki temu diagram może być używany jako bezpieczna dokumentacja projektowa: pokazuje obecny model oraz kierunek dalszej implementacji, ale nie sugeruje, że wszystkie oznaczone elementy są już fizycznie zaimplementowane.
 
 ## Zakres diagramu klas
 
