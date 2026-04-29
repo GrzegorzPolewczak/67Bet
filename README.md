@@ -54,7 +54,7 @@ Zdecydowano się na architekturę mikroserwisową, aby zapewnić skalowalność 
 
 Podział na usługi: System zostanie podzielony na niezależne serwisy (np. IdentityService, BettingService, OddsService, WalletService).
 
-Technologie: Każdy mikroserwis oparty jest na .NET 9 z niezależną instancją bazy MySQL.
+Technologie: Każdy mikroserwis oparty jest na .NET 10 z niezależną instancją bazy MySQL.
 
 Komunikacja: Asynchroniczna wymiana danych przez REST API.
 
@@ -78,7 +78,7 @@ Implementacja kodu przez Cline po akceptacji logiki.
 
 ### Stos Technologiczny
 - **Frontend:** React (TypeScript), Tailwind CSS, Redux Toolkit, SignalR Client.
-- **Backend (Core & API):** .NET 9 (ASP.NET Core Web API), Entity Framework Core.
+- **Backend (Core & API):** .NET 10 (ASP.NET Core Web API), Entity Framework Core.
 - **Baza Danych & Cache:** MySQL (Główne dane), Redis (Cache dla kursów "live").
 ---
 
