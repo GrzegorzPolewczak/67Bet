@@ -12,10 +12,10 @@ title 67Bet - Diagram klas UML I wersji systemu
 legend right
   <<implemented>> - element istnieje juz w kodzie projektu
   <<planned>> - element wynika z zalozen projektu / README,
-                ale moze nie byc jeszcze zaimplementowany
+                ale nie jest jeszcze osobna klasa w kodzie
   Linia ciagla - relacja domenowa lub relacja w ramach jednego modulu
   Linia przerywana - powiazanie logiczne przez identyfikator, REST/API
-                     albo zaleznosc planowana miedzy mikroserwisami
+                     albo planowana zaleznosc miedzy mikroserwisami
 endlegend
 
 package "Shared Kernel" {
@@ -43,22 +43,37 @@ package "Identity Service" {
     }
 
     interface IUserRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetByEmailAsync(email: string) : Task
+        +GetByIdAsync(id: Guid) : Task<User?>
+        +GetByEmailAsync(email: string) : Task<User?>
         +AddAsync(user: User) : Task
         +UpdateAsync(user: User) : Task
+    }
+
+    interface IIdentityService <<implemented>> {
+        +GetUserByIdAsync(userId: Guid) : Task<User?>
+        +GetUserByEmailAsync(email: string) : Task<User?>
+        +RegisterAsync(username: string, email: string, password: string) : Task<User>
+        +AuthenticateAsync(email: string, password: string) : Task<bool>
     }
 
     class UserRepository <<implemented>> {
         -_context : IdentityDbContext
-        +GetByIdAsync(id: Guid) : Task
-        +GetByEmailAsync(email: string) : Task
+        +GetByIdAsync(id: Guid) : Task<User?>
+        +GetByEmailAsync(email: string) : Task<User?>
         +AddAsync(user: User) : Task
         +UpdateAsync(user: User) : Task
     }
 
+    class IdentityService <<implemented>> {
+        -_userRepository : IUserRepository
+        +GetUserByIdAsync(userId: Guid) : Task<User?>
+        +GetUserByEmailAsync(email: string) : Task<User?>
+        +RegisterAsync(username: string, email: string, password: string) : Task<User>
+        +AuthenticateAsync(email: string, password: string) : Task<bool>
+    }
+
     class IdentityDbContext <<implemented>> {
-        +Users : DbSet~User~
+        +Users : DbSet<User>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }
@@ -98,38 +113,59 @@ package "Wallet Service" {
     }
 
     interface IWalletRepository <<implemented>> {
-        +GetByUserIdAsync(userId: Guid) : Task
-        +GetByIdAsync(id: Guid) : Task
+        +GetByUserIdAsync(userId: Guid) : Task<Wallet?>
+        +GetByIdAsync(id: Guid) : Task<Wallet?>
         +AddAsync(wallet: Wallet) : Task
         +UpdateAsync(wallet: Wallet) : Task
     }
 
     interface ITransactionRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetByWalletIdAsync(walletId: Guid) : Task
+        +GetByIdAsync(id: Guid) : Task<Transaction?>
+        +GetByWalletIdAsync(walletId: Guid) : Task<IEnumerable<Transaction>>
         +AddAsync(transaction: Transaction) : Task
         +UpdateAsync(transaction: Transaction) : Task
     }
 
+    interface IWalletService <<implemented>> {
+        +GetBalanceAsync(userId: Guid) : Task<decimal>
+        +DepositAsync(userId: Guid, amount: decimal) : Task
+        +WithdrawAsync(userId: Guid, amount: decimal) : Task
+        +ProcessStakeAsync(userId: Guid, amount: decimal) : Task<bool>
+        +ProcessPayoutAsync(userId: Guid, amount: decimal) : Task
+        +GetWalletByUserIdAsync(userId: Guid) : Task<Wallet?>
+    }
+
     class WalletRepository <<implemented>> {
         -_context : WalletDbContext
-        +GetByUserIdAsync(userId: Guid) : Task
-        +GetByIdAsync(id: Guid) : Task
+        +GetByUserIdAsync(userId: Guid) : Task<Wallet?>
+        +GetByIdAsync(id: Guid) : Task<Wallet?>
         +AddAsync(wallet: Wallet) : Task
         +UpdateAsync(wallet: Wallet) : Task
     }
 
     class TransactionRepository <<implemented>> {
         -_context : WalletDbContext
-        +GetByIdAsync(id: Guid) : Task
-        +GetByWalletIdAsync(walletId: Guid) : Task
+        +GetByIdAsync(id: Guid) : Task<Transaction?>
+        +GetByWalletIdAsync(walletId: Guid) : Task<IEnumerable<Transaction>>
         +AddAsync(transaction: Transaction) : Task
         +UpdateAsync(transaction: Transaction) : Task
     }
 
+    class WalletService <<implemented>> {
+        -_walletRepository : IWalletRepository
+        -_transactionRepository : ITransactionRepository
+        +GetBalanceAsync(userId: Guid) : Task<decimal>
+        +DepositAsync(userId: Guid, amount: decimal) : Task
+        +WithdrawAsync(userId: Guid, amount: decimal) : Task
+        +ProcessStakeAsync(userId: Guid, amount: decimal) : Task<bool>
+        +ProcessPayoutAsync(userId: Guid, amount: decimal) : Task
+        +GetWalletByUserIdAsync(userId: Guid) : Task<Wallet?>
+        -GetOrCreateWalletAsync(userId: Guid) : Task<Wallet>
+    }
+
     class WalletDbContext <<implemented>> {
-        +Wallets : DbSet~Wallet~
-        +Transactions : DbSet~Transaction~
+        +Wallets : DbSet<Wallet>
+        +Transactions : DbSet<Transaction>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }
@@ -174,10 +210,10 @@ package "Betting Service" {
         +EventId : Guid
         +Name : string
         +IsActive : bool
-        +Outcomes : List~Outcome~
+        +Outcomes : List<Outcome>
         +Market(eventId: Guid, name: string)
-        +Activate() : void
         +Deactivate() : void
+        +Activate() : void
     }
 
     class Outcome <<implemented>> {
@@ -197,7 +233,7 @@ package "Betting Service" {
         +Stake : decimal
         +PotentialWinning : decimal
         +Status : TicketStatus
-        +Bets : List~Bet~
+        +Bets : List<Bet>
         +Ticket(userId: Guid, stake: decimal)
         +AddBet(outcomeId: Guid, fixedPrice: decimal) : void
         -CalculateTotalOdds() : void
@@ -214,55 +250,102 @@ package "Betting Service" {
     }
 
     interface ISportRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetAllAsync() : Task
+        +GetByIdAsync(id: Guid) : Task<Sport?>
+        +GetAllAsync() : Task<IEnumerable<Sport>>
         +AddAsync(sport: Sport) : Task
     }
 
     interface IEventRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetActiveEventsAsync() : Task
+        +GetByIdAsync(id: Guid) : Task<Event?>
+        +GetActiveEventsAsync() : Task<IEnumerable<Event>>
         +AddAsync(event: Event) : Task
         +UpdateAsync(event: Event) : Task
     }
 
     interface IMarketRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetByEventIdAsync(eventId: Guid) : Task
+        +GetByIdAsync(id: Guid) : Task<Market?>
+        +GetByEventIdAsync(eventId: Guid) : Task<IEnumerable<Market>>
         +AddAsync(market: Market) : Task
     }
 
     interface ITicketRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetByUserIdAsync(userId: Guid) : Task
+        +GetByIdAsync(id: Guid) : Task<Ticket?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<Ticket>>
         +AddAsync(ticket: Ticket) : Task
         +UpdateAsync(ticket: Ticket) : Task
     }
 
+    interface IBettingService <<implemented>> {
+        +GetActiveEventsAsync() : Task<IEnumerable<Event>>
+        +PlaceTicketAsync(userId: Guid, stake: decimal, outcomeIds: IEnumerable<Guid>) : Task<Ticket>
+        +SettleEventAsync(eventId: Guid, winningOutcomeIds: List<Guid>) : Task
+        +GetTicketByIdAsync(ticketId: Guid) : Task<Ticket?>
+        +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+    }
+
     class SportRepository <<implemented>> {
         -_context : BettingDbContext
+        +GetByIdAsync(id: Guid) : Task<Sport?>
+        +GetAllAsync() : Task<IEnumerable<Sport>>
+        +AddAsync(sport: Sport) : Task
     }
 
     class EventRepository <<implemented>> {
         -_context : BettingDbContext
+        +GetByIdAsync(id: Guid) : Task<Event?>
+        +GetActiveEventsAsync() : Task<IEnumerable<Event>>
+        +AddAsync(event: Event) : Task
+        +UpdateAsync(event: Event) : Task
     }
 
     class MarketRepository <<implemented>> {
         -_context : BettingDbContext
+        +GetByIdAsync(id: Guid) : Task<Market?>
+        +GetByEventIdAsync(eventId: Guid) : Task<IEnumerable<Market>>
+        +AddAsync(market: Market) : Task
     }
 
     class TicketRepository <<implemented>> {
         -_context : BettingDbContext
+        +GetByIdAsync(id: Guid) : Task<Ticket?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+        +AddAsync(ticket: Ticket) : Task
+        +UpdateAsync(ticket: Ticket) : Task
+    }
+
+    class BettingService <<implemented>> {
+        -_eventRepository : IEventRepository
+        -_marketRepository : IMarketRepository
+        -_ticketRepository : ITicketRepository
+        +GetActiveEventsAsync() : Task<IEnumerable<Event>>
+        +PlaceTicketAsync(userId: Guid, stake: decimal, outcomeIds: IEnumerable<Guid>) : Task<Ticket>
+        +SettleEventAsync(eventId: Guid, winningOutcomeIds: List<Guid>) : Task
+        +GetTicketByIdAsync(ticketId: Guid) : Task<Ticket?>
+        +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
     }
 
     class BettingDbContext <<implemented>> {
-        +Sports : DbSet~Sport~
-        +Events : DbSet~Event~
-        +Markets : DbSet~Market~
-        +Outcomes : DbSet~Outcome~
-        +Tickets : DbSet~Ticket~
-        +Bets : DbSet~Bet~
+        +Sports : DbSet<Sport>
+        +Events : DbSet<Event>
+        +Markets : DbSet<Market>
+        +Outcomes : DbSet<Outcome>
+        +Tickets : DbSet<Ticket>
+        +Bets : DbSet<Bet>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
+    }
+}
+
+package "Odds Service" {
+    interface IOddsService <<implemented>> {
+        +CalculateOddsAsync(probability: decimal) : Task<decimal>
+        +UpdateMarketOddsAsync(marketId: Guid) : Task
+        +GetLiveProbabilityAsync(eventId: Guid, contextJson: string) : Task<decimal>
+    }
+
+    class OddsService <<implemented>> {
+        +CalculateOddsAsync(probability: decimal) : Task<decimal>
+        +UpdateMarketOddsAsync(marketId: Guid) : Task
+        +GetLiveProbabilityAsync(eventId: Guid, contextJson: string) : Task<decimal>
     }
 }
 
@@ -288,53 +371,56 @@ package "Custom Bet Service" {
     }
 
     interface ICustomBetRepository <<implemented>> {
-        +GetByIdAsync(id: Guid) : Task
-        +GetByUserIdAsync(userId: Guid) : Task
-        +GetPendingRequestsAsync() : Task
+        +GetByIdAsync(id: Guid) : Task<CustomBetRequest?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<CustomBetRequest>>
+        +GetPendingRequestsAsync() : Task<IEnumerable<CustomBetRequest>>
         +AddAsync(request: CustomBetRequest) : Task
         +UpdateAsync(request: CustomBetRequest) : Task
     }
 
+    interface ICustomBetService <<implemented>> {
+        +CreateRequestAsync(userId: Guid, description: string) : Task<CustomBetRequest>
+        +GetUserRequestsAsync(userId: Guid) : Task<IEnumerable<CustomBetRequest>>
+        +GetPendingRequestsAsync() : Task<IEnumerable<CustomBetRequest>>
+        +AcceptRequestAsync(requestId: Guid, finalOdds: decimal, adminNote: string?) : Task
+        +RejectRequestAsync(requestId: Guid, reason: string) : Task
+    }
+
     class CustomBetRepository <<implemented>> {
         -_context : CustomBetDbContext
+        +GetByIdAsync(id: Guid) : Task<CustomBetRequest?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<CustomBetRequest>>
+        +GetPendingRequestsAsync() : Task<IEnumerable<CustomBetRequest>>
+        +AddAsync(request: CustomBetRequest) : Task
+        +UpdateAsync(request: CustomBetRequest) : Task
+    }
+
+    class CustomBetService <<implemented>> {
+        -_customBetRepository : ICustomBetRepository
+        +CreateRequestAsync(userId: Guid, description: string) : Task<CustomBetRequest>
+        +GetUserRequestsAsync(userId: Guid) : Task<IEnumerable<CustomBetRequest>>
+        +GetPendingRequestsAsync() : Task<IEnumerable<CustomBetRequest>>
+        +AcceptRequestAsync(requestId: Guid, finalOdds: decimal, adminNote: string?) : Task
+        +RejectRequestAsync(requestId: Guid, reason: string) : Task
     }
 
     class CustomBetDbContext <<implemented>> {
-        +CustomBetRequests : DbSet~CustomBetRequest~
+        +CustomBetRequests : DbSet<CustomBetRequest>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }
 
-package "Business Logic Layer / Core - elementy planowane" {
-    interface IWalletService <<planned>> {
-        +Deposit(userId: Guid, amount: decimal) : Task
-        +Withdraw(userId: Guid, amount: decimal) : Task
-        +ChargeStake(userId: Guid, amount: decimal) : Task
-        +Payout(userId: Guid, amount: decimal) : Task
-    }
-
-    interface IBettingService <<planned>> {
-        +CreateTicket(userId: Guid, outcomeIds: List~Guid~, stake: decimal) : Task
-        +SettleTicket(ticketId: Guid) : Task
-    }
-
-    interface IOddsService <<planned>> {
-        +GenerateOdds(eventId: Guid) : Task
-        +UpdateOutcomePrice(outcomeId: Guid, price: decimal, probability: decimal) : Task
-    }
-
+package "Elementy planowane / rozszerzenia" {
     interface ISettlementService <<planned>> {
-        +SettleEvent(eventId: Guid) : Task
-        +SettleTicketsForOutcome(outcomeId: Guid) : Task
+        +SettleTicketsForEventAsync(eventId: Guid) : Task
+        +SettleTicketAsync(ticketId: Guid) : Task
     }
 
     interface IRealtimeOddsNotifier <<planned>> {
-        +PublishOddsChanged(outcomeId: Guid, currentPrice: decimal) : Task
+        +PublishOddsChangedAsync(outcomeId: Guid, currentPrice: decimal) : Task
+        +PublishMarketSuspendedAsync(marketId: Guid) : Task
     }
 
-    class WalletService <<planned>>
-    class BettingService <<planned>>
-    class OddsService <<planned>>
     class SettlementService <<planned>>
     class SignalROddsNotifier <<planned>>
 }
@@ -367,10 +453,10 @@ Wallet "1" -- "0..*" Transaction : WalletId
 Sport "1" -- "0..*" Event : SportId
 Event "1" -- "0..*" Market : EventId
 Market "1" *-- "0..*" Outcome : contains
-Ticket "1" *-- "1..*" Bet : contains
+Ticket "1" *-- "0..*" Bet : contains
 Bet "0..*" ..> "1" Outcome : OutcomeId
 
-' Klasy korzystajace z typow wyliczeniowych
+' Typy wyliczeniowe
 User --> Role
 Transaction --> TransactionType
 Transaction --> TransactionStatus
@@ -379,7 +465,7 @@ Ticket --> TicketStatus
 Bet --> BetStatus
 CustomBetRequest --> RequestStatus
 
-' Repozytoria i implementacje warstwy dostepu do danych
+' Repozytoria i implementacje DAL
 IUserRepository <|.. UserRepository
 UserRepository --> IdentityDbContext : uses
 IdentityDbContext --> User : DbSet
@@ -410,24 +496,28 @@ ICustomBetRepository <|.. CustomBetRepository
 CustomBetRepository --> CustomBetDbContext : uses
 CustomBetDbContext --> CustomBetRequest : DbSet
 
-' Planowana warstwa BLL / Core
+' Serwisy aplikacyjne / BLL zaimplementowane w kodzie
+IIdentityService <|.. IdentityService
 IWalletService <|.. WalletService
 IBettingService <|.. BettingService
 IOddsService <|.. OddsService
-ISettlementService <|.. SettlementService
-IRealtimeOddsNotifier <|.. SignalROddsNotifier
+ICustomBetService <|.. CustomBetService
 
+IdentityService ..> IUserRepository : uses
 WalletService ..> IWalletRepository : uses
 WalletService ..> ITransactionRepository : uses
+BettingService ..> IEventRepository : uses
+BettingService ..> IMarketRepository : uses
 BettingService ..> ITicketRepository : uses
-BettingService ..> IMarketRepository : checks outcomes
-BettingService ..> IWalletService : charges stake / API
-OddsService ..> IEventRepository : reads events
-OddsService ..> IMarketRepository : updates outcomes
-OddsService ..> IRealtimeOddsNotifier : publishes changes
-SettlementService ..> ITicketRepository : settles tickets
-SettlementService ..> IWalletService : payout / API
-CustomBetRequest ..> IOddsService : AI suggested odds / planned
+CustomBetService ..> ICustomBetRepository : uses
+
+' Logiczne / planowane zaleznosci miedzy mikroserwisami
+BettingService ..> WalletService : stake/payout through API (planned integration)
+CustomBetService ..> OddsService : AI odds suggestion (planned integration)
+SettlementService ..> ITicketRepository : planned settlement
+SettlementService ..> WalletService : planned payout through API
+OddsService ..> IRealtimeOddsNotifier : planned SignalR notification
+SignalROddsNotifier ..> Outcome : publishes price changes
 
 note right of Wallet
 Version pelni role znacznika
@@ -443,7 +533,7 @@ dostepnym dla gracza.
 end note
 
 note bottom of Ticket
-Ticket reprezentuje kupon AKO.
+Ticket reprezentuje kupon.
 Bet przechowuje FixedPrice,
 czyli kurs z momentu zawarcia zakladu.
 end note
@@ -453,12 +543,6 @@ Powiazania User -> Wallet/Ticket/CustomBetRequest
 sa celowo pokazane jako logiczne.
 W kodzie i w mikroserwisach sa realizowane
 przez UserId, a nie przez bezposrednie pola nawigacyjne.
-end note
-
-note bottom of "Business Logic Layer / Core - elementy planowane"
-Ta czesc pokazuje elementy wynikajace z zalozen projektu:
-AI Oddsmaker, Settlement Engine, Live Betting i SignalR.
-Nie oznacza to, ze wszystkie te klasy sa juz obecne w kodzie.
 end note
 
 @enduml
