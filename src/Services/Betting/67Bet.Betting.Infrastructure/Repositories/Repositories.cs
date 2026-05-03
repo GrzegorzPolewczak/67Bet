@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Implementacje repozytoriów dla modułu Betting przy użyciu Entity Framework Core.
  * Serwisy te odpowiadają za bezpośrednią komunikację z bazą danych PostgreSQL.
  */
@@ -11,125 +11,63 @@ using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Repositories;
 using _67Bet.Betting.Domain.Enums;
 using _67Bet.Betting.Infrastructure.Persistence;
+using _67Bet.Shared.Kernel;
 
 namespace _67Bet.Betting.Infrastructure.Repositories;
 
-public class SportRepository : ISportRepository
+public class SportRepository : EFRepository<Sport, BettingDbContext>, ISportRepository
 {
-    private readonly BettingDbContext _context;
-
-    public SportRepository(BettingDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<Sport?> GetByIdAsync(Guid id) => await _context.Sports.FindAsync(id);
-
-    public async Task<IEnumerable<Sport>> GetAllAsync() => await _context.Sports.ToListAsync();
-
-    public async Task AddAsync(Sport sport)
-    {
-        await _context.Sports.AddAsync(sport);
-        await _context.SaveChangesAsync();
-    }
+    public SportRepository(BettingDbContext context) : base(context) { }
 }
 
-public class EventRepository : IEventRepository
+public class EventRepository : EFRepository<Event, BettingDbContext>, IEventRepository
 {
-    private readonly BettingDbContext _context;
-
-    public EventRepository(BettingDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<Event?> GetByIdAsync(Guid id) => await _context.Events.FindAsync(id);
+    public EventRepository(BettingDbContext context) : base(context) { }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
     {
-        return await _context.Events
+        return await _dbSet
             .Where(e => e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live)
             .ToListAsync();
     }
-
-    public async Task AddAsync(Event @event)
-    {
-        await _context.Events.AddAsync(@event);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(Event @event)
-    {
-        _context.Events.Update(@event);
-        await _context.SaveChangesAsync();
-    }
 }
 
-public class MarketRepository : IMarketRepository
+public class MarketRepository : EFRepository<Market, BettingDbContext>, IMarketRepository
 {
-    private readonly BettingDbContext _context;
+    public MarketRepository(BettingDbContext context) : base(context) { }
 
-    public MarketRepository(BettingDbContext context)
+    public override async Task<Market?> GetByIdAsync(Guid id)
     {
-        _context = context;
-    }
-
-    public async Task<Market?> GetByIdAsync(Guid id)
-    {
-        return await _context.Markets
+        return await _dbSet
             .Include(m => m.Outcomes)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
     public async Task<IEnumerable<Market>> GetByEventIdAsync(Guid eventId)
     {
-        return await _context.Markets
+        return await _dbSet
             .Include(m => m.Outcomes)
             .Where(m => m.EventId == eventId)
             .ToListAsync();
     }
-
-    public async Task AddAsync(Market market)
-    {
-        await _context.Markets.AddAsync(market);
-        await _context.SaveChangesAsync();
-    }
 }
 
-public class TicketRepository : ITicketRepository
+public class TicketRepository : EFRepository<Ticket, BettingDbContext>, ITicketRepository
 {
-    private readonly BettingDbContext _context;
+    public TicketRepository(BettingDbContext context) : base(context) { }
 
-    public TicketRepository(BettingDbContext context)
+    public override async Task<Ticket?> GetByIdAsync(Guid id)
     {
-        _context = context;
-    }
-
-    public async Task<Ticket?> GetByIdAsync(Guid id)
-    {
-        return await _context.Tickets
+        return await _dbSet
             .Include(t => t.Bets)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task<IEnumerable<Ticket>> GetByUserIdAsync(Guid userId)
     {
-        return await _context.Tickets
+        return await _dbSet
             .Include(t => t.Bets)
             .Where(t => t.UserId == userId)
             .ToListAsync();
     }
-
-    public async Task AddAsync(Ticket ticket)
-    {
-        await _context.Tickets.AddAsync(ticket);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task UpdateAsync(Ticket ticket)
-    {
-        _context.Tickets.Update(ticket);
-        await _context.SaveChangesAsync();
-    }
 }
-

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Implementacje repozytoriów dla modułu Wallet.
  * Obsługuje zapis transakcji oraz aktualizację salda portfeli użytkowników.
  */
@@ -7,21 +7,25 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _67Bet.Wallet.Domain.Entities;
+using _67Bet.Wallet.Domain.Repositories;
+using _67Bet.Wallet.Infrastructure.Persistence;
+using _67Bet.Shared.Kernel;
 
 namespace _67Bet.Wallet.Infrastructure.Persistence
 {
-    using _67Bet.Wallet.Domain.Entities;
+    using WalletEntity = _67Bet.Wallet.Domain.Entities.Wallet;
 
     public class WalletDbContext : DbContext
     {
-        public DbSet<Wallet> Wallets => Set<Wallet>();
+        public DbSet<WalletEntity> Wallets => Set<WalletEntity>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
 
         public WalletDbContext(DbContextOptions<WalletDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Wallet>(builder =>
+            modelBuilder.Entity<WalletEntity>(builder =>
             {
                 builder.HasKey(w => w.Id);
                 builder.Property(w => w.Balance).HasPrecision(18, 2);
@@ -34,7 +38,7 @@ namespace _67Bet.Wallet.Infrastructure.Persistence
             {
                 builder.HasKey(t => t.Id);
                 builder.Property(t => t.Amount).HasPrecision(18, 2);
-                builder.HasOne<Wallet>().WithMany().HasForeignKey(t => t.WalletId);
+                builder.HasOne<WalletEntity>().WithMany().HasForeignKey(t => t.WalletId);
             });
         }
     }
@@ -42,70 +46,28 @@ namespace _67Bet.Wallet.Infrastructure.Persistence
 
 namespace _67Bet.Wallet.Infrastructure.Repositories
 {
-    using _67Bet.Wallet.Infrastructure.Persistence;
-    using _67Bet.Wallet.Domain.Repositories;
     using WalletEntity = _67Bet.Wallet.Domain.Entities.Wallet;
-    using TransactionEntity = _67Bet.Wallet.Domain.Entities.Transaction;
 
-    public class WalletRepository : IWalletRepository
+    public class WalletRepository : EFRepository<WalletEntity, WalletDbContext>, IWalletRepository
     {
-        private readonly WalletDbContext _context;
-
-        public WalletRepository(WalletDbContext context)
-        {
-            _context = context;
-        }
+        public WalletRepository(WalletDbContext context) : base(context) { }
 
         public async Task<WalletEntity?> GetByUserIdAsync(Guid userId)
         {
-            return await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId);
-        }
-
-        public async Task<WalletEntity?> GetByIdAsync(Guid id) => await _context.Wallets.FindAsync(id);
-
-        public async Task AddAsync(WalletEntity wallet)
-        {
-            await _context.Wallets.AddAsync(wallet);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(WalletEntity wallet)
-        {
-            _context.Wallets.Update(wallet);
-            await _context.SaveChangesAsync();
+            return await _dbSet.FirstOrDefaultAsync(w => w.UserId == userId);
         }
     }
 
-    public class TransactionRepository : ITransactionRepository
+    public class TransactionRepository : EFRepository<Transaction, WalletDbContext>, ITransactionRepository
     {
-        private readonly WalletDbContext _context;
+        public TransactionRepository(WalletDbContext context) : base(context) { }
 
-        public TransactionRepository(WalletDbContext context)
+        public async Task<IEnumerable<Transaction>> GetByWalletIdAsync(Guid walletId)
         {
-            _context = context;
-        }
-
-        public async Task<TransactionEntity?> GetByIdAsync(Guid id) => await _context.Transactions.FindAsync(id);
-
-        public async Task<IEnumerable<TransactionEntity>> GetByWalletIdAsync(Guid walletId)
-        {
-            return await _context.Transactions
+            return await _dbSet
                 .Where(t => t.WalletId == walletId)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
         }
-
-        public async Task AddAsync(TransactionEntity transaction)
-        {
-            await _context.Transactions.AddAsync(transaction);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(TransactionEntity transaction)
-        {
-            _context.Transactions.Update(transaction);
-            await _context.SaveChangesAsync();
-        }
     }
 }
-
