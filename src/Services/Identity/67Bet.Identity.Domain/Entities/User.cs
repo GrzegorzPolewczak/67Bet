@@ -45,12 +45,9 @@ namespace _67Bet.Identity.Domain.Repositories
 {
     using _67Bet.Identity.Domain.Entities;
 
-    public interface IUserRepository
+    public interface IUserRepository : IRepository<User>
     {
-        Task<User?> GetByIdAsync(Guid id);
         Task<User?> GetByEmailAsync(string email);
-        Task AddAsync(User user);
-        Task UpdateAsync(User user);
     }
 }
 

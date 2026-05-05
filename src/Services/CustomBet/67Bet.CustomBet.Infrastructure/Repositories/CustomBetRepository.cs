@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Implementacja repozytorium CustomBetRepository.
  * Zarządza trwałym zapisem i odczytem wniosków o zakłady specjalne w bazie danych.
  */
@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _67Bet.CustomBet.Infrastructure.Persistence;
+using _67Bet.Shared.Kernel;
 
 namespace _67Bet.CustomBet.Infrastructure.Persistence
 {
@@ -34,22 +36,13 @@ namespace _67Bet.CustomBet.Infrastructure.Persistence
 
 namespace _67Bet.CustomBet.Infrastructure.Repositories
 {
-    using _67Bet.CustomBet.Infrastructure.Persistence;
-
-    public class CustomBetRepository : ICustomBetRepository
+    public class CustomBetRepository : EFRepository<CustomBetRequest, CustomBetDbContext>, ICustomBetRepository
     {
-        private readonly CustomBetDbContext _context;
-
-        public CustomBetRepository(CustomBetDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<CustomBetRequest?> GetByIdAsync(Guid id) => await _context.CustomBetRequests.FindAsync(id);
+        public CustomBetRepository(CustomBetDbContext context) : base(context) { }
 
         public async Task<IEnumerable<CustomBetRequest>> GetByUserIdAsync(Guid userId)
         {
-            return await _context.CustomBetRequests
+            return await _dbSet
                 .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -57,23 +50,10 @@ namespace _67Bet.CustomBet.Infrastructure.Repositories
 
         public async Task<IEnumerable<CustomBetRequest>> GetPendingRequestsAsync()
         {
-            return await _context.CustomBetRequests
+            return await _dbSet
                 .Where(r => r.Status == RequestStatus.Pending || r.Status == RequestStatus.Reviewing)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
-
-        public async Task AddAsync(CustomBetRequest request)
-        {
-            await _context.CustomBetRequests.AddAsync(request);
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task UpdateAsync(CustomBetRequest request)
-        {
-            _context.CustomBetRequests.Update(request);
-            await _context.SaveChangesAsync();
-        }
     }
 }
-

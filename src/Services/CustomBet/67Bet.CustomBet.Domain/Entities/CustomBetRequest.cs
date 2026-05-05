@@ -66,13 +66,10 @@ namespace _67Bet.CustomBet.Domain.Repositories
 {
     using _67Bet.CustomBet.Domain.Entities;
 
-    public interface ICustomBetRepository
+    public interface ICustomBetRepository : IRepository<CustomBetRequest>
     {
-        Task<CustomBetRequest?> GetByIdAsync(Guid id);
         Task<IEnumerable<CustomBetRequest>> GetByUserIdAsync(Guid userId);
         Task<IEnumerable<CustomBetRequest>> GetPendingRequestsAsync();
-        Task AddAsync(CustomBetRequest request);
-        Task UpdateAsync(CustomBetRequest request);
     }
 }
 
