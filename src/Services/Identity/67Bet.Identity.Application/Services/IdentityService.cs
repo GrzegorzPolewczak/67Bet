@@ -34,10 +34,7 @@ public class IdentityService : IIdentityService
         var existingUser = await _userRepository.GetByEmailAsync(email);
         if (existingUser != null) throw new InvalidOperationException("Użytkownik o tym adresie e-mail już istnieje.");
 
-        // W wersji I: proste hashowanie (wersja demo)
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(password); 
-        // Uwaga: Wersja I może wymagać dodania paczki BCrypt.Net-Next do csproj,
-        // ale na ten moment zakładamy standardowe podejście.
 
         var user = new User(username, email, passwordHash);
         await _userRepository.AddAsync(user);

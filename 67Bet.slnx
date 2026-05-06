@@ -15,6 +15,7 @@
     <Project Path="src/Services/Identity/67Bet.Identity.Domain/67Bet.Identity.Domain.csproj" />
     <Project Path="src/Services/Identity/67Bet.Identity.Application/67Bet.Identity.Application.csproj" />
     <Project Path="src/Services/Identity/67Bet.Identity.Infrastructure/67Bet.Identity.Infrastructure.csproj" />
+    <Project Path="src/Services/Identity/67Bet.Identity.Api/67Bet.Identity.Api.csproj" />
   </Folder>
   <Folder Name="/src/Services/Odds/">
     <Project Path="src/Services/Odds/67Bet.Odds.Application/67Bet.Odds.Application.csproj" />
