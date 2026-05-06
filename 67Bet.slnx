@@ -11,6 +11,7 @@
     <Project Path="src/Services/CustomBet/67Bet.CustomBet.Domain/67Bet.CustomBet.Domain.csproj" />
     <Project Path="src/Services/CustomBet/67Bet.CustomBet.Application/67Bet.CustomBet.Application.csproj" />
     <Project Path="src/Services/CustomBet/67Bet.CustomBet.Infrastructure/67Bet.CustomBet.Infrastructure.csproj" />
+    <Project Path="src/Services/CustomBet/67Bet.CustomBet.Api/67Bet.CustomBet.Api.csproj" />
   </Folder>
   <Folder Name="/src/Services/Identity/">
     <Project Path="src/Services/Identity/67Bet.Identity.Domain/67Bet.Identity.Domain.csproj" />
