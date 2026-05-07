@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="_67Bet.CustomBet.Application\_67Bet.CustomBet.Application.csproj" />
-    <ProjectReference Include="_67Bet.CustomBet.Infrastructure\_67Bet.CustomBet.Infrastructure.csproj" />
+    <ProjectReference Include="..\67Bet.CustomBet.Application\67Bet.CustomBet.Application.csproj" />
+    <ProjectReference Include="..\67Bet.CustomBet.Infrastructure\67Bet.CustomBet.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -39,7 +39,7 @@ builder.Services.AddSwaggerGen(c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "67Bet Odds API", Version = "v1" });
     
     // Add JWT support to Swagger
-    c.AddSecurityDefinition("Bearer", new OpenApiScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
         Name = "Authorization",
@@ -51,7 +51,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiScheme
+            new OpenApiSecurityScheme
             {
                 Reference = new OpenApiReference
                 {
