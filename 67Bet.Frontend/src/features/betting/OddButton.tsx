@@ -9,21 +9,22 @@ interface OddButtonProps {
 }
 
 const OddButton: React.FC<OddButtonProps> = ({ name, odd, isSelected, onClick }) => {
-  const [prevOdd, setPrevOdd] = useState(odd);
+  const numericOdd = Number(odd) || 0;
+  const [prevOdd, setPrevOdd] = useState(numericOdd);
   const [change, setChange] = useState<'up' | 'down' | null>(null);
 
   useEffect(() => {
-    if (odd > prevOdd) {
+    if (numericOdd > prevOdd) {
       setChange('up');
       const timer = setTimeout(() => setChange(null), 2000);
       return () => clearTimeout(timer);
-    } else if (odd < prevOdd) {
+    } else if (numericOdd < prevOdd) {
       setChange('down');
       const timer = setTimeout(() => setChange(null), 2000);
       return () => clearTimeout(timer);
     }
-    setPrevOdd(odd);
-  }, [odd, prevOdd]);
+    setPrevOdd(numericOdd);
+  }, [numericOdd, prevOdd]);
 
   return (
     <button
@@ -53,7 +54,7 @@ const OddButton: React.FC<OddButtonProps> = ({ name, odd, isSelected, onClick })
       <span className={`text-sm font-black tracking-tighter z-10 flex items-center gap-1 transition-colors ${
         change === 'up' ? 'text-accent-success' : change === 'down' ? 'text-accent-danger' : ''
       }`}>
-        {odd.toFixed(2)}
+        {numericOdd > 0 ? numericOdd.toFixed(2) : '-'}
         {change && (
           <motion.span
             initial={{ y: change === 'up' ? 5 : -5, opacity: 0 }}

@@ -1,4 +1,6 @@
 import { NavLink } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../app/store';
 import { 
   Trophy, 
   Gamepad2, 
@@ -7,7 +9,8 @@ import {
   Flame, 
   History, 
   Settings,
-  Star
+  Star,
+  ShieldCheck
 } from 'lucide-react';
 
 const sports = [
@@ -20,6 +23,8 @@ const sports = [
 ];
 
 const Sidebar: React.FC = () => {
+  const { user } = useSelector((state: RootState) => state.auth);
+
   return (
     <aside className="w-64 bg-dark-800 border-r border-dark-700 hidden lg:flex flex-col">
       <div className="p-4 flex flex-col gap-6">
@@ -49,17 +54,50 @@ const Sidebar: React.FC = () => {
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">My Account</h3>
           <ul className="space-y-1">
             <li>
-              <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-dark-700 transition-all text-sm font-medium text-gray-300 hover:text-white group">
+              <NavLink 
+                to="/history"
+                className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${isActive 
+                    ? 'bg-primary-600/10 text-primary-500' 
+                    : 'text-gray-300 hover:bg-dark-700 hover:text-white'}
+                `}
+              >
                 <History className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
                 Bet History
-              </button>
+              </NavLink>
             </li>
             <li>
-              <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-dark-700 transition-all text-sm font-medium text-gray-300 hover:text-white group">
+              <NavLink 
+                to="/settings"
+                className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${isActive 
+                    ? 'bg-primary-600/10 text-primary-500' 
+                    : 'text-gray-300 hover:bg-dark-700 hover:text-white'}
+                `}
+              >
                 <Settings className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
                 Settings
-              </button>
+              </NavLink>
             </li>
+            
+            {user?.role === 'Admin' && (
+              <li>
+                <NavLink 
+                  to="/admin/dashboard"
+                  className={({ isActive }) => `
+                    w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group mt-4 border border-primary-500/30
+                    ${isActive 
+                      ? 'bg-primary-600/20 text-primary-500' 
+                      : 'text-primary-400 hover:bg-primary-600/10 hover:text-primary-500'}
+                  `}
+                >
+                  <ShieldCheck className="w-5 h-5" />
+                  Admin Panel
+                </NavLink>
+              </li>
+            )}
           </ul>
         </div>
       </div>

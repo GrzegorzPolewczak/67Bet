@@ -25,11 +25,15 @@ public class Event : BaseEntity, IAggregateRoot
     public DateTime StartTime { get; private set; }
     public EventStatus Status { get; private set; }
     public string Metadata { get; private set; } = null!; // JSONB in DB
+    public string League { get; private set; } = null!;
 
-    public Event(Guid sportId, string name, DateTime startTime, string metadata = "{}")
+    public virtual ICollection<Market> Markets { get; private set; } = new List<Market>();
+
+    public Event(string name, Guid sportId, string league, DateTime startTime, string metadata = "{}")
     {
-        SportId = sportId;
         Name = name;
+        SportId = sportId;
+        League = league;
         StartTime = startTime;
         Status = EventStatus.Scheduled;
         Metadata = metadata;

@@ -1,17 +1,38 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Zap, Send, Info, ChevronLeft } from 'lucide-react';
+import { Zap, Send, Info, ChevronLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { submitCustomBetAsync } from '../admin/adminSlice';
+import type { AppDispatch, RootState } from '../../app/store';
+import toast from 'react-hot-toast';
 
 const CustomBetRequest: React.FC = () => {
   const [request, setRequest] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!request.trim()) return;
-    // Symulacja wysyłki do AI
-    setSubmitted(true);
+    
+    if (!isAuthenticated) {
+      toast.error('You must be logged in to request a custom bet.');
+      return;
+    }
+
+    setSubmitting(true);
+    const resultAction = await dispatch(submitCustomBetAsync(request));
+    setSubmitting(false);
+
+    if (submitCustomBetAsync.fulfilled.match(resultAction)) {
+      setSubmitted(true);
+      toast.success('Custom bet submitted to Admin successfully!');
+    } else {
+      toast.error('Failed to submit custom bet request.');
+    }
   };
 
   if (submitted) {
@@ -26,11 +47,16 @@ const CustomBetRequest: React.FC = () => {
         </motion.div>
         <h2 className="text-3xl font-black text-white">Request Sent!</h2>
         <p className="text-gray-400">
-          Our AI Oddsmaker is now analyzing your request: <br />
+          Our AI Oddsmaker & Admin team are analyzing your request: <br />
           <span className="text-white italic font-medium">"{request}"</span>
         </p>
-        <p className="text-sm text-gray-500">You will be notified once the odds are ready.</p>
-        <Link to="/" className="text-primary-500 font-bold hover:underline">Back to Home</Link>
+        <p className="text-sm text-gray-500">You will be notified once the odds are ready and approved.</p>
+        <button 
+          onClick={() => { setSubmitted(false); setRequest(''); }}
+          className="text-primary-500 font-bold hover:underline"
+        >
+          Submit Another Request
+        </button>
       </div>
     );
   }
@@ -57,8 +83,9 @@ const CustomBetRequest: React.FC = () => {
           <textarea
             value={request}
             onChange={(e) => setRequest(e.target.value)}
+            disabled={submitting}
             placeholder="Example: Robert Lewandowski will score a header and get a yellow card in the first half of El Clasico."
-            className="w-full bg-dark-900 border border-dark-600 rounded-2xl p-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-primary-500 min-h-[150px] transition-colors"
+            className="w-full bg-dark-900 border border-dark-600 rounded-2xl p-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-primary-500 min-h-[150px] transition-colors disabled:opacity-50"
           />
         </div>
 
@@ -72,10 +99,11 @@ const CustomBetRequest: React.FC = () => {
 
         <button 
           type="submit"
-          className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-primary-600/20"
+          disabled={submitting || !request.trim()}
+          className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-primary-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Send className="w-5 h-5" />
-          Request Odds
+          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+          {submitting ? 'Submitting...' : 'Request Odds'}
         </button>
       </form>
 
