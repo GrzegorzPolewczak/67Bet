@@ -21,6 +21,12 @@ public class Market : BaseEntity
     public void Deactivate() => IsActive = false;
     public void Activate() => IsActive = true;
 
+    public void AddOutcome(string name, decimal odd)
+    {
+        var probability = odd > 0 ? 1 / odd : 0;
+        Outcomes.Add(new Outcome(Id, name, probability, odd));
+    }
+
     // EF Core
     private Market() { }
 }

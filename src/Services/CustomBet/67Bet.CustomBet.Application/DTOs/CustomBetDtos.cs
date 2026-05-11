@@ -4,11 +4,13 @@ namespace _67Bet.CustomBet.Application.DTOs;
 
 public record CustomBetRequestDto(
     Guid Id,
+    Guid UserId,
     string Description,
     string Status,
     decimal AiSuggestedOdds,
     decimal? AdminFinalOdds,
-    string? AdminNote
+    string? AdminNote,
+    DateTime CreatedAt
 );
 
 public record CreateCustomBetRequest(string Description);

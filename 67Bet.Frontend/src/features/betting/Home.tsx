@@ -1,93 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addSelection } from '../betslip/betslipSlice';
-import type { RootState } from '../../app/store';
+import { fetchEventsAsync } from './bettingSlice';
+import type { RootState, AppDispatch } from '../../app/store';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Clock, ChevronRight, Zap } from 'lucide-react';
+import { Trophy, Clock, ChevronRight, Zap, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import OddButton from './OddButton';
 
-const MOCK_EVENTS = [
-  {
-    id: '1',
-    name: 'Real Madrid vs Barcelona',
-    league: 'La Liga',
-    time: 'Today, 21:00',
-    markets: [
-      {
-        id: 'm1',
-        name: 'Match Result',
-        outcomes: [
-          { id: 'o1', name: '1', odd: 2.15 },
-          { id: 'o2', name: 'X', odd: 3.40 },
-          { id: 'o3', name: '2', odd: 3.10 },
-        ]
-      }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Man City vs Arsenal',
-    league: 'Premier League',
-    time: 'Today, 18:30',
-    markets: [
-      {
-        id: 'm2',
-        name: 'Match Result',
-        outcomes: [
-          { id: 'o4', name: '1', odd: 1.85 },
-          { id: 'o5', name: 'X', odd: 3.75 },
-          { id: 'o6', name: '2', odd: 4.20 },
-        ]
-      }
-    ]
-  },
-  {
-    id: '3',
-    name: 'Bayern Munich vs Dortmund',
-    league: 'Bundesliga',
-    time: 'Today, 15:30',
-    markets: [
-      {
-        id: 'm3',
-        name: 'Match Result',
-        outcomes: [
-          { id: 'o7', name: '1', odd: 1.55 },
-          { id: 'o8', name: 'X', odd: 4.50 },
-          { id: 'o9', name: '2', odd: 5.80 },
-        ]
-      }
-    ]
-  }
-];
-
 const Home: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const selections = useSelector((state: RootState) => state.betslip.selections);
-  const [events, setEvents] = useState(MOCK_EVENTS);
+  const { events, loading, error } = useSelector((state: RootState) => state.betting);
 
-  // Simulate real-time odd updates
   useEffect(() => {
-    const interval = setInterval(() => {
-      setEvents(prev => prev.map(event => ({
-        ...event,
-        markets: event.markets.map(market => ({
-          ...market,
-          outcomes: market.outcomes.map(outcome => {
-            if (Math.random() > 0.8) {
-              const change = (Math.random() - 0.5) * 0.1;
-              return { ...outcome, odd: Math.max(1.01, outcome.odd + change) };
-            }
-            return outcome;
-          })
-        }))
-      })));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    dispatch(fetchEventsAsync());
+  }, [dispatch]);
 
   const isSelected = (outcomeId: string) => 
     selections.some(s => s.outcomeId === outcomeId);
+
+  if (loading && events.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <Loader2 className="w-10 h-10 text-primary-500 animate-spin" />
+        <p className="text-gray-400 font-bold">Loading exciting matches...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12 relative">
@@ -138,10 +78,19 @@ const Home: React.FC = () => {
             <div className="w-1.5 h-6 bg-primary-500 rounded-full" />
             Top Matches
           </h2>
-          <button className="text-xs font-bold text-gray-400 hover:text-white flex items-center gap-1 transition-colors">
-            View All <ChevronRight className="w-4 h-4" />
+          <button 
+            onClick={() => dispatch(fetchEventsAsync())}
+            className="text-xs font-bold text-gray-400 hover:text-white flex items-center gap-1 transition-colors"
+          >
+            Refresh <ChevronRight className="w-4 h-4" />
           </button>
         </div>
+
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-xs font-bold p-4 rounded-xl text-center">
+            {error}. Using mock data for preview.
+          </div>
+        )}
 
         <div className="grid gap-4">
           <AnimatePresence mode="popLayout">
@@ -167,28 +116,40 @@ const Home: React.FC = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {event.markets[0].outcomes.map((outcome) => (
-                      <OddButton
-                        key={outcome.id}
-                        name={outcome.name}
-                        odd={outcome.odd}
-                        isSelected={isSelected(outcome.id)}
-                        onClick={() => dispatch(addSelection({
-                          eventId: event.id,
-                          eventName: event.name,
-                          marketId: event.markets[0].id,
-                          marketName: event.markets[0].name,
-                          outcomeId: outcome.id,
-                          outcomeName: outcome.name === '1' ? event.name.split(' vs ')[0] : outcome.name === '2' ? event.name.split(' vs ')[1] : 'Draw',
-                          odd: outcome.odd
-                        }))}
-                      />
-                    ))}
+                    {Array.isArray(event.markets) && event.markets.length > 0 && Array.isArray(event.markets[0]?.outcomes) ? (
+                      event.markets[0].outcomes.map((outcome: any, index: number) => (
+                        <OddButton
+                          key={outcome?.id || index}
+                          name={outcome?.name || '-'}
+                          odd={outcome?.odd || 0}
+                          isSelected={outcome?.id ? isSelected(outcome.id) : false}
+                          onClick={() => {
+                            const market = event.markets[0];
+                            if (market && outcome?.id) {
+                              dispatch(addSelection({
+                                eventId: event.id,
+                                eventName: event.name || 'Unknown Event',
+                                marketId: market.id,
+                                marketName: market.name || 'Unknown Market',
+                                outcomeId: outcome.id,
+                                outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : 'Draw',
+                                odd: outcome.odd || 0
+                              }));
+                            }
+                          }}
+                        />
+                      ))
+                    ) : (
+                      <span className="text-xs text-gray-500 font-bold border border-dark-600 border-dashed px-4 py-2 rounded-xl">Odds upcoming</span>
+                    )}
                   </div>
                 </div>
               </motion.div>
             ))}
           </AnimatePresence>
+          {events.length === 0 && !loading && !error && (
+            <p className="text-center text-gray-500 py-10">No matches available at the moment.</p>
+          )}
         </div>
       </section>
 

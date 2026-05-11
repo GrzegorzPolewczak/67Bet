@@ -27,6 +27,8 @@ public class EventRepository : EFRepository<Event, BettingDbContext>, IEventRepo
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
     {
         return await _dbSet
+            .Include(e => e.Markets)
+                .ThenInclude(m => m.Outcomes)
             .Where(e => e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live)
             .ToListAsync();
     }

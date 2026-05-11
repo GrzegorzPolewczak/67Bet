@@ -1,16 +1,40 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from '../../app/store';
-import { X, Trash2, Info } from 'lucide-react';
-import { removeSelection, clearBetslip, setStake, toggleBetslip } from './betslipSlice';
+import type { RootState, AppDispatch } from '../../app/store';
+import { X, Trash2, Info, Loader2 } from 'lucide-react';
+import { removeSelection, clearBetslip, setStake, toggleBetslip, placeBetAsync } from './betslipSlice';
+import { fetchBalanceAsync } from '../wallet/walletSlice';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const BetSlip: React.FC = () => {
-  const dispatch = useDispatch();
-  const { selections, stake } = useSelector((state: RootState) => state.betslip);
+  const dispatch = useDispatch<AppDispatch>();
+  const { selections, stake, loading } = useSelector((state: RootState) => state.betslip);
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   
   const totalOdds = selections.reduce((acc, curr) => acc * curr.odd, 1);
   const potentialPayout = stake * totalOdds;
+
+  const handlePlaceBet = async () => {
+    if (!isAuthenticated) {
+      toast.error('You must be logged in to place a bet.');
+      return;
+    }
+
+    if (stake <= 0) {
+      toast.error('Stake must be greater than 0.');
+      return;
+    }
+
+    const resultAction = await dispatch(placeBetAsync());
+    
+    if (placeBetAsync.fulfilled.match(resultAction)) {
+      toast.success('Bet placed successfully!');
+      dispatch(fetchBalanceAsync()); // Refresh balance after bet
+    } else {
+      toast.error(resultAction.payload as string || 'Failed to place bet.');
+    }
+  };
 
   return (
     <div className="flex flex-col h-full bg-dark-800">
@@ -23,7 +47,7 @@ const BetSlip: React.FC = () => {
         </div>
         <button 
           onClick={() => dispatch(toggleBetslip())}
-          className="text-gray-500 hover:text-white"
+          className="text-gray-500 hover:text-white transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -89,6 +113,7 @@ const BetSlip: React.FC = () => {
                 onChange={(e) => dispatch(setStake(Number(e.target.value)))}
                 placeholder="0.00"
                 className="w-full bg-dark-900 border border-dark-600 rounded-lg py-3 pl-8 pr-4 text-sm font-bold focus:outline-none focus:border-primary-500 transition-colors"
+                disabled={loading}
               />
             </div>
           </div>
@@ -99,13 +124,19 @@ const BetSlip: React.FC = () => {
               <span className="text-lg font-black text-accent-success">${potentialPayout.toFixed(2)}</span>
             </div>
             
-            <button className="w-full bg-primary-600 hover:bg-primary-700 py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary-600/20 active:scale-95 transition-all">
-              Place Bet
+            <button 
+              onClick={handlePlaceBet}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-800 disabled:opacity-50 py-4 rounded-xl font-black text-sm uppercase tracking-widest shadow-lg shadow-primary-600/20 active:scale-95 transition-all"
+            >
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+              {loading ? 'Placing...' : 'Place Bet'}
             </button>
             
             <button 
               onClick={() => dispatch(clearBetslip())}
-              className="w-full mt-2 text-[10px] font-bold text-gray-500 hover:text-gray-300 uppercase tracking-tighter transition-colors"
+              disabled={loading}
+              className="w-full mt-2 text-[10px] font-bold text-gray-500 hover:text-gray-300 disabled:opacity-50 uppercase tracking-tighter transition-colors"
             >
               Clear All
             </button>

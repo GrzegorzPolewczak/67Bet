@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Wallet, Menu, Search, Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Wallet, Menu, Search, Bell, LogOut } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
-import type { RootState } from '../../app/store';
+import type { RootState, AppDispatch } from '../../app/store';
 import { toggleBetslip } from '../../features/betslip/betslipSlice';
+import { logout } from '../../features/auth/authSlice';
+import { fetchBalanceAsync } from '../../features/wallet/walletSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Navbar: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+  const { balance } = useSelector((state: RootState) => state.wallet);
   const betSelectionsCount = useSelector((state: RootState) => state.betslip.selections.length);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchBalanceAsync());
+    }
+  }, [isAuthenticated, dispatch]);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/login');
+  };
 
   return (
     <nav className="bg-dark-800 border-b border-dark-700 h-16 flex items-center justify-between px-6 z-50">
@@ -84,7 +99,7 @@ const Navbar: React.FC = () => {
               <span className="text-xs text-gray-400 font-medium">Balance</span>
               <div className="flex items-center gap-2 text-accent-success font-bold">
                 <Wallet className="w-4 h-4" />
-                <span>$1,240.00</span>
+                <span>${balance.toFixed(2)}</span>
               </div>
             </div>
             
@@ -109,6 +124,13 @@ const Navbar: React.FC = () => {
               <div className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold">
                 {user?.username?.[0]?.toUpperCase() || 'U'}
               </div>
+              <button 
+                onClick={handleLogout}
+                className="text-gray-500 hover:text-white transition-colors"
+                title="Log Out"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
             </div>
           </>
         ) : (

@@ -15,9 +15,10 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.AddDbContext<BettingDbContext>(options =>
-            options.UseMySQL(connectionString));
+            options.UseInMemoryDatabase("BettingDb"));
 
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IMarketRepository, MarketRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
 
         return services;

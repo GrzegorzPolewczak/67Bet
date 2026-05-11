@@ -3,6 +3,7 @@ using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Mappings;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace _67Bet.Betting.Api.Controllers;
 
@@ -23,16 +24,7 @@ public class EventsController : ControllerBase
     public async Task<ActionResult<IEnumerable<EventDto>>> GetActiveEvents()
     {
         var events = await _bettingService.GetActiveEventsAsync();
-        var dtos = new List<EventDto>();
-
-        foreach (var @event in events)
-        {
-            // W rzeczywistej implementacji serwisu rynki byłyby dołączone lub pobrane osobno.
-            // Na potrzeby API zakładamy mapowanie z pustą listą rynków jeśli serwis ich nie dostarcza bezpośrednio w encji Event.
-            // Tutaj uproszczenie: mapujemy to co mamy.
-            dtos.Add(@event.ToDto(new List<_67Bet.Betting.Domain.Entities.Market>()));
-        }
-
+        var dtos = events.Select(e => e.ToDto(e.Markets.ToList())).ToList();
         return Ok(dtos);
     }
 

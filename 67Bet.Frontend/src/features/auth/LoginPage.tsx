@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Mail, Lock, LogIn, ChevronLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, Lock, LogIn, ChevronLeft, Loader2 } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginAsync } from './authSlice';
+import type { AppDispatch, RootState } from '../../app/store';
 
 const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state: RootState) => state.auth);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const resultAction = await dispatch(loginAsync({ email, password }));
+    if (loginAsync.fulfilled.match(resultAction)) {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-dark-900 flex flex-col justify-center items-center p-4 relative overflow-hidden">
       {/* Background Glows */}
@@ -27,15 +44,24 @@ const LoginPage: React.FC = () => {
             <p className="text-gray-400 text-sm">Welcome back! Please enter your details.</p>
           </div>
 
-          <form className="space-y-6">
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/50 text-red-500 text-xs font-bold p-4 rounded-xl mb-6 text-center">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-500 uppercase px-1">Email Address</label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <input 
                   type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
                   className="w-full bg-dark-900 border border-dark-600 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-primary-500 transition-colors"
+                  required
                 />
               </div>
             </div>
@@ -49,18 +75,26 @@ const LoginPage: React.FC = () => {
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
                 <input 
                   type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   className="w-full bg-dark-900 border border-dark-600 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-gray-600 focus:outline-none focus:border-primary-500 transition-colors"
+                  required
                 />
               </div>
             </div>
 
             <button 
               type="submit"
-              className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-primary-600/20 mt-8"
+              disabled={loading}
+              className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-primary-600/20 mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <LogIn className="w-5 h-5" />
-              Sign In
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <LogIn className="w-5 h-5" />
+              )}
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 

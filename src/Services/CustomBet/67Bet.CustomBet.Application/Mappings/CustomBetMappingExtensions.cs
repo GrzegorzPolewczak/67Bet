@@ -9,11 +9,13 @@ public static class CustomBetMappingExtensions
     {
         return new CustomBetRequestDto(
             request.Id,
+            request.UserId,
             request.Description,
             request.Status.ToString(),
             request.AiSuggestedOdds,
             request.AdminFinalOdds,
-            request.AdminNote
+            request.AdminNote,
+            request.CreatedAt
         );
     }
 }

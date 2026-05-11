@@ -15,7 +15,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.AddDbContext<IdentityDbContext>(options =>
-            options.UseMySQL(connectionString));
+            options.UseInMemoryDatabase("IdentityDb"));
 
         services.AddScoped<IUserRepository, UserRepository>();
 

@@ -12,6 +12,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
@@ -71,6 +82,22 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+// Seed Admin User
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<_67Bet.Identity.Infrastructure.Persistence.IdentityDbContext>();
+    if (!context.Users.Any(u => u.Email == "admin@67bet.com"))
+    {
+        // For development purposes, we are putting the plain password "admin123" here. 
+        // NOTE: In the AuthController, it checks if BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) is true.
+        // So we MUST hash it before saving, even in Seed data.
+        var passwordHash = BCrypt.Net.BCrypt.HashPassword("admin123");
+        var adminUser = new _67Bet.Identity.Domain.Entities.User("admin", "admin@67bet.com", passwordHash, _67Bet.Identity.Domain.Enums.Role.Admin);
+        context.Users.Add(adminUser);
+        context.SaveChanges();
+    }
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
@@ -80,7 +107,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Commented for local HTTP debugging
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
