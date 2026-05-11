@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-900: #0a0a0a;
+  --color-dark-800: #121212;
+  --color-dark-700: #1f1f1f;
+  --color-dark-600: #2d2d2d;
+  
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  
+  --color-accent-success: #10b981;
+  --color-accent-danger: #ef4444;
+  --color-accent-warning: #f59e0b;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-dark-900 text-gray-100 font-sans antialiased;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-dark-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-dark-600 rounded-full hover:bg-dark-700 transition-colors;
+}
+
+/* Transitions for Odds changing */
+.odd-up {
+  @apply text-accent-success font-bold transition-all duration-300 scale-105;
+}
+
+.odd-down {
+  @apply text-accent-danger font-bold transition-all duration-300 scale-105;
+}
