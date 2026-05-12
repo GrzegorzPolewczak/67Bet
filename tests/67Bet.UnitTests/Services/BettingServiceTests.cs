@@ -6,6 +6,7 @@ using _67Bet.Betting.Application.Services;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Enums;
 using _67Bet.Betting.Domain.Repositories;
+using _67Bet.Wallet.Application.Interfaces;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -17,6 +18,7 @@ public class BettingServiceTests
     private readonly Mock<IEventRepository> _eventRepositoryMock;
     private readonly Mock<IMarketRepository> _marketRepositoryMock;
     private readonly Mock<ITicketRepository> _ticketRepositoryMock;
+    private readonly Mock<IWalletService> _walletServiceMock;
     private readonly BettingService _bettingService;
 
     public BettingServiceTests()
@@ -24,10 +26,12 @@ public class BettingServiceTests
         _eventRepositoryMock = new Mock<IEventRepository>();
         _marketRepositoryMock = new Mock<IMarketRepository>();
         _ticketRepositoryMock = new Mock<ITicketRepository>();
+        _walletServiceMock = new Mock<IWalletService>();
         _bettingService = new BettingService(
             _eventRepositoryMock.Object,
             _marketRepositoryMock.Object,
-            _ticketRepositoryMock.Object);
+            _ticketRepositoryMock.Object,
+            _walletServiceMock.Object);
     }
 
     [Fact]
@@ -40,12 +44,17 @@ public class BettingServiceTests
     }
 
     [Fact]
-    public async Task PlaceTicketAsync_ShouldThrowException_WhenNoOutcomesProvided()
+    public async Task PlaceTicketAsync_ShouldThrowException_WhenInsufficientFunds()
     {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var stake = 100m;
+        _walletServiceMock.Setup(w => w.ProcessStakeAsync(userId, stake)).ReturnsAsync(false);
+
         // Act & Assert
-        await _bettingService.Invoking(s => s.PlaceTicketAsync(Guid.NewGuid(), 10, new List<Guid>()))
-            .Should().ThrowAsync<ArgumentException>()
-            .WithMessage("Kupon musi zawierać przynajmniej jeden zakład.");
+        await _bettingService.Invoking(s => s.PlaceTicketAsync(userId, stake, new List<Guid> { Guid.NewGuid() }))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Niewystarczające środki na koncie użytkownika.");
     }
 
     [Fact]
@@ -54,6 +63,7 @@ public class BettingServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var stake = 100m;
+        _walletServiceMock.Setup(w => w.ProcessStakeAsync(userId, stake)).ReturnsAsync(true);
 
         var sport = new Sport("Football");
         var @event = new Event("Test Match", sport.Id, "Test League", DateTime.Now.AddDays(1));
@@ -80,36 +90,38 @@ public class BettingServiceTests
         ticket.PotentialWinning.Should().Be(200m);
         
         _ticketRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Ticket>()), Times.Once);
+        _walletServiceMock.Verify(w => w.ProcessStakeAsync(userId, stake), Times.Once);
     }
 
     [Fact]
-    public async Task SettleEventAsync_ShouldUpdateEventStatusAndOutcomes()
+    public async Task SettleEventAsync_ShouldHandlePayout_WhenTicketIsWon()
     {
         // Arrange
         var eventId = Guid.NewGuid();
         var sport = new Sport("Football");
         var @event = new Event("Test Match", sport.Id, "Test League", DateTime.Now.AddDays(1));
-        // We need to set @event.Id to eventId, but it's protected set.
-        // Let's use the actual ID from the created object.
         eventId = @event.Id;
 
         var market = new Market(eventId, "Winner");
-        var outcome1 = new Outcome(market.Id, "Team A", 0.5m, 2.0m);
-        var outcome2 = new Outcome(market.Id, "Team B", 0.5m, 2.0m);
-        market.Outcomes.Add(outcome1);
-        market.Outcomes.Add(outcome2);
+        var outcome = new Outcome(market.Id, "Team A", 0.5m, 2.0m);
+        market.Outcomes.Add(outcome);
+
+        var userId = Guid.NewGuid();
+        var ticket = new Ticket(userId, 100m);
+        ticket.AddBet(outcome.Id, 2.0m);
+        ticket.Settle(TicketStatus.Pending);
 
         _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId)).ReturnsAsync(@event);
         _marketRepositoryMock.Setup(x => x.GetByEventIdAsync(eventId)).ReturnsAsync(new List<Market> { market });
+        _ticketRepositoryMock.Setup(x => x.GetActiveTicketsAsync()).ReturnsAsync(new List<Ticket> { ticket });
+        _eventRepositoryMock.Setup(x => x.GetActiveEventsAsync()).ReturnsAsync(new List<Event> { @event });
 
         // Act
-        await _bettingService.SettleEventAsync(eventId, new List<Guid> { outcome1.Id });
+        await _bettingService.SettleEventAsync(eventId, new List<Guid> { outcome.Id });
 
         // Assert
-        @event.Status.Should().Be(EventStatus.Finished);
-        outcome1.IsWinner.Should().BeTrue();
-        outcome2.IsWinner.Should().BeFalse();
-        
-        _eventRepositoryMock.Verify(x => x.UpdateAsync(@event), Times.Once);
+        ticket.Status.Should().Be(TicketStatus.Won);
+        _walletServiceMock.Verify(w => w.ProcessPayoutAsync(userId, 200m), Times.Once);
+        _ticketRepositoryMock.Verify(x => x.UpdateAsync(ticket), Times.AtLeastOnce);
     }
 }

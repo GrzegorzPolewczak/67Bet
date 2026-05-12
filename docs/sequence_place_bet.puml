@@ -1,0 +1,49 @@
+@startuml sequence_place_bet
+header 67Bet - Business Logic Layer
+title Proces postawienia zakładu (Place Bet)
+
+actor Użytkownik as User
+participant "BettingController\n(API)" as API
+participant "BettingService\n(BLL)" as BLL
+participant "WalletService\n(BLL)" as Wallet
+database "TicketRepository\n(DAL)" as RepoTicket
+database "EventRepository\n(DAL)" as RepoEvent
+
+User -> API : Postaw zakład (userId, stake, outcomeIds)
+activate API
+
+API -> BLL : PlaceTicketAsync(userId, stake, outcomeIds)
+activate BLL
+
+BLL -> BLL : Walidacja (stawka > 0, lista typów niepusta)
+
+loop dla każdego outcomeId
+    BLL -> RepoEvent : Sprawdź czy zdarzenie aktywne i pobierz kurs
+    RepoEvent --> BLL : Kurs/Dane zdarzenia
+end
+
+BLL -> Wallet : ProcessStakeAsync(userId, stake)
+activate Wallet
+note right: Sprawdzenie salda i pobranie środków (Atomic/Transaction)
+Wallet --> BLL : Success / Failure
+deactivate Wallet
+
+alt Jeśli brak środków
+    BLL --> API : Throw Exception (InsufficientFunds)
+    API --> User : 400 Bad Request
+else Sukces
+    BLL -> BLL : Oblicz kurs całkowity (AKO) i wygraną
+    
+    BLL -> RepoTicket : AddAsync(ticket)
+    activate RepoTicket
+    RepoTicket --> BLL : Saved
+    deactivate RepoTicket
+    
+    BLL --> API : Return TicketDto
+    deactivate BLL
+    
+    API --> User : 201 Created (Ticket Details)
+end
+
+deactivate API
+@enduml

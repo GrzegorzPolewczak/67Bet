@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\67Bet.Betting.Domain\67Bet.Betting.Domain.csproj" />
+    <ProjectReference Include="..\..\Wallet\67Bet.Wallet.Application\67Bet.Wallet.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -72,4 +72,12 @@ public class TicketRepository : EFRepository<Ticket, BettingDbContext>, ITicketR
             .Where(t => t.UserId == userId)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Ticket>> GetActiveTicketsAsync()
+    {
+        return await _dbSet
+            .Include(t => t.Bets)
+            .Where(t => t.Status == TicketStatus.Pending)
+            .ToListAsync();
+    }
 }
