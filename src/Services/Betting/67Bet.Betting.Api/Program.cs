@@ -86,6 +86,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<_67Bet.Betting.Infrastructure.Persistence.BettingDbContext>();
+    context.Database.EnsureCreated();
     if (!context.Events.Any())
     {
         var footballSport = new _67Bet.Betting.Domain.Entities.Sport("Football");
@@ -138,11 +139,8 @@ using (var scope = app.Services.CreateScope())
 app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 

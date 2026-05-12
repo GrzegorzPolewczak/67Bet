@@ -86,6 +86,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<_67Bet.Identity.Infrastructure.Persistence.IdentityDbContext>();
+    context.Database.EnsureCreated();
     if (!context.Users.Any(u => u.Email == "admin@67bet.com"))
     {
         // For development purposes, we are putting the plain password "admin123" here. 
@@ -101,11 +102,8 @@ using (var scope = app.Services.CreateScope())
 app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 

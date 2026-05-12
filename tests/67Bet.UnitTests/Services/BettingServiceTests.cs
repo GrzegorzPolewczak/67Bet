@@ -55,7 +55,8 @@ public class BettingServiceTests
         var userId = Guid.NewGuid();
         var stake = 100m;
 
-        var @event = new Event(Guid.NewGuid(), "Test Match", DateTime.Now.AddDays(1));
+        var sport = new Sport("Football");
+        var @event = new Event("Test Match", sport.Id, "Test League", DateTime.Now.AddDays(1));
         var market = new Market(@event.Id, "Winner");
         var outcome = new Outcome(market.Id, "Team A", 0.5m, 2.0m);
         market.Outcomes.Add(outcome);
@@ -86,7 +87,8 @@ public class BettingServiceTests
     {
         // Arrange
         var eventId = Guid.NewGuid();
-        var @event = new Event(Guid.NewGuid(), "Test Match", DateTime.Now.AddDays(1));
+        var sport = new Sport("Football");
+        var @event = new Event("Test Match", sport.Id, "Test League", DateTime.Now.AddDays(1));
         // We need to set @event.Id to eventId, but it's protected set.
         // Let's use the actual ID from the created object.
         eventId = @event.Id;

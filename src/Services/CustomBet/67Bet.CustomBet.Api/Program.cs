@@ -82,14 +82,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<_67Bet.CustomBet.Infrastructure.Persistence.CustomBetDbContext>();
+    context.Database.EnsureCreated();
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 

@@ -1,0 +1,22 @@
+name: Deploy CustomBet API
+on:
+  push:
+    branches: [ "main" ]
+    paths: [ "src/Services/CustomBet/**", ".github/workflows/deploy-custombet.yml" ]
+  workflow_dispatch:
+env:
+  AZURE_WEBAPP_NAME: '67bet-custombet-api'
+  WORKING_DIRECTORY: 'src/Services/CustomBet/67Bet.CustomBet.Api'
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: '10.0.x' }
+      - run: dotnet publish ${{ env.WORKING_DIRECTORY }} -c Release -o ./publish_output
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_CUSTOMBET }}
+          package: ./publish_output
