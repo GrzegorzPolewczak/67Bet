@@ -70,15 +70,15 @@ const BetHistoryPage: React.FC = () => {
                 <div className="flex items-center gap-6">
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Total Odds</span>
-                    <span className="text-sm font-black text-white">@{ticket.totalOdds.toFixed(2)}</span>
+                    <span className="text-sm font-black text-white">@{(ticket.totalOdds || 0).toFixed(2)}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Stake</span>
-                    <span className="text-sm font-black text-white">${ticket.stake.toFixed(2)}</span>
+                    <span className="text-sm font-black text-white">${(ticket.stake || 0).toFixed(2)}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Payout</span>
-                    <span className="text-sm font-black text-accent-success">${ticket.potentialWinning.toFixed(2)}</span>
+                    <span className="text-sm font-black text-accent-success">${(ticket.potentialWinning || 0).toFixed(2)}</span>
                   </div>
                   <div className="text-right">
                     <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${

@@ -99,7 +99,7 @@ const Navbar: React.FC = () => {
               <span className="text-xs text-gray-400 font-medium">Balance</span>
               <div className="flex items-center gap-2 text-accent-success font-bold">
                 <Wallet className="w-4 h-4" />
-                <span>${balance.toFixed(2)}</span>
+                <span>${(balance || 0).toFixed(2)}</span>
               </div>
             </div>
             
