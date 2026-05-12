@@ -1,0 +1,307 @@
+@startuml 67Bet_DomainLayer
+!theme plain
+scale max 2200 width
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - Diagram warstwy domeny
+
+legend right
+  <<implemented>> - element istnieje w aktualnym kodzie
+  <<AggregateRoot>> - korzen agregatu domenowego
+  Linia ciagla - relacja domenowa w ramach modelu
+  Linia przerywana - relacja logiczna przez identyfikator, np. UserId
+endlegend
+
+package "Shared Kernel" {
+    abstract class BaseEntity <<implemented, abstract>> {
+        #Id : Guid
+        #CreatedAt : DateTime
+    }
+
+    interface IAggregateRoot <<implemented, marker>>
+}
+
+package "Identity Domain" {
+    enum Role <<implemented>> {
+        Admin
+        User
+    }
+
+    class User <<implemented, AggregateRoot>> {
+        +Username : string
+        +Email : string
+        +PasswordHash : string
+        +UserRole : Role
+        +User(username: string, email: string, passwordHash: string, role: Role)
+        +ChangeRole(newRole: Role) : void
+    }
+
+    interface IUserRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<User?>
+        +GetByEmailAsync(email: string) : Task<User?>
+        +AddAsync(user: User) : Task
+        +UpdateAsync(user: User) : Task
+    }
+}
+
+package "Wallet Domain" {
+    enum TransactionType <<implemented>> {
+        Deposit
+        Withdrawal
+        Stake
+        Payout
+    }
+
+    enum TransactionStatus <<implemented>> {
+        Pending
+        Completed
+        Failed
+    }
+
+    class Wallet <<implemented, AggregateRoot>> {
+        +UserId : Guid
+        +Balance : decimal
+        +Currency : string
+        +Version : int
+        +Wallet(userId: Guid, currency: string)
+        +Deposit(amount: decimal) : void
+        +Withdraw(amount: decimal) : void
+    }
+
+    class Transaction <<implemented>> {
+        +WalletId : Guid
+        +Amount : decimal
+        +Type : TransactionType
+        +Status : TransactionStatus
+        +Transaction(walletId: Guid, amount: decimal, type: TransactionType)
+        +Complete() : void
+        +Fail() : void
+    }
+
+    interface IWalletRepository <<implemented>> {
+        +GetByUserIdAsync(userId: Guid) : Task<Wallet?>
+        +GetByIdAsync(id: Guid) : Task<Wallet?>
+        +AddAsync(wallet: Wallet) : Task
+        +UpdateAsync(wallet: Wallet) : Task
+    }
+
+    interface ITransactionRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<Transaction?>
+        +GetByWalletIdAsync(walletId: Guid) : Task<IEnumerable<Transaction>>
+        +AddAsync(transaction: Transaction) : Task
+        +UpdateAsync(transaction: Transaction) : Task
+    }
+}
+
+package "Betting Domain" {
+    enum EventStatus <<implemented>> {
+        Scheduled
+        Live
+        Finished
+        Cancelled
+    }
+
+    enum TicketStatus <<implemented>> {
+        Pending
+        Won
+        Lost
+        Cancelled
+    }
+
+    enum BetStatus <<implemented>> {
+        Pending
+        Won
+        Lost
+    }
+
+    class Sport <<implemented, AggregateRoot>> {
+        +Name : string
+        +Sport(name: string)
+    }
+
+    class Event <<implemented, AggregateRoot>> {
+        +SportId : Guid
+        +Name : string
+        +StartTime : DateTime
+        +Status : EventStatus
+        +Metadata : string
+        +Event(sportId: Guid, name: string, startTime: DateTime, metadata: string)
+        +UpdateStatus(status: EventStatus) : void
+    }
+
+    class Market <<implemented>> {
+        +EventId : Guid
+        +Name : string
+        +IsActive : bool
+        +Outcomes : List<Outcome>
+        +Market(eventId: Guid, name: string)
+        +Deactivate() : void
+        +Activate() : void
+    }
+
+    class Outcome <<implemented>> {
+        +MarketId : Guid
+        +Name : string
+        +Probability : decimal
+        +CurrentPrice : decimal
+        +IsWinner : bool?
+        +Outcome(marketId: Guid, name: string, probability: decimal, currentPrice: decimal)
+        +SetResult(isWinner: bool) : void
+        +UpdatePrice(newPrice: decimal, newProbability: decimal) : void
+    }
+
+    class Ticket <<implemented, AggregateRoot>> {
+        +UserId : Guid
+        +TotalOdds : decimal
+        +Stake : decimal
+        +PotentialWinning : decimal
+        +Status : TicketStatus
+        +Bets : List<Bet>
+        +Ticket(userId: Guid, stake: decimal)
+        +AddBet(outcomeId: Guid, fixedPrice: decimal) : void
+        -CalculateTotalOdds() : void
+        +Settle(status: TicketStatus) : void
+    }
+
+    class Bet <<implemented>> {
+        +TicketId : Guid
+        +OutcomeId : Guid
+        +FixedPrice : decimal
+        +Status : BetStatus
+        +Bet(ticketId: Guid, outcomeId: Guid, fixedPrice: decimal)
+        +Settle(status: BetStatus) : void
+    }
+
+    interface ISportRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<Sport?>
+        +GetAllAsync() : Task<IEnumerable<Sport>>
+        +AddAsync(sport: Sport) : Task
+    }
+
+    interface IEventRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<Event?>
+        +GetActiveEventsAsync() : Task<IEnumerable<Event>>
+        +AddAsync(event: Event) : Task
+        +UpdateAsync(event: Event) : Task
+    }
+
+    interface IMarketRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<Market?>
+        +GetByEventIdAsync(eventId: Guid) : Task<IEnumerable<Market>>
+        +AddAsync(market: Market) : Task
+    }
+
+    interface ITicketRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<Ticket?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+        +AddAsync(ticket: Ticket) : Task
+        +UpdateAsync(ticket: Ticket) : Task
+    }
+}
+
+package "Custom Bet Domain" {
+    enum RequestStatus <<implemented>> {
+        Pending
+        Reviewing
+        Accepted
+        Rejected
+    }
+
+    class CustomBetRequest <<implemented, AggregateRoot>> {
+        +UserId : Guid
+        +Description : string
+        +AiSuggestedOdds : decimal
+        +AdminFinalOdds : decimal?
+        +Status : RequestStatus
+        +AdminNote : string?
+        +CustomBetRequest(userId: Guid, description: string)
+        +SetAiSuggestedOdds(odds: decimal) : void
+        +Accept(finalOdds: decimal, note: string?) : void
+        +Reject(reason: string) : void
+    }
+
+    interface ICustomBetRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<CustomBetRequest?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<CustomBetRequest>>
+        +GetPendingRequestsAsync() : Task<IEnumerable<CustomBetRequest>>
+        +AddAsync(request: CustomBetRequest) : Task
+        +UpdateAsync(request: CustomBetRequest) : Task
+    }
+}
+
+' Dziedziczenie po klasie bazowej
+BaseEntity <|-- User
+BaseEntity <|-- Wallet
+BaseEntity <|-- Transaction
+BaseEntity <|-- Sport
+BaseEntity <|-- Event
+BaseEntity <|-- Market
+BaseEntity <|-- Outcome
+BaseEntity <|-- Ticket
+BaseEntity <|-- Bet
+BaseEntity <|-- CustomBetRequest
+
+' Korzenie agregatow
+User ..|> IAggregateRoot
+Wallet ..|> IAggregateRoot
+Sport ..|> IAggregateRoot
+Event ..|> IAggregateRoot
+Ticket ..|> IAggregateRoot
+CustomBetRequest ..|> IAggregateRoot
+
+' Relacje domenowe
+Wallet "1" -- "0..*" Transaction : WalletId
+Sport "1" -- "0..*" Event : SportId
+Event "1" -- "0..*" Market : EventId
+Market "1" *-- "0..*" Outcome : contains
+Ticket "1" *-- "0..*" Bet : contains
+Bet "0..*" ..> "1" Outcome : OutcomeId
+
+' Relacje logiczne miedzy mikroserwisami
+User "1" ..> "1" Wallet : UserId / logical
+User "1" ..> "0..*" Ticket : UserId / logical
+User "1" ..> "0..*" CustomBetRequest : UserId / logical
+
+' Powiazania z enumami
+User --> Role
+Transaction --> TransactionType
+Transaction --> TransactionStatus
+Event --> EventStatus
+Ticket --> TicketStatus
+Bet --> BetStatus
+CustomBetRequest --> RequestStatus
+
+' Repozytoria jako kontrakty domenowe
+IUserRepository ..> User
+IWalletRepository ..> Wallet
+ITransactionRepository ..> Transaction
+ISportRepository ..> Sport
+IEventRepository ..> Event
+IMarketRepository ..> Market
+ITicketRepository ..> Ticket
+ICustomBetRepository ..> CustomBetRequest
+
+note right of Wallet
+Version jest znacznikiem
+optimistic concurrency.
+Chroni saldo przed konfliktami
+przy jednoczesnych operacjach.
+end note
+
+note right of Outcome
+Probability oznacza prawdopodobienstwo,
+a CurrentPrice oznacza finalny kurs
+dostepny dla gracza.
+end note
+
+note bottom of User
+Relacje User -> Wallet/Ticket/CustomBetRequest
+sa logiczne i realizowane przez UserId,
+poniewaz system jest mikroserwisowy.
+end note
+
+@enduml
