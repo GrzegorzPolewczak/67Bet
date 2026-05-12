@@ -30,6 +30,12 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: ${{ env.WORKING_DIRECTORY }}
+        env:
+          VITE_API_IDENTITY: ${{ secrets.VITE_API_IDENTITY }}
+          VITE_API_WALLET: ${{ secrets.VITE_API_WALLET }}
+          VITE_API_BETTING: ${{ secrets.VITE_API_BETTING }}
+          VITE_API_ODDS: ${{ secrets.VITE_API_ODDS }}
+          VITE_API_CUSTOMBET: ${{ secrets.VITE_API_CUSTOMBET }}
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
