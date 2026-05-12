@@ -15,7 +15,7 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.AddDbContext<CustomBetDbContext>(options =>
-            options.UseInMemoryDatabase("CustomBetDb"));
+            options.UseMySQL(connectionString));
 
         services.AddScoped<ICustomBetRepository, CustomBetRepository>();
 

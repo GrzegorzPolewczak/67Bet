@@ -103,7 +103,10 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(c => {
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "67Bet Identity API v1");
+    c.RoutePrefix = string.Empty; // Set Swagger at the root
+});
 
 // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 
