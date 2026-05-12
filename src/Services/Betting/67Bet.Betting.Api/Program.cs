@@ -83,6 +83,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 // Seed data
+/*
 using (var scope = app.Services.CreateScope())
 {
     try 
@@ -91,7 +92,7 @@ using (var scope = app.Services.CreateScope())
         context.Database.EnsureCreated();
         if (!context.Events.Any())
         {
-            // ... rest of seeding logic
+            // Seeding logic...
         }
     }
     catch (Exception ex)
@@ -99,6 +100,7 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Error seeding data: {ex.Message}");
     }
 }
+*/
 
 app.UseMiddleware<ExceptionMiddleware>();
 
