@@ -1,0 +1,46 @@
+@startuml 67Bet_Odds_Classes
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Odds Service - diagram klas
+
+package "Odds Service" {
+    interface IOddsService {
+        +CalculateOddsAsync(probability: decimal) : Task<decimal>
+        +UpdateMarketOddsAsync(marketId: Guid) : Task
+        +GetLiveProbabilityAsync(eventId: Guid, contextJson: string) : Task<decimal>
+    }
+
+    class OddsService {
+        +CalculateOddsAsync(probability: decimal) : Task<decimal>
+        +UpdateMarketOddsAsync(marketId: Guid) : Task
+        +GetLiveProbabilityAsync(eventId: Guid, contextJson: string) : Task<decimal>
+    }
+
+    class CalculateOddsRequest <<record>> {
+        +Probability : decimal
+    }
+
+    class OddsResultDto <<record>> {
+        +Odds : decimal
+        +Probability : decimal
+    }
+
+    class LiveProbabilityRequest <<record>> {
+        +EventId : Guid
+        +ContextJson : string
+    }
+}
+
+IOddsService <|.. OddsService
+
+note bottom of OddsService
+W aktualnym kodzie Odds Service nie ma osobnych encji domenowych.
+Diagram pokazuje istniejacy serwis aplikacyjny i rekordy DTO.
+end note
+
+@enduml

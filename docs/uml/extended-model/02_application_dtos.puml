@@ -1,0 +1,138 @@
+@startuml 67Bet_Application_DTOs
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - rekordy DTO i requesty aplikacyjne
+
+package "Identity DTO" {
+    class UserDto <<record>> {
+        +Id : Guid
+        +Username : string
+        +Email : string
+        +Role : string
+    }
+
+    class LoginRequest <<record>> {
+        +Email : string
+        +Password : string
+    }
+
+    class RegisterRequest <<record>> {
+        +Username : string
+        +Email : string
+        +Password : string
+    }
+}
+
+package "Wallet DTO" {
+    class DepositRequest <<record>> {
+        +Amount : decimal
+    }
+
+    class WithdrawRequest <<record>> {
+        +Amount : decimal
+    }
+
+    class WalletBalanceDto <<record>> {
+        +Balance : decimal
+        +Currency : string
+    }
+}
+
+package "Betting DTO" {
+    class OutcomeDto <<record>> {
+        +Id : Guid
+        +Name : string
+        +CurrentPrice : decimal
+    }
+
+    class MarketDto <<record>> {
+        +Id : Guid
+        +Name : string
+        +Outcomes : List<OutcomeDto>
+    }
+
+    class EventDto <<record>> {
+        +Id : Guid
+        +Name : string
+        +StartTime : DateTime
+        +Status : string
+        +Markets : List<MarketDto>
+    }
+
+    class BetDto <<record>> {
+        +OutcomeId : Guid
+        +FixedPrice : decimal
+        +Status : string
+    }
+
+    class TicketDto <<record>> {
+        +Id : Guid
+        +Stake : decimal
+        +TotalOdds : decimal
+        +PotentialWinning : decimal
+        +Status : string
+        +Bets : List<BetDto>
+    }
+
+    class PlaceTicketRequest <<record>> {
+        +Stake : decimal
+        +OutcomeIds : List<Guid>
+    }
+
+    class SettleEventRequest <<record>> {
+        +WinningOutcomeIds : List<Guid>
+    }
+}
+
+package "Odds DTO" {
+    class CalculateOddsRequest <<record>> {
+        +Probability : decimal
+    }
+
+    class OddsResultDto <<record>> {
+        +Odds : decimal
+        +Probability : decimal
+    }
+
+    class LiveProbabilityRequest <<record>> {
+        +EventId : Guid
+        +ContextJson : string
+    }
+}
+
+package "CustomBet DTO" {
+    class CustomBetRequestDto <<record>> {
+        +Id : Guid
+        +UserId : Guid
+        +Description : string
+        +Status : string
+        +AiSuggestedOdds : decimal
+        +AdminFinalOdds : decimal?
+        +AdminNote : string?
+        +CreatedAt : DateTime
+    }
+
+    class CreateCustomBetRequest <<record>> {
+        +Description : string
+    }
+
+    class AcceptCustomBetRequest <<record>> {
+        +FinalOdds : decimal
+        +AdminNote : string?
+    }
+
+    class RejectCustomBetRequest <<record>> {
+        +Reason : string
+    }
+}
+
+EventDto *-- MarketDto
+MarketDto *-- OutcomeDto
+TicketDto *-- BetDto
+
+@enduml

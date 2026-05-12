@@ -1,0 +1,38 @@
+@startuml 67Bet_Identity_Classes
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Identity Service - diagram klas
+
+package "Identity Service" {
+    abstract class BaseEntity {
+        #Id : Guid
+        #CreatedAt : DateTime
+    }
+
+    interface IAggregateRoot <<marker>>
+
+    enum Role {
+        Admin
+        User
+    }
+
+    class User <<AggregateRoot>> {
+        +Username : string
+        +Email : string
+        +PasswordHash : string
+        +UserRole : Role
+        +User(username: string, email: string, passwordHash: string, role: Role = Role.User)
+        +ChangeRole(newRole: Role) : void
+    }
+}
+
+BaseEntity <|-- User
+User ..|> IAggregateRoot
+User --> Role
+
+@enduml

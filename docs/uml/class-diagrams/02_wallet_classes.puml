@@ -1,0 +1,61 @@
+@startuml 67Bet_Wallet_Classes
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Wallet Service - diagram klas
+
+package "Wallet Service" {
+    abstract class BaseEntity {
+        #Id : Guid
+        #CreatedAt : DateTime
+    }
+
+    interface IAggregateRoot <<marker>>
+
+    enum TransactionType {
+        Deposit
+        Withdrawal
+        Stake
+        Payout
+    }
+
+    enum TransactionStatus {
+        Pending
+        Completed
+        Failed
+    }
+
+    class Wallet <<AggregateRoot>> {
+        +UserId : Guid
+        +Balance : decimal
+        +Currency : string
+        +Version : int
+        +Wallet(userId: Guid, currency: string = "PLN")
+        +Deposit(amount: decimal) : void
+        +Withdraw(amount: decimal) : void
+    }
+
+    class Transaction {
+        +WalletId : Guid
+        +Amount : decimal
+        +Type : TransactionType
+        +Status : TransactionStatus
+        +Transaction(walletId: Guid, amount: decimal, type: TransactionType)
+        +Complete() : void
+        +Fail() : void
+    }
+}
+
+BaseEntity <|-- Wallet
+BaseEntity <|-- Transaction
+Wallet ..|> IAggregateRoot
+
+Wallet "1" -- "0..*" Transaction : WalletId
+Transaction --> TransactionType
+Transaction --> TransactionStatus
+
+@enduml

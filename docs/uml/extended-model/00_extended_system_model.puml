@@ -1,0 +1,217 @@
+@startuml 67Bet_Extended_System_Model
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - rozszerzony model systemu
+
+package "Shared Kernel" {
+    abstract class BaseEntity {
+        #Id : Guid
+        #CreatedAt : DateTime
+    }
+
+    interface IAggregateRoot <<marker>>
+}
+
+package "Identity Service" {
+    enum Role {
+        Admin
+        User
+    }
+
+    class User <<AggregateRoot>> {
+        +Username : string
+        +Email : string
+        +PasswordHash : string
+        +UserRole : Role
+        +User(username: string, email: string, passwordHash: string, role: Role = Role.User)
+        +ChangeRole(newRole: Role) : void
+    }
+}
+
+package "Wallet Service" {
+    enum TransactionType {
+        Deposit
+        Withdrawal
+        Stake
+        Payout
+    }
+
+    enum TransactionStatus {
+        Pending
+        Completed
+        Failed
+    }
+
+    class Wallet <<AggregateRoot>> {
+        +UserId : Guid
+        +Balance : decimal
+        +Currency : string
+        +Version : int
+        +Wallet(userId: Guid, currency: string = "PLN")
+        +Deposit(amount: decimal) : void
+        +Withdraw(amount: decimal) : void
+    }
+
+    class Transaction {
+        +WalletId : Guid
+        +Amount : decimal
+        +Type : TransactionType
+        +Status : TransactionStatus
+        +Transaction(walletId: Guid, amount: decimal, type: TransactionType)
+        +Complete() : void
+        +Fail() : void
+    }
+}
+
+package "Betting Service" {
+    enum EventStatus {
+        Scheduled
+        Live
+        Finished
+        Cancelled
+    }
+
+    enum TicketStatus {
+        Pending
+        Won
+        Lost
+        Cancelled
+    }
+
+    enum BetStatus {
+        Pending
+        Won
+        Lost
+    }
+
+    class Sport <<AggregateRoot>> {
+        +Name : string
+        +Sport(name: string)
+    }
+
+    class Event <<AggregateRoot>> {
+        +SportId : Guid
+        +Name : string
+        +StartTime : DateTime
+        +Status : EventStatus
+        +Metadata : string
+        +League : string
+        +Markets : ICollection<Market>
+        +Event(name: string, sportId: Guid, league: string, startTime: DateTime, metadata: string = "{}")
+        +UpdateStatus(status: EventStatus) : void
+    }
+
+    class Market {
+        +EventId : Guid
+        +Name : string
+        +IsActive : bool
+        +Outcomes : List<Outcome>
+        +Market(eventId: Guid, name: string)
+        +Deactivate() : void
+        +Activate() : void
+        +AddOutcome(name: string, odd: decimal) : void
+    }
+
+    class Outcome {
+        +MarketId : Guid
+        +Name : string
+        +Probability : decimal
+        +CurrentPrice : decimal
+        +IsWinner : bool?
+        +Outcome(marketId: Guid, name: string, probability: decimal, currentPrice: decimal)
+        +SetResult(isWinner: bool) : void
+        +UpdatePrice(newPrice: decimal, newProbability: decimal) : void
+    }
+
+    class Ticket <<AggregateRoot>> {
+        +UserId : Guid
+        +TotalOdds : decimal
+        +Stake : decimal
+        +PotentialWinning : decimal
+        +Status : TicketStatus
+        +Bets : List<Bet>
+        +Ticket(userId: Guid, stake: decimal)
+        +AddBet(outcomeId: Guid, fixedPrice: decimal) : void
+        +Settle(status: TicketStatus) : void
+    }
+
+    class Bet {
+        +TicketId : Guid
+        +OutcomeId : Guid
+        +FixedPrice : decimal
+        +Status : BetStatus
+        +Bet(ticketId: Guid, outcomeId: Guid, fixedPrice: decimal)
+        +Settle(status: BetStatus) : void
+    }
+}
+
+package "Custom Bet Service" {
+    enum RequestStatus {
+        Pending
+        Reviewing
+        Accepted
+        Rejected
+    }
+
+    class CustomBetRequest <<AggregateRoot>> {
+        +UserId : Guid
+        +Description : string
+        +AiSuggestedOdds : decimal
+        +AdminFinalOdds : decimal?
+        +Status : RequestStatus
+        +AdminNote : string?
+        +CustomBetRequest(userId: Guid, description: string)
+        +SetAiSuggestedOdds(odds: decimal) : void
+        +Accept(finalOdds: decimal, note: string? = null) : void
+        +Reject(reason: string) : void
+    }
+}
+
+BaseEntity <|-- User
+BaseEntity <|-- Wallet
+BaseEntity <|-- Transaction
+BaseEntity <|-- Sport
+BaseEntity <|-- Event
+BaseEntity <|-- Market
+BaseEntity <|-- Outcome
+BaseEntity <|-- Ticket
+BaseEntity <|-- Bet
+BaseEntity <|-- CustomBetRequest
+
+User ..|> IAggregateRoot
+Wallet ..|> IAggregateRoot
+Sport ..|> IAggregateRoot
+Event ..|> IAggregateRoot
+Ticket ..|> IAggregateRoot
+CustomBetRequest ..|> IAggregateRoot
+
+User --> Role
+Transaction --> TransactionType
+Transaction --> TransactionStatus
+Event --> EventStatus
+Ticket --> TicketStatus
+Bet --> BetStatus
+CustomBetRequest --> RequestStatus
+
+Wallet "1" -- "0..*" Transaction : WalletId
+Sport "1" -- "0..*" Event : SportId
+Event "1" -- "0..*" Market : EventId
+Market "1" *-- "0..*" Outcome : Outcomes
+Ticket "1" *-- "0..*" Bet : Bets
+Bet "0..*" ..> "1" Outcome : OutcomeId
+
+User "1" ..> "0..1" Wallet : UserId
+User "1" ..> "0..*" Ticket : UserId
+User "1" ..> "0..*" CustomBetRequest : UserId
+
+note bottom
+Relacje przerywane sa logicznymi powiazaniami miedzy mikroserwisami.
+W kodzie sa realizowane przez pola Guid, np. UserId albo OutcomeId.
+end note
+
+@enduml

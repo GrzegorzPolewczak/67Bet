@@ -1,0 +1,124 @@
+@startuml 67Bet_Betting_Classes
+!theme plain
+top to bottom direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Betting Service - diagram klas
+
+package "Oferta zakladow" {
+    abstract class BaseEntity {
+        #Id : Guid
+        #CreatedAt : DateTime
+    }
+
+    interface IAggregateRoot <<marker>>
+
+    enum EventStatus {
+        Scheduled
+        Live
+        Finished
+        Cancelled
+    }
+
+    class Sport <<AggregateRoot>> {
+        +Name : string
+        +Sport(name: string)
+    }
+
+    class Event <<AggregateRoot>> {
+        +SportId : Guid
+        +Name : string
+        +StartTime : DateTime
+        +Status : EventStatus
+        +Metadata : string
+        +League : string
+        +Markets : ICollection<Market>
+        +Event(name: string, sportId: Guid, league: string, startTime: DateTime, metadata: string = "{}")
+        +UpdateStatus(status: EventStatus) : void
+    }
+
+    class Market {
+        +EventId : Guid
+        +Name : string
+        +IsActive : bool
+        +Outcomes : List<Outcome>
+        +Market(eventId: Guid, name: string)
+        +Deactivate() : void
+        +Activate() : void
+        +AddOutcome(name: string, odd: decimal) : void
+    }
+
+    class Outcome {
+        +MarketId : Guid
+        +Name : string
+        +Probability : decimal
+        +CurrentPrice : decimal
+        +IsWinner : bool?
+        +Outcome(marketId: Guid, name: string, probability: decimal, currentPrice: decimal)
+        +SetResult(isWinner: bool) : void
+        +UpdatePrice(newPrice: decimal, newProbability: decimal) : void
+    }
+}
+
+package "Kupony" {
+    enum TicketStatus {
+        Pending
+        Won
+        Lost
+        Cancelled
+    }
+
+    enum BetStatus {
+        Pending
+        Won
+        Lost
+    }
+
+    class Ticket <<AggregateRoot>> {
+        +UserId : Guid
+        +TotalOdds : decimal
+        +Stake : decimal
+        +PotentialWinning : decimal
+        +Status : TicketStatus
+        +Bets : List<Bet>
+        +Ticket(userId: Guid, stake: decimal)
+        +AddBet(outcomeId: Guid, fixedPrice: decimal) : void
+        -CalculateTotalOdds() : void
+        +Settle(status: TicketStatus) : void
+    }
+
+    class Bet {
+        +TicketId : Guid
+        +OutcomeId : Guid
+        +FixedPrice : decimal
+        +Status : BetStatus
+        +Bet(ticketId: Guid, outcomeId: Guid, fixedPrice: decimal)
+        +Settle(status: BetStatus) : void
+    }
+}
+
+BaseEntity <|-- Sport
+BaseEntity <|-- Event
+BaseEntity <|-- Market
+BaseEntity <|-- Outcome
+BaseEntity <|-- Ticket
+BaseEntity <|-- Bet
+
+Sport ..|> IAggregateRoot
+Event ..|> IAggregateRoot
+Ticket ..|> IAggregateRoot
+
+Sport "1" -- "0..*" Event : SportId
+Event "1" -- "0..*" Market : EventId
+Market "1" *-- "0..*" Outcome : Outcomes
+Ticket "1" *-- "0..*" Bet : Bets
+Bet "0..*" ..> "1" Outcome : OutcomeId
+
+Event --> EventStatus
+Ticket --> TicketStatus
+Bet --> BetStatus
+
+@enduml

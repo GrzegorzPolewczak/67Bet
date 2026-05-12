@@ -1,0 +1,127 @@
+@startuml 67Bet_System_Class_Overview
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - zbiorczy diagram klas modelu
+
+package "Identity" {
+    class User {
+        +Id : Guid
+        +Username : string
+        +Email : string
+        +PasswordHash : string
+        +UserRole : Role
+        +CreatedAt : DateTime
+    }
+}
+
+package "Wallet" {
+    class Wallet {
+        +Id : Guid
+        +UserId : Guid
+        +Balance : decimal
+        +Currency : string
+        +Version : int
+        +CreatedAt : DateTime
+    }
+
+    class Transaction {
+        +Id : Guid
+        +WalletId : Guid
+        +Amount : decimal
+        +Type : TransactionType
+        +Status : TransactionStatus
+        +CreatedAt : DateTime
+    }
+}
+
+package "Betting" {
+    class Sport {
+        +Id : Guid
+        +Name : string
+        +CreatedAt : DateTime
+    }
+
+    class Event {
+        +Id : Guid
+        +SportId : Guid
+        +Name : string
+        +League : string
+        +StartTime : DateTime
+        +Status : EventStatus
+        +Metadata : string
+        +CreatedAt : DateTime
+    }
+
+    class Market {
+        +Id : Guid
+        +EventId : Guid
+        +Name : string
+        +IsActive : bool
+        +CreatedAt : DateTime
+    }
+
+    class Outcome {
+        +Id : Guid
+        +MarketId : Guid
+        +Name : string
+        +Probability : decimal
+        +CurrentPrice : decimal
+        +IsWinner : bool?
+        +CreatedAt : DateTime
+    }
+
+    class Ticket {
+        +Id : Guid
+        +UserId : Guid
+        +Stake : decimal
+        +TotalOdds : decimal
+        +PotentialWinning : decimal
+        +Status : TicketStatus
+        +CreatedAt : DateTime
+    }
+
+    class Bet {
+        +Id : Guid
+        +TicketId : Guid
+        +OutcomeId : Guid
+        +FixedPrice : decimal
+        +Status : BetStatus
+        +CreatedAt : DateTime
+    }
+}
+
+package "Custom Bet" {
+    class CustomBetRequest {
+        +Id : Guid
+        +UserId : Guid
+        +Description : string
+        +AiSuggestedOdds : decimal
+        +AdminFinalOdds : decimal?
+        +Status : RequestStatus
+        +AdminNote : string?
+        +CreatedAt : DateTime
+    }
+}
+
+Wallet "1" -- "0..*" Transaction : WalletId
+Sport "1" -- "0..*" Event : SportId
+Event "1" -- "0..*" Market : EventId
+Market "1" -- "0..*" Outcome : MarketId
+Ticket "1" -- "0..*" Bet : TicketId
+Bet "0..*" ..> "1" Outcome : OutcomeId
+
+User "1" ..> "0..1" Wallet : UserId
+User "1" ..> "0..*" Ticket : UserId
+User "1" ..> "0..*" CustomBetRequest : UserId
+
+note bottom
+Linie przerywane oznaczaja logiczne powiazania miedzy mikroserwisami
+realizowane przez identyfikatory Guid, a nie przez pola nawigacyjne.
+end note
+
+@enduml

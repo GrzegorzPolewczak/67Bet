@@ -1,0 +1,44 @@
+@startuml 67Bet_CustomBet_Classes
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Custom Bet Service - diagram klas
+
+package "Custom Bet Service" {
+    abstract class BaseEntity {
+        #Id : Guid
+        #CreatedAt : DateTime
+    }
+
+    interface IAggregateRoot <<marker>>
+
+    enum RequestStatus {
+        Pending
+        Reviewing
+        Accepted
+        Rejected
+    }
+
+    class CustomBetRequest <<AggregateRoot>> {
+        +UserId : Guid
+        +Description : string
+        +AiSuggestedOdds : decimal
+        +AdminFinalOdds : decimal?
+        +Status : RequestStatus
+        +AdminNote : string?
+        +CustomBetRequest(userId: Guid, description: string)
+        +SetAiSuggestedOdds(odds: decimal) : void
+        +Accept(finalOdds: decimal, note: string? = null) : void
+        +Reject(reason: string) : void
+    }
+}
+
+BaseEntity <|-- CustomBetRequest
+CustomBetRequest ..|> IAggregateRoot
+CustomBetRequest --> RequestStatus
+
+@enduml

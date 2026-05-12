@@ -1,0 +1,122 @@
+@startuml 67Bet_Extended_Data_Structure
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - struktura danych modelu
+
+package "Identity" {
+    class User {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +Username : string
+        +Email : string
+        +PasswordHash : string
+        +UserRole : Role
+    }
+}
+
+package "Wallet" {
+    class Wallet {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +UserId : Guid
+        +Balance : decimal
+        +Currency : string
+        +Version : int
+    }
+
+    class Transaction {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +WalletId : Guid
+        +Amount : decimal
+        +Type : TransactionType
+        +Status : TransactionStatus
+    }
+}
+
+package "Betting" {
+    class Sport {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +Name : string
+    }
+
+    class Event {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +SportId : Guid
+        +Name : string
+        +League : string
+        +StartTime : DateTime
+        +Status : EventStatus
+        +Metadata : string
+    }
+
+    class Market {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +EventId : Guid
+        +Name : string
+        +IsActive : bool
+    }
+
+    class Outcome {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +MarketId : Guid
+        +Name : string
+        +Probability : decimal
+        +CurrentPrice : decimal
+        +IsWinner : bool?
+    }
+
+    class Ticket {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +UserId : Guid
+        +TotalOdds : decimal
+        +Stake : decimal
+        +PotentialWinning : decimal
+        +Status : TicketStatus
+    }
+
+    class Bet {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +TicketId : Guid
+        +OutcomeId : Guid
+        +FixedPrice : decimal
+        +Status : BetStatus
+    }
+}
+
+package "CustomBet" {
+    class CustomBetRequest {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +UserId : Guid
+        +Description : string
+        +AiSuggestedOdds : decimal
+        +AdminFinalOdds : decimal?
+        +Status : RequestStatus
+        +AdminNote : string?
+    }
+}
+
+Wallet "1" -- "0..*" Transaction : WalletId
+Sport "1" -- "0..*" Event : SportId
+Event "1" -- "0..*" Market : EventId
+Market "1" -- "0..*" Outcome : MarketId
+Ticket "1" -- "0..*" Bet : TicketId
+Bet "0..*" ..> "1" Outcome : OutcomeId
+
+User "1" ..> "0..1" Wallet : UserId
+User "1" ..> "0..*" Ticket : UserId
+User "1" ..> "0..*" CustomBetRequest : UserId
+
+@enduml

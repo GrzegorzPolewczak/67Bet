@@ -1,0 +1,120 @@
+@startuml 67Bet_DAL_Overview
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - DAL, widok zbiorczy
+
+package "Shared Kernel" {
+    interface "IRepository<T>" as IRepository {
+        +GetByIdAsync(id: Guid) : Task<T?>
+        +GetAllAsync() : Task<IEnumerable<T>>
+        +AddAsync(entity: T) : Task
+        +UpdateAsync(entity: T) : Task
+        +DeleteAsync(entity: T) : Task
+    }
+
+    class "EFRepository<T, TContext>" as EFRepository {
+        #_context : TContext
+        #_dbSet : DbSet<T>
+        +GetByIdAsync(id: Guid) : Task<T?>
+        +GetAllAsync() : Task<IEnumerable<T>>
+        +AddAsync(entity: T) : Task
+        +UpdateAsync(entity: T) : Task
+        +DeleteAsync(entity: T) : Task
+    }
+}
+
+package "Identity DAL" {
+    interface IUserRepository {
+        +GetByEmailAsync(email: string) : Task<User?>
+    }
+    class UserRepository
+    class IdentityDbContext
+}
+
+package "Wallet DAL" {
+    interface IWalletRepository {
+        +GetByUserIdAsync(userId: Guid) : Task<Wallet?>
+    }
+    interface ITransactionRepository {
+        +GetByWalletIdAsync(walletId: Guid) : Task<IEnumerable<Transaction>>
+    }
+    class WalletRepository
+    class TransactionRepository
+    class WalletDbContext
+}
+
+package "Betting DAL" {
+    interface ISportRepository
+    interface IEventRepository {
+        +GetActiveEventsAsync() : Task<IEnumerable<Event>>
+    }
+    interface IMarketRepository {
+        +GetByEventIdAsync(eventId: Guid) : Task<IEnumerable<Market>>
+    }
+    interface ITicketRepository {
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+    }
+    class SportRepository
+    class EventRepository
+    class MarketRepository
+    class TicketRepository
+    class BettingDbContext
+}
+
+package "CustomBet DAL" {
+    interface ICustomBetRepository {
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<CustomBetRequest>>
+        +GetPendingRequestsAsync() : Task<IEnumerable<CustomBetRequest>>
+    }
+    class CustomBetRepository
+    class CustomBetDbContext
+}
+
+IRepository <|.. EFRepository
+
+IRepository <|-- IUserRepository
+EFRepository <|-- UserRepository
+IUserRepository <|.. UserRepository
+UserRepository --> IdentityDbContext
+
+IRepository <|-- IWalletRepository
+IRepository <|-- ITransactionRepository
+EFRepository <|-- WalletRepository
+EFRepository <|-- TransactionRepository
+IWalletRepository <|.. WalletRepository
+ITransactionRepository <|.. TransactionRepository
+WalletRepository --> WalletDbContext
+TransactionRepository --> WalletDbContext
+
+IRepository <|-- ISportRepository
+IRepository <|-- IEventRepository
+IRepository <|-- IMarketRepository
+IRepository <|-- ITicketRepository
+EFRepository <|-- SportRepository
+EFRepository <|-- EventRepository
+EFRepository <|-- MarketRepository
+EFRepository <|-- TicketRepository
+ISportRepository <|.. SportRepository
+IEventRepository <|.. EventRepository
+IMarketRepository <|.. MarketRepository
+ITicketRepository <|.. TicketRepository
+SportRepository --> BettingDbContext
+EventRepository --> BettingDbContext
+MarketRepository --> BettingDbContext
+TicketRepository --> BettingDbContext
+
+IRepository <|-- ICustomBetRepository
+EFRepository <|-- CustomBetRepository
+ICustomBetRepository <|.. CustomBetRepository
+CustomBetRepository --> CustomBetDbContext
+
+note bottom
+Odds Service nie posiada obecnie repozytoriow ani DbContext w kodzie.
+end note
+
+@enduml

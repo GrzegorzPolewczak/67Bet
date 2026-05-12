@@ -1,0 +1,78 @@
+@startuml 67Bet_DAL_Data_Mapping
+!theme plain
+left to right direction
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title 67Bet - mapowanie danych w DbContext
+
+package "IdentityDbContext" {
+    class User {
+        +Username : string <<required, max 50, unique>>
+        +Email : string <<required, max 100, unique>>
+    }
+}
+
+package "WalletDbContext" {
+    class Wallet {
+        +UserId : Guid <<unique>>
+        +Balance : decimal <<18,2>>
+        +Currency : string <<max 3>>
+        +Version : int <<concurrency token>>
+    }
+
+    class Transaction {
+        +WalletId : Guid
+        +Amount : decimal <<18,2>>
+    }
+}
+
+package "BettingDbContext" {
+    class Sport {
+        +Name : string <<required, max 50>>
+    }
+
+    class Event {
+        +SportId : Guid
+        +Name : string <<required, max 255>>
+        +Metadata : string <<longtext>>
+    }
+
+    class Market {
+        +Name : string <<required, max 100>>
+    }
+
+    class Outcome {
+        +Name : string <<required, max 100>>
+        +Probability : decimal <<18,4>>
+        +CurrentPrice : decimal <<18,2>>
+    }
+
+    class Ticket {
+        +TotalOdds : decimal <<18,2>>
+        +Stake : decimal <<18,2>>
+        +PotentialWinning : decimal <<18,2>>
+    }
+
+    class Bet {
+        +FixedPrice : decimal <<18,2>>
+    }
+}
+
+package "CustomBetDbContext" {
+    class CustomBetRequest {
+        +Description : string <<required>>
+        +AiSuggestedOdds : decimal <<10,2>>
+        +AdminFinalOdds : decimal? <<10,2>>
+    }
+}
+
+Wallet "1" -- "0..*" Transaction : WalletId
+Sport "1" -- "0..*" Event : SportId
+Event "1" -- "0..*" Market : EventId
+Market "1" -- "0..*" Outcome : MarketId
+Ticket "1" -- "0..*" Bet : TicketId
+
+@enduml
