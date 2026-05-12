@@ -30,7 +30,7 @@ public class BettingDbContext : DbContext
         {
             builder.HasKey(e => e.Id);
             builder.Property(e => e.Name).IsRequired().HasMaxLength(255);
-            builder.Property(e => e.Metadata).HasColumnType("jsonb");
+            builder.Property(e => e.Metadata).HasColumnType("longtext");
             builder.HasOne<Sport>().WithMany().HasForeignKey(e => e.SportId);
         });
 
