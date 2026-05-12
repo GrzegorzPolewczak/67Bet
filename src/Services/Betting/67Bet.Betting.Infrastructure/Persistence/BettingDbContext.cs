@@ -45,23 +45,23 @@ public class BettingDbContext : DbContext
         {
             builder.HasKey(o => o.Id);
             builder.Property(o => o.Name).IsRequired().HasMaxLength(100);
-            builder.Property(o => o.Probability).HasPrecision(5, 4);
-            builder.Property(o => o.CurrentPrice).HasPrecision(10, 2);
+            builder.Property(o => o.Probability).HasColumnType("decimal(18,4)");
+            builder.Property(o => o.CurrentPrice).HasColumnType("decimal(18,2)");
         });
 
         modelBuilder.Entity<Ticket>(builder =>
         {
             builder.HasKey(t => t.Id);
-            builder.Property(t => t.TotalOdds).HasPrecision(10, 2);
-            builder.Property(t => t.Stake).HasPrecision(18, 2);
-            builder.Property(t => t.PotentialWinning).HasPrecision(18, 2);
+            builder.Property(t => t.TotalOdds).HasColumnType("decimal(18,2)");
+            builder.Property(t => t.Stake).HasColumnType("decimal(18,2)");
+            builder.Property(t => t.PotentialWinning).HasColumnType("decimal(18,2)");
             builder.HasMany(t => t.Bets).WithOne().HasForeignKey(b => b.TicketId);
         });
 
         modelBuilder.Entity<Bet>(builder =>
         {
             builder.HasKey(b => b.Id);
-            builder.Property(b => b.FixedPrice).HasPrecision(10, 2);
+            builder.Property(b => b.FixedPrice).HasColumnType("decimal(18,2)");
         });
     }
 }
