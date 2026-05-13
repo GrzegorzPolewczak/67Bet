@@ -87,7 +87,7 @@ const BetSlip: React.FC = () => {
                 </div>
                 <div className="mt-2 flex items-center justify-between">
                   <span className="text-xs font-black text-white bg-dark-600 px-2 py-1 rounded">
-                    @{selection.odd.toFixed(2)}
+                    @{Number(selection.odd).toFixed(2)}
                   </span>
                 </div>
               </motion.div>
@@ -100,7 +100,7 @@ const BetSlip: React.FC = () => {
         <div className="p-4 bg-dark-700/50 border-t border-dark-700 space-y-4">
           <div className="flex items-center justify-between text-xs font-bold text-gray-400">
             <span>Total Odds</span>
-            <span className="text-white">@{totalOdds.toFixed(2)}</span>
+            <span className="text-white">@{Number(totalOdds).toFixed(2)}</span>
           </div>
           
           <div className="space-y-2">
@@ -121,7 +121,7 @@ const BetSlip: React.FC = () => {
           <div className="pt-2">
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-bold text-gray-400">Potential Payout</span>
-              <span className="text-lg font-black text-accent-success">${potentialPayout.toFixed(2)}</span>
+              <span className="text-lg font-black text-accent-success">${Number(potentialPayout).toFixed(2)}</span>
             </div>
             
             <button 
