@@ -19,7 +19,7 @@ export const fetchBalanceAsync = createAsyncThunk(
     try {
       // In a real app, the user ID would be taken from the token on the server
       const response = await walletApi.get('/wallet/balance');
-      return response.data;
+      return typeof response.data === 'object' && response.data !== null && 'balance' in response.data ? response.data.balance : response.data;
     } catch (error: any) {
       const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to fetch balance';
       return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);

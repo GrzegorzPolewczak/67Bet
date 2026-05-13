@@ -33,6 +33,43 @@ const initialState: BettingState = {
   error: null,
 };
 
+const MOCK_EVENTS = [
+  {
+    id: "evt-1",
+    name: "Real Madrid vs Bayern Munich",
+    league: "Champions League",
+    time: "20:45",
+    markets: [
+      {
+        id: "m-1",
+        name: "Match Winner",
+        outcomes: [
+          { id: "o-1", name: "1", odd: 2.10 },
+          { id: "o-2", name: "X", odd: 3.50 },
+          { id: "o-3", name: "2", odd: 3.20 }
+        ]
+      }
+    ]
+  },
+  {
+    id: "evt-2",
+    name: "FC Barcelona vs Juventus",
+    league: "Champions League",
+    time: "21:00",
+    markets: [
+      {
+        id: "m-2",
+        name: "Match Winner",
+        outcomes: [
+          { id: "o-4", name: "1", odd: 1.85 },
+          { id: "o-5", name: "X", odd: 3.80 },
+          { id: "o-6", name: "2", odd: 4.10 }
+        ]
+      }
+    ]
+  }
+];
+
 export const fetchEventsAsync = createAsyncThunk(
   'betting/fetchEvents',
   async (_, { rejectWithValue }) => {
@@ -76,6 +113,7 @@ const bettingSlice = createSlice({
       .addCase(fetchEventsAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+        state.events = MOCK_EVENTS;
       });
   },
 });
