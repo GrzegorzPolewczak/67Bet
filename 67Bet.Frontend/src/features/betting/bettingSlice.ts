@@ -35,35 +35,35 @@ const initialState: BettingState = {
 
 const MOCK_EVENTS = [
   {
-    id: "evt-1",
+    id: "00000000-0000-0000-0000-000000000001",
     name: "Real Madrid vs Bayern Munich",
     league: "Champions League",
     time: "20:45",
     markets: [
       {
-        id: "m-1",
+        id: "11111111-1111-1111-1111-111111111111",
         name: "Match Winner",
         outcomes: [
-          { id: "o-1", name: "1", odd: 2.10 },
-          { id: "o-2", name: "X", odd: 3.50 },
-          { id: "o-3", name: "2", odd: 3.20 }
+          { id: "a0000000-0000-0000-0000-000000000001", name: "1", odd: 2.10 },
+          { id: "a0000000-0000-0000-0000-000000000002", name: "X", odd: 3.50 },
+          { id: "a0000000-0000-0000-0000-000000000003", name: "2", odd: 3.20 }
         ]
       }
     ]
   },
   {
-    id: "evt-2",
+    id: "00000000-0000-0000-0000-000000000002",
     name: "FC Barcelona vs Juventus",
     league: "Champions League",
     time: "21:00",
     markets: [
       {
-        id: "m-2",
+        id: "22222222-2222-2222-2222-222222222222",
         name: "Match Winner",
         outcomes: [
-          { id: "o-4", name: "1", odd: 1.85 },
-          { id: "o-5", name: "X", odd: 3.80 },
-          { id: "o-6", name: "2", odd: 4.10 }
+          { id: "b0000000-0000-0000-0000-000000000001", name: "1", odd: 1.85 },
+          { id: "b0000000-0000-0000-0000-000000000002", name: "X", odd: 3.80 },
+          { id: "b0000000-0000-0000-0000-000000000003", name: "2", odd: 4.10 }
         ]
       }
     ]
