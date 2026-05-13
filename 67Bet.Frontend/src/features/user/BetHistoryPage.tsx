@@ -70,15 +70,15 @@ const BetHistoryPage: React.FC = () => {
                 <div className="flex items-center gap-6">
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Total Odds</span>
-                    <span className="text-sm font-black text-white">@{(ticket.totalOdds || 0).toFixed(2)}</span>
+                    <span className="text-sm font-black text-white">@{Number(ticket.totalOdds || 0).toFixed(2)}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Stake</span>
-                    <span className="text-sm font-black text-white">${(ticket.stake || 0).toFixed(2)}</span>
+                    <span className="text-sm font-black text-white">${Number(ticket.stake || 0).toFixed(2)}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Payout</span>
-                    <span className="text-sm font-black text-accent-success">${(ticket.potentialWinning || 0).toFixed(2)}</span>
+                    <span className="text-sm font-black text-accent-success">${Number(ticket.potentialWinning || 0).toFixed(2)}</span>
                   </div>
                   <div className="text-right">
                     <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${
@@ -100,7 +100,7 @@ const BetHistoryPage: React.FC = () => {
                       <p className="text-[10px] text-gray-500 uppercase">Status: {bet.status}</p>
                     </div>
                     <span className="text-sm font-black text-white bg-dark-700 px-3 py-1 rounded-lg">
-                      @{bet.fixedPrice.toFixed(2)}
+                      @{Number(bet.fixedPrice).toFixed(2)}
                     </span>
                   </div>
                 ))}

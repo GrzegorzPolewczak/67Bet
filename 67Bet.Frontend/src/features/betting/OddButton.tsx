@@ -54,7 +54,7 @@ const OddButton: React.FC<OddButtonProps> = ({ name, odd, isSelected, onClick })
       <span className={`text-sm font-black tracking-tighter z-10 flex items-center gap-1 transition-colors ${
         change === 'up' ? 'text-accent-success' : change === 'down' ? 'text-accent-danger' : ''
       }`}>
-        {numericOdd > 0 ? numericOdd.toFixed(2) : '-'}
+        {numericOdd > 0 ? Number(numericOdd).toFixed(2) : '-'}
         {change && (
           <motion.span
             initial={{ y: change === 'up' ? 5 : -5, opacity: 0 }}
