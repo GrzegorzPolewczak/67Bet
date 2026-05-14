@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 env:
   AZURE_WEBAPP_NAME: '67bet-odds-api'
-  WORKING_DIRECTORY: 'src/Services/Odds'
+  PROJECT_PATH: 'src/Services/Odds/67Bet.Odds.Api/67Bet.Odds.Api.csproj'
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
@@ -16,10 +16,10 @@ jobs:
         with: { dotnet-version: '10.0.x' }
       
       - name: Restore dependencies
-        run: dotnet restore ${{ env.WORKING_DIRECTORY }}
+        run: dotnet restore ${{ env.PROJECT_PATH }}
       
       - name: Build
-        run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration Release --no-restore
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
       
       - name: Test
         run: dotnet test tests/67Bet.UnitTests/67Bet.UnitTests.csproj --filter OddsIntegrationServiceTests --no-build --verbosity normal
@@ -34,7 +34,7 @@ jobs:
           ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_MYSQL_CONNECTION_STRING_ODDS }}
 
       - name: Publish
-        run: dotnet publish ${{ env.WORKING_DIRECTORY }}/67Bet.Odds.Api -c Release -o ./publish_output
+        run: dotnet publish ${{ env.PROJECT_PATH }} -c Release -o ./publish_output
       
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
