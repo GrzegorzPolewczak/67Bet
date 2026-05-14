@@ -6,16 +6,38 @@ on:
   workflow_dispatch:
 env:
   AZURE_WEBAPP_NAME: '67bet-odds-api'
-  WORKING_DIRECTORY: 'src/Services/Odds/67Bet.Odds.Api'
+  WORKING_DIRECTORY: 'src/Services/Odds'
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '10.0.x' }
-      - run: dotnet publish ${{ env.WORKING_DIRECTORY }} -c Release -o ./publish_output
-      - uses: azure/webapps-deploy@v3
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.WORKING_DIRECTORY }}
+      
+      - name: Build
+        run: dotnet build ${{ env.WORKING_DIRECTORY }} --configuration Release --no-restore
+      
+      - name: Test
+        run: dotnet test tests/67Bet.UnitTests/67Bet.UnitTests.csproj --filter OddsIntegrationServiceTests --no-build --verbosity normal
+      
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
+      
+      - name: Apply Migrations
+        run: |
+          dotnet ef database update --project src/Services/Odds/67Bet.Odds.Infrastructure --startup-project src/Services/Odds/67Bet.Odds.Api
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING_ODDS }}
+
+      - name: Publish
+        run: dotnet publish ${{ env.WORKING_DIRECTORY }}/67Bet.Odds.Api -c Release -o ./publish_output
+      
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_ODDS }}
