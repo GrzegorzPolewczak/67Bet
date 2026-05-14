@@ -24,6 +24,8 @@ public class ExternalEventDto
     [JsonPropertyName("away_team")]
     public string AwayTeam { get; set; } = string.Empty;
 
+    public string? StreamUrl { get; set; }
+
     [JsonPropertyName("bookmakers")]
     public List<BookmakerDto> Bookmakers { get; set; } = new();
 }

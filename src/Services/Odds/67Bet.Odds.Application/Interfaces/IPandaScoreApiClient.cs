@@ -7,4 +7,5 @@ namespace _67Bet.Odds.Application.Interfaces;
 public interface IPandaScoreApiClient
 {
     Task<IEnumerable<ExternalEventDto>> GetUpcomingEsportsMatchesAsync();
+    Task<LiveMatchStateDto?> GetLiveMatchDetailsAsync(string matchId);
 }

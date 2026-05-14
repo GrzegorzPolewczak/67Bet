@@ -21,8 +21,14 @@ public class PandaScoreMatch
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
     
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+    
     [JsonPropertyName("begin_at")]
     public DateTime? BeginAt { get; set; }
+    
+    [JsonPropertyName("live_url")]
+    public string? LiveUrl { get; set; }
     
     [JsonPropertyName("videogame")]
     public PandaScoreVideoGame VideoGame { get; set; } = new();
@@ -69,7 +75,6 @@ public class PandaScoreApiClient : IPandaScoreApiClient
     {
         try
         {
-            // Pobieranie nadchodzących meczów z PandaScore
             var url = "matches/upcoming?sort=begin_at&per_page=15";
             var response = await _httpClient.GetFromJsonAsync<List<PandaScoreMatch>>(url);
             
@@ -87,18 +92,19 @@ public class PandaScoreApiClient : IPandaScoreApiClient
 
                         var eventDto = new ExternalEventDto
                         {
-                            Id = "ps_" + match.Id.ToString(), // Unikalny prefix, żeby nie było konfliktu z TheOddsApi
+                            Id = "ps_" + match.Id.ToString(),
                             SportKey = sportKey,
                             SportTitle = "Esports " + match.VideoGame.Slug.ToUpper(),
                             CommenceTime = match.BeginAt.Value,
                             HomeTeam = homeTeam,
                             AwayTeam = awayTeam,
+                            StreamUrl = match.LiveUrl,
                             Bookmakers = new List<BookmakerDto>
                             {
                                 new BookmakerDto
                                 {
-                                    Key = "pandascore_mock",
-                                    Title = "PandaScore Default",
+                                    Key = "pandascore_real",
+                                    Title = "PandaScore Live",
                                     Markets = new List<ExternalMarketDto>
                                     {
                                         new ExternalMarketDto
@@ -125,5 +131,35 @@ public class PandaScoreApiClient : IPandaScoreApiClient
             _logger.LogError(ex, "Error fetching data from PandaScore API");
             return new List<ExternalEventDto>();
         }
+    }
+
+    public async Task<LiveMatchStateDto?> GetLiveMatchDetailsAsync(string matchId)
+    {
+        try
+        {
+            var rawId = matchId.Replace("ps_", "");
+            var url = $"matches/{rawId}";
+            var match = await _httpClient.GetFromJsonAsync<PandaScoreMatch>(url);
+
+            if (match != null && match.BeginAt.HasValue)
+            {
+                return new LiveMatchStateDto
+                {
+                    MatchId = matchId,
+                    SportKey = "esports_" + match.VideoGame.Slug.Replace("-", ""),
+                    CurrentTime = match.Status == "running" ? "LIVE" : "STARTING SOON",
+                    CurrentAction = match.Status == "running" ? "MATCH IN PROGRESS" : "READY",
+                    StreamUrl = match.LiveUrl,
+                    Score = new Dictionary<string, string> { { "Home", "0" }, { "Away", "0" } },
+                    Statistics = new Dictionary<string, int> { { "MapControl", 50 } },
+                    TimelineEvents = new List<TimelineEventDto>()
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching PandaScore live details");
+        }
+        return null;
     }
 }

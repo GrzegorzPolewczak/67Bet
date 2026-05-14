@@ -12,6 +12,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.SoccerSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.BasketballSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.EsportSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.TennisSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.DefaultSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.MatchSimulatorFactory>();
 builder.Services.AddHostedService<_67Bet.Odds.Api.Services.LiveTrackerBackgroundService>();
 
 // Configure CORS

@@ -5,8 +5,16 @@ export interface LiveMatchState {
   sportKey: string;
   currentTime: string;
   currentAction: string;
+  currentZone: string;
+  momentum: number;
   score: Record<string, string>;
   statistics: Record<string, number>;
+  timelineEvents: Array<{
+    type: string;
+    minute: string;
+    description: string;
+    team: string;
+  }>;
 }
 
 const API_URL = import.meta.env.VITE_API_ODDS || 'http://localhost:5300';

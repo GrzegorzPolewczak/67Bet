@@ -17,7 +17,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         
         services.AddDbContext<OddsDbContext>(options =>
-            options.UseSqlServer(connectionString));
+            options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 
         services.AddScoped<IExternalEventRepository, ExternalEventRepository>();
         
@@ -30,6 +30,8 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri("https://api.pandascore.co/");
         });
+
+        services.AddHttpClient<ILiveDataProvider, ApiSportsClient>();
 
         services.AddScoped<IOddsIntegrationService, OddsIntegrationService>();
 

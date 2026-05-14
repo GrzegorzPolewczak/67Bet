@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using _67Bet.Odds.Api.Hubs;
 using _67Bet.Odds.Application.DTOs;
+using _67Bet.Odds.Application.Interfaces;
 using _67Bet.Odds.Domain.Repositories;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +19,6 @@ public class LiveTrackerBackgroundService : BackgroundService
     private readonly IHubContext<LiveTrackerHub> _hubContext;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<LiveTrackerBackgroundService> _logger;
-    private readonly Random _random = new();
-    
-    // Dynamiczna lista stanów dla WSZYSTKICH aktywnych meczów w bazie
-    private readonly ConcurrentDictionary<string, LiveMatchStateDto> _mockStates = new();
 
     public LiveTrackerBackgroundService(IHubContext<LiveTrackerHub> hubContext, IServiceScopeFactory scopeFactory, ILogger<LiveTrackerBackgroundService> logger)
     {
@@ -32,7 +29,7 @@ public class LiveTrackerBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Live Tracker Background Service is starting.");
+        _logger.LogInformation("Live Tracker REAL DATA ONLY Service is starting.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -41,104 +38,57 @@ public class LiveTrackerBackgroundService : BackgroundService
                 using (var scope = _scopeFactory.CreateScope())
                 {
                     var repo = scope.ServiceProvider.GetRequiredService<IExternalEventRepository>();
+                    var liveProvider = scope.ServiceProvider.GetRequiredService<ILiveDataProvider>();
                     var activeEvents = await repo.GetAllActiveAsync();
 
                     foreach (var evt in activeEvents)
                     {
-                        if (!_mockStates.ContainsKey(evt.ExternalId))
+                        // POBIERAMY WYŁĄCZNIE PRAWDZIWE DANE
+                        var realState = await GetStateFromApis(evt, scope, liveProvider);
+                        
+                        if (realState != null)
                         {
-                            // Obliczanie faktycznego czasu trwania meczu
-                            var timeElapsed = DateTime.UtcNow - evt.StartTime;
-                            var startMinutes = timeElapsed.TotalMinutes > 0 ? (int)timeElapsed.TotalMinutes : 0;
-                            var startSeconds = timeElapsed.TotalSeconds > 0 ? (int)timeElapsed.Seconds : 0;
-
-                            _mockStates[evt.ExternalId] = new LiveMatchStateDto
+                            // Szukanie streamu (to zostawiamy jako bonus)
+                            if (string.IsNullOrEmpty(realState.StreamUrl))
                             {
-                                MatchId = evt.ExternalId,
-                                SportKey = evt.SportKey,
-                                CurrentTime = $"{startMinutes:D2}:{startSeconds:D2}",
-                                CurrentAction = timeElapsed.TotalMinutes < 0 ? "Upcoming" : "Match Started",
-                                Score = new Dictionary<string, string> { { "Home", "0" }, { "Away", "0" } },
-                                Statistics = new Dictionary<string, int> { { "Corners", 0 }, { "Fouls", 0 }, { "PossessionHome", 50 } }
-                            };
-                        }
-                    }
-                }
+                                realState.StreamUrl = FindStreamForMatch(evt.Name, evt.SportKey);
+                            }
 
-                foreach (var state in _mockStates.Values)
-                {
-                    SimulateMatchUpdate(state);
-                    await _hubContext.Clients.Group(state.MatchId).SendAsync("ReceiveMatchUpdate", state, cancellationToken: stoppingToken);
+                            await _hubContext.Clients.Group(evt.ExternalId).SendAsync("ReceiveMatchUpdate", realState, cancellationToken: stoppingToken);
+                        }
+                        // Jeśli realState == null, NIE WYSYŁAMY NIC - frontend pokaże "Waiting for data" lub stary stan
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred executing Live Tracker update loop.");
+                _logger.LogError(ex, "Error in Live Tracker loop.");
             }
 
-            // Aktualizuj co 5 sekund
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
         }
     }
 
-    private void SimulateMatchUpdate(LiveMatchStateDto match)
+    private async Task<LiveMatchStateDto?> GetStateFromApis(dynamic evt, IServiceScope scope, ILiveDataProvider liveProvider)
     {
-        var isSoccer = match.SportKey.Contains("soccer", StringComparison.OrdinalIgnoreCase);
-        var isBasketball = match.SportKey.Contains("basketball", StringComparison.OrdinalIgnoreCase);
-        var isEsport = match.SportKey.Contains("esport", StringComparison.OrdinalIgnoreCase);
+        if (evt.ExternalId.StartsWith("ps_"))
+        {
+            var pandaClient = scope.ServiceProvider.GetRequiredService<IPandaScoreApiClient>();
+            return await pandaClient.GetLiveMatchDetailsAsync(evt.ExternalId);
+        }
+        
+        return await liveProvider.GetLiveMatchStateAsync(evt.ExternalId, evt.SportKey, evt.Name, "");
+    }
 
-        // Globalna aktualizacja czasu dla wszystkich sportów
-        var timeParts = match.CurrentTime.Split(':');
-        if (timeParts.Length == 2 && int.TryParse(timeParts[0], out int minutes) && int.TryParse(timeParts[1], out int seconds))
+    private string FindStreamForMatch(string matchName, string sportKey)
+    {
+        if (sportKey.Contains("esport"))
         {
-            seconds += 5;
-            if (seconds >= 60)
-            {
-                seconds -= 60;
-                minutes++;
-            }
-            match.CurrentTime = $"{minutes:D2}:{seconds:D2}";
+            string channel = "esl_csgo";
+            if (sportKey.Contains("league")) channel = "riotgames";
+            return $"https://player.twitch.tv/?channel={channel}&parent=localhost&autoplay=true&muted=true";
         }
-
-        if (isSoccer)
-        {
-            var actions = new[] { "Safe Possession", "Dangerous Attack", "Shot on Target", "Goal Kick", "Free Kick" };
-            match.CurrentAction = actions[_random.Next(actions.Length)];
-            
-            if (_random.Next(100) < 2) 
-            {
-                int scoreHome = int.Parse(match.Score["Home"]);
-                match.Score["Home"] = (scoreHome + 1).ToString();
-                match.CurrentAction = "GOAL!";
-            }
-            if (_random.Next(100) < 10) match.Statistics["Corners"]++;
-            match.Statistics["PossessionHome"] = _random.Next(40, 61);
-        }
-        else if (isBasketball)
-        {
-            var actions = new[] { "Attack", "Defense", "Free Throws", "Timeout" };
-            match.CurrentAction = actions[_random.Next(actions.Length)];
-            
-            if (_random.Next(100) < 30) 
-            {
-                int scoreHome = int.Parse(match.Score["Home"]);
-                match.Score["Home"] = (scoreHome + _random.Next(1, 4)).ToString();
-            }
-        }
-        else if (isEsport)
-        {
-            var actions = new[] { "Farming", "Team Fight", "Objective Taken", "Pushing Base" };
-            match.CurrentAction = actions[_random.Next(actions.Length)];
-
-            if (_random.Next(100) < 15) 
-            {
-                int killsHome = int.Parse(match.Score["Home"]);
-                match.Score["Home"] = (killsHome + 1).ToString();
-            }
-        }
-        else 
-        {
-            match.CurrentAction = "In Progress";
-        }
+        var searchQuery = Uri.EscapeDataString(matchName + " live stream");
+        return $"https://www.youtube.com/embed?listType=search&list={searchQuery}&autoplay=1&mute=1";
     }
 }
