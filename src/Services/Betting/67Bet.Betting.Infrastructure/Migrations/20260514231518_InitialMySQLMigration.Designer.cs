@@ -12,7 +12,7 @@ using _67Bet.Betting.Infrastructure.Persistence;
 namespace _67Bet.Betting.Infrastructure.Migrations
 {
     [DbContext(typeof(BettingDbContext))]
-    [Migration("20260514213216_InitialMySQLMigration")]
+    [Migration("20260514231518_InitialMySQLMigration")]
     partial class InitialMySQLMigration
     {
         /// <inheritdoc />
@@ -68,7 +68,7 @@ namespace _67Bet.Betting.Infrastructure.Migrations
 
                     b.Property<string>("Metadata")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()

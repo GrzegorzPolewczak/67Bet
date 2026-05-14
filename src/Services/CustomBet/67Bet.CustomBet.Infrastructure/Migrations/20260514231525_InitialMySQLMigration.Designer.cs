@@ -5,14 +5,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using _67Bet.Identity.Infrastructure.Persistence;
+using _67Bet.CustomBet.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace _67Bet.Identity.Infrastructure.Migrations
+namespace _67Bet.CustomBet.Infrastructure.Migrations
 {
-    [DbContext(typeof(IdentityDbContext))]
-    [Migration("20260514213157_InitialMySQLMigration")]
+    [DbContext(typeof(CustomBetDbContext))]
+    [Migration("20260514231525_InitialMySQLMigration")]
     partial class InitialMySQLMigration
     {
         /// <inheritdoc />
@@ -25,41 +25,39 @@ namespace _67Bet.Identity.Infrastructure.Migrations
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
 
-            modelBuilder.Entity("_67Bet.Identity.Domain.Entities.User", b =>
+            modelBuilder.Entity("_67Bet.CustomBet.Domain.Entities.CustomBetRequest", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<decimal?>("AdminFinalOdds")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("AdminNote")
+                        .HasColumnType("longtext");
+
+                    b.Property<decimal>("AiSuggestedOdds")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<string>("PasswordHash")
+                    b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("UserRole")
+                    b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("Username")
-                        .IsUnique();
-
-                    b.ToTable("Users");
+                    b.ToTable("CustomBetRequests");
                 });
 #pragma warning restore 612, 618
         }

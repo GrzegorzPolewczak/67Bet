@@ -12,7 +12,7 @@ using _67Bet.Wallet.Infrastructure.Persistence;
 namespace _67Bet.Wallet.Infrastructure.Migrations
 {
     [DbContext(typeof(WalletDbContext))]
-    [Migration("20260514213206_InitialMySQLMigration")]
+    [Migration("20260514231509_InitialMySQLMigration")]
     partial class InitialMySQLMigration
     {
         /// <inheritdoc />

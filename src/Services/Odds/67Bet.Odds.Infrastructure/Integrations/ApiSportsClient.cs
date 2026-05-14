@@ -11,6 +11,29 @@ using Microsoft.Extensions.Logging;
 
 namespace _67Bet.Odds.Infrastructure.Integrations;
 
+// Modele dla API-Sports
+public class ApiSportsResponse<T>
+{
+    [JsonPropertyName("response")]
+    public List<T> Response { get; set; } = new();
+}
+
+public class ApiSportsLiveMatch
+{
+    [JsonPropertyName("fixture")] public FixtureInfo? Fixture { get; set; }
+    [JsonPropertyName("goals")] public Dictionary<string, int?> Goals { get; set; } = new();
+    [JsonPropertyName("events")] public List<ApiSportsEvent> Events { get; set; } = new();
+    [JsonPropertyName("statistics")] public List<ApiSportsStatWrapper> Statistics { get; set; } = new();
+}
+
+public class FixtureInfo { [JsonPropertyName("status")] public StatusInfo Status { get; set; } = new(); }
+public class StatusInfo { [JsonPropertyName("elapsed")] public int? Elapsed { get; set; } }
+public class ApiSportsEvent { [JsonPropertyName("time")] public EventTime Time { get; set; } = new(); [JsonPropertyName("type")] public string Type { get; set; } = ""; [JsonPropertyName("detail")] public string Detail { get; set; } = ""; [JsonPropertyName("team")] public TeamInfo Team { get; set; } = new(); }
+public class EventTime { [JsonPropertyName("elapsed")] public int Elapsed { get; set; } }
+public class TeamInfo { [JsonPropertyName("name")] public string Name { get; set; } = ""; }
+public class ApiSportsStatWrapper { [JsonPropertyName("team")] public TeamInfo Team { get; set; } = new(); [JsonPropertyName("statistics")] public List<ApiSportsStat> Stats { get; set; } = new(); }
+public class ApiSportsStat { [JsonPropertyName("type")] public string Type { get; set; } = ""; [JsonPropertyName("value")] public object Value { get; set; } = 0; }
+
 public class ApiSportsClient : ILiveDataProvider
 {
     private readonly HttpClient _httpClient;
@@ -47,10 +70,8 @@ public class ApiSportsClient : ILiveDataProvider
             
             if (response?.Response != null && response.Response.Count > 0)
             {
-                // Znalezienie meczu po nazwie drużyny (bardzo uproszczone mapowanie)
                 var match = response.Response.Find(m => 
-                    m.Fixture?.Status?.Elapsed != null || 
-                    (m.Fixture == null && m.Events.Count > 0)
+                    m.Fixture?.Status?.Elapsed != null || m.Events.Count > 0
                 ) ?? response.Response[0];
 
                 return new LiveMatchStateDto

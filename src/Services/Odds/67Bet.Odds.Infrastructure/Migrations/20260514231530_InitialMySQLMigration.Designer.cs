@@ -12,7 +12,7 @@ using _67Bet.Odds.Infrastructure.Persistence;
 namespace _67Bet.Odds.Infrastructure.Migrations
 {
     [DbContext(typeof(OddsDbContext))]
-    [Migration("20260514213232_InitialMySQLMigration")]
+    [Migration("20260514231530_InitialMySQLMigration")]
     partial class InitialMySQLMigration
     {
         /// <inheritdoc />
