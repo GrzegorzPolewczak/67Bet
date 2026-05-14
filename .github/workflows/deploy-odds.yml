@@ -31,7 +31,7 @@ jobs:
         run: |
           dotnet ef database update --project src/Services/Odds/67Bet.Odds.Infrastructure --startup-project src/Services/Odds/67Bet.Odds.Api
         env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING_ODDS }}
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_MYSQL_CONNECTION_STRING_ODDS }}
 
       - name: Publish
         run: dotnet publish ${{ env.WORKING_DIRECTORY }}/67Bet.Odds.Api -c Release -o ./publish_output
