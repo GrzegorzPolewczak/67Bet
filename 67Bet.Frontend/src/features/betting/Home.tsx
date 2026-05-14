@@ -126,15 +126,19 @@ const Home: React.FC = () => {
                           onClick={() => {
                             const market = event.markets[0];
                             if (market && outcome?.id) {
-                              dispatch(addSelection({
-                                eventId: event.id,
-                                eventName: event.name || 'Unknown Event',
-                                marketId: market.id,
-                                marketName: market.name || 'Unknown Market',
-                                outcomeId: outcome.id,
-                                outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : 'Draw',
-                                odd: outcome.odd || 0
-                              }));
+                              if (isSelected(outcome.id)) {
+                                dispatch(removeSelection(outcome.id));
+                              } else {
+                                dispatch(addSelection({
+                                  eventId: event.id,
+                                  eventName: event.name || 'Unknown Event',
+                                  marketId: market.id,
+                                  marketName: market.name || 'Unknown Market',
+                                  outcomeId: outcome.id,
+                                  outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : outcome.name,
+                                  odd: outcome.odd || 0
+                                }));
+                              }
                             }
                           }}
                         />

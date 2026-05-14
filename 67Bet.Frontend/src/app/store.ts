@@ -5,6 +5,7 @@ import bettingReducer from '../features/betting/bettingSlice';
 import walletReducer from '../features/wallet/walletSlice';
 import historyReducer from '../features/user/historySlice';
 import adminReducer from '../features/admin/adminSlice';
+import liveTrackerReducer from '../features/betting/liveTrackerSlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     wallet: walletReducer,
     history: historyReducer,
     admin: adminReducer,
+    liveTracker: liveTrackerReducer,
   },
 });
 

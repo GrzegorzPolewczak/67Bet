@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { bettingApi } from '../../api/axios';
+import { oddsApi } from '../../api/axios';
 
 interface Outcome {
   id: string;
@@ -17,7 +17,9 @@ interface Event {
   id: string;
   name: string;
   league: string;
+  sportKey: string;
   time: string;
+  rawTime: string;
   markets: Market[];
 }
 
@@ -74,18 +76,30 @@ export const fetchEventsAsync = createAsyncThunk(
   'betting/fetchEvents',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await bettingApi.get('/events');
+      const response = await oddsApi.get('/externalodds/events');
       
-      // Map API DTO (currentPrice) to Frontend Model (odd)
+      // Map External API DTO to Frontend Model
       const mappedEvents = response.data.map((event: any) => ({
-        ...event,
-        markets: event.markets?.map((market: any) => ({
-          ...market,
+        id: event.id,
+        name: `${event.home_team} vs ${event.away_team}`,
+        league: event.sport_title || event.sport_key,
+        sportKey: event.sport_key || '',
+        rawTime: event.commence_time,
+        time: new Date(event.commence_time).toLocaleString('pl-PL', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        markets: event.bookmakers?.[0]?.markets?.map((market: any) => ({
+          id: market.key,
+          name: market.key === 'h2h' ? 'Match Winner' : market.key,
           outcomes: market.outcomes?.map((outcome: any) => ({
-            ...outcome,
-            odd: outcome.currentPrice ?? outcome.odd ?? 0
+            id: `${event.id}_${market.key}_${outcome.name}`,
+            name: outcome.name,
+            odd: outcome.price
           }))
-        }))
+        })) || []
       }));
       
       return mappedEvents;

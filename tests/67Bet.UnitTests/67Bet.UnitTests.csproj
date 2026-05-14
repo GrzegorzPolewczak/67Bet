@@ -12,6 +12,7 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="FluentAssertions" Version="8.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.3" />
@@ -28,6 +29,7 @@
     <ProjectReference Include="..\..\src\Services\Identity\67Bet.Identity.Application\67Bet.Identity.Application.csproj" />
     <ProjectReference Include="..\..\src\Services\CustomBet\67Bet.CustomBet.Application\67Bet.CustomBet.Application.csproj" />
     <ProjectReference Include="..\..\src\Services\Odds\67Bet.Odds.Application\67Bet.Odds.Application.csproj" />
+    <ProjectReference Include="..\..\src\Services\Odds\67Bet.Odds.Domain\67Bet.Odds.Domain.csproj" />
   </ItemGroup>
 
 </Project>
