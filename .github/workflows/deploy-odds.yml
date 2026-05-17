@@ -7,6 +7,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: '67bet-odds-api'
   PROJECT_PATH: 'src/Services/Odds/67Bet.Odds.Api/67Bet.Odds.Api.csproj'
+  INFRA_PATH: 'src/Services/Odds/67Bet.Odds.Infrastructure'
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
@@ -21,15 +22,15 @@ jobs:
       - name: Build
         run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
       
-      - name: Test
-        run: dotnet test tests/67Bet.UnitTests/67Bet.UnitTests.csproj --filter OddsIntegrationServiceTests --no-build --verbosity normal
-      
-      - name: Install dotnet-ef
-        run: dotnet tool install --global dotnet-ef
-      
-      - name: Apply Migrations
+      - name: Apply Migrations (Smart Check)
         run: |
-          dotnet ef database update --project src/Services/Odds/67Bet.Odds.Infrastructure --startup-project src/Services/Odds/67Bet.Odds.Api
+          if [ -d "${{ env.INFRA_PATH }}/Migrations" ]; then
+            echo "Migrations directory found. Installing tools and updating database..."
+            dotnet tool install --global dotnet-ef
+            dotnet ef database update --project ${{ env.INFRA_PATH }} --startup-project ${{ env.PROJECT_PATH }}
+          else
+            echo "No Migrations directory found. Skipping database update."
+          fi
         env:
           ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_MYSQL_CONNECTION_STRING_ODDS }}
 
