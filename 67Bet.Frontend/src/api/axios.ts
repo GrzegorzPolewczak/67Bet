@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URLS = {
-  identity: import.meta.env.VITE_API_IDENTITY || 'http://localhost:5000/api',
+  identity: import.meta.env.VITE_API_IDENTITY || 'http://localhost:5010/api',
   betting: import.meta.env.VITE_API_BETTING || 'http://localhost:5100/api',
   wallet: import.meta.env.VITE_API_WALLET || 'http://localhost:5200/api',
   odds: import.meta.env.VITE_API_ODDS || 'http://localhost:5300/api',

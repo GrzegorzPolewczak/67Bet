@@ -22,6 +22,8 @@
   <Folder Name="/src/Services/Odds/">
     <Project Path="src/Services/Odds/67Bet.Odds.Application/67Bet.Odds.Application.csproj" />
     <Project Path="src/Services/Odds/67Bet.Odds.Api/67Bet.Odds.Api.csproj" />
+    <Project Path="src/Services/Odds/67Bet.Odds.Domain/67Bet.Odds.Domain.csproj" />
+    <Project Path="src/Services/Odds/67Bet.Odds.Infrastructure/67Bet.Odds.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/src/Services/Wallet/">
     <Project Path="src/Services/Wallet/67Bet.Wallet.Domain/67Bet.Wallet.Domain.csproj" />

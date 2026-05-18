@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import Home from './features/betting/Home';
 import SportPage from './features/betting/SportPage';
+import MatchDetailsView from './features/betting/MatchDetailsView';
 import CustomBetRequest from './features/betting/CustomBetRequest';
 import SettingsPage from './features/user/SettingsPage';
 import BetHistoryPage from './features/user/BetHistoryPage';
@@ -19,6 +20,7 @@ function App() {
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="sport/:sportName" element={<SportPage />} />
+        <Route path="match/:matchId" element={<MatchDetailsView />} />
         <Route path="custom-bet" element={<CustomBetRequest />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="history" element={<BetHistoryPage />} />

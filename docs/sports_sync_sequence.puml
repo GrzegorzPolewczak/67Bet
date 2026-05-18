@@ -1,0 +1,42 @@
+@startuml
+title 67Bet - Synchronizacja Wydarzeń Sportowych
+
+actor Admin
+participant "ExternalOddsController" as API
+participant "OddsIntegrationService" as App
+participant "TheOddsApiClient" as Client
+participant "ExternalProvider (The Odds API)" as External
+database "OddsDbContext" as DB
+
+Admin -> API : POST /api/external/sync
+activate API
+
+API -> App : SyncExternalOddsAsync()
+activate App
+
+App -> Client : GetUpcomingEventsAsync()
+activate Client
+
+Client -> External : GET /v4/sports/.../odds
+activate External
+External --> Client : JSON Odds Data
+deactivate External
+
+Client --> App : List<ExternalOddsDto>
+deactivate Client
+
+loop Dla każdego wydarzenia
+    App -> App : MapToDomainEntities()
+    App -> DB : UpdateOrInsertEvent(event)
+    activate DB
+    DB --> App : Success
+    deactivate DB
+end
+
+App --> API : SyncResult (Count, Errors)
+deactivate App
+
+API --> Admin : 200 OK (Sync Summary)
+deactivate API
+
+@enduml

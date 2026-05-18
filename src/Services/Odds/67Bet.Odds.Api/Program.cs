@@ -1,4 +1,5 @@
 using _67Bet.Odds.Application;
+using _67Bet.Odds.Infrastructure;
 using _67Bet.Odds.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,26 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.SoccerSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.BasketballSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.EsportSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.TennisSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.DefaultSimulator>();
+builder.Services.AddSingleton<_67Bet.Odds.Api.Services.MatchSimulatorFactory>();
+builder.Services.AddHostedService<_67Bet.Odds.Api.Services.LiveTrackerBackgroundService>();
+
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -77,10 +98,13 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register layers
 builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionMiddleware>();
+
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
@@ -92,10 +116,12 @@ app.UseSwaggerUI(c => {
 // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 
 app.UseCors("AllowAll");
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<_67Bet.Odds.Api.Hubs.LiveTrackerHub>("/liveTrackerHub");
 
 app.Run();

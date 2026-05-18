@@ -347,6 +347,39 @@ package "Odds Service" {
         +UpdateMarketOddsAsync(marketId: Guid) : Task
         +GetLiveProbabilityAsync(eventId: Guid, contextJson: string) : Task<decimal>
     }
+
+    ' Rozszerzenie o integracje z API
+    class ExternalEvent <<planned, AggregateRoot>> {
+        +ExternalId : string
+        +SportKey : string
+        +Name : string
+        +StartTime : DateTime
+    }
+
+    class ExternalMarket <<planned>> {
+        +ExternalEventId : Guid
+        +Name : string
+    }
+
+    class ExternalOutcome <<planned>> {
+        +ExternalMarketId : Guid
+        +Name : string
+        +Price : decimal
+    }
+
+    interface ITheOddsApiClient <<planned>> {
+        +GetUpcomingEventsAsync(sport: string) : Task<IEnumerable<ExternalEventDto>>
+    }
+
+    interface IOddsIntegrationService <<planned>> {
+        +SyncExternalOddsAsync() : Task<SyncResult>
+    }
+
+    class OddsIntegrationService <<planned>> {
+        -_apiClient : ITheOddsApiClient
+        -_eventRepository : IExternalEventRepository
+        +SyncExternalOddsAsync() : Task<SyncResult>
+    }
 }
 
 package "Custom Bet Service" {

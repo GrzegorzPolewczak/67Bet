@@ -100,6 +100,7 @@ app.UseSwaggerUI(c => {
 // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 
 app.UseCors("AllowAll");
+// app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
