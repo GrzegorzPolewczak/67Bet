@@ -13,6 +13,8 @@
   "dependencies": {
     "@microsoft/signalr": "^10.0.0",
     "@reduxjs/toolkit": "^2.11.2",
+    "@stripe/react-stripe-js": "^6.3.0",
+    "@stripe/stripe-js": "^9.5.0",
     "@tailwindcss/postcss": "^4.2.4",
     "axios": "^1.16.0",
     "framer-motion": "^12.38.0",

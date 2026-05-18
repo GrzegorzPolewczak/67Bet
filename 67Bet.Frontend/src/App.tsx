@@ -10,6 +10,9 @@ import AdminDashboard from './features/admin/AdminDashboard';
 
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
+import DepositPage from './features/wallet/DepositPage';
+import DepositSuccessPage from './features/wallet/DepositSuccessPage';
+import WithdrawPage from './features/wallet/WithdrawPage';
 
 function App() {
   return (
@@ -21,6 +24,9 @@ function App() {
         <Route path="custom-bet" element={<CustomBetRequest />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="history" element={<BetHistoryPage />} />
+        <Route path="deposit" element={<DepositPage />} />
+        <Route path="deposit-success" element={<DepositSuccessPage />} />
+        <Route path="withdraw" element={<WithdrawPage />} />
         <Route path="admin/dashboard" element={<AdminDashboard />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />

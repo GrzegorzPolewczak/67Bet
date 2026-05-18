@@ -12,10 +12,12 @@ namespace _67Bet.Wallet.Api.Controllers;
 public class WalletController : ControllerBase
 {
     private readonly IWalletService _walletService;
+    private readonly IPaymentService _paymentService;
 
-    public WalletController(IWalletService walletService)
+    public WalletController(IWalletService walletService, IPaymentService paymentService)
     {
         _walletService = walletService;
+        _paymentService = paymentService;
     }
 
     [HttpGet("balance")]
@@ -26,6 +28,28 @@ public class WalletController : ControllerBase
         var wallet = await _walletService.GetWalletByUserIdAsync(userId);
         
         return Ok(new WalletBalanceDto(balance, wallet?.Currency ?? "PLN"));
+    }
+
+    [HttpPost("create-payment-intent")]
+    public async Task<ActionResult<PaymentIntentResponseDto>> CreatePaymentIntent(CreatePaymentIntentRequest request)
+    {
+        if (request.Amount <= 0) return BadRequest("Kwota musi być dodatnia.");
+        
+        var result = await _paymentService.CreatePaymentIntentAsync(GetUserId(), request.Amount, request.Currency);
+        return Ok(result);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("webhook")]
+    public async Task<IActionResult> Webhook()
+    {
+        var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+        var signature = Request.Headers["Stripe-Signature"];
+
+        var result = await _paymentService.HandleWebhookAsync(json, signature!);
+        
+        if (result) return Ok();
+        return BadRequest();
     }
 
     [HttpPost("deposit")]
@@ -42,14 +66,32 @@ public class WalletController : ControllerBase
     {
         if (request.Amount <= 0) return BadRequest("Kwota musi być dodatnia.");
         
+        var userId = GetUserId();
+        
         try
         {
-            await _walletService.WithdrawAsync(GetUserId(), request.Amount);
+            // 1. Check local balance first
+            var balance = await _walletService.GetBalanceAsync(userId);
+            if (balance < request.Amount) return BadRequest("Niewystarczające środki na koncie.");
+
+            // 2. Trigger Stripe Payout (Sandbox)
+            var errorMessage = await _paymentService.CreatePayoutAsync(userId, request.Amount);
+            if (!string.IsNullOrEmpty(errorMessage)) 
+            {
+                return BadRequest($"Błąd procesora płatności Stripe: {errorMessage}");
+            }
+
+            // 3. Update local balance and register transaction
+            await _walletService.WithdrawAsync(userId, request.Amount);
             return NoContent();
         }
         catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Wystąpił nieoczekiwany błąd podczas wypłaty.");
         }
     }
 

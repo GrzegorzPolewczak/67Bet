@@ -32,6 +32,17 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Configure JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]!);
@@ -102,6 +113,9 @@ app.UseSwaggerUI(c => {
     c.RoutePrefix = string.Empty;
 });
 
+// app.UseHttpsRedirection(); // Commented for local HTTP debugging
+
+app.UseCors("AllowAll");
 // app.UseHttpsRedirection();
 
 app.UseAuthentication();

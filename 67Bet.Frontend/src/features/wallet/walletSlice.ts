@@ -27,6 +27,32 @@ export const fetchBalanceAsync = createAsyncThunk(
   }
 );
 
+export const createPaymentIntentAsync = createAsyncThunk(
+  'wallet/createPaymentIntent',
+  async (amount: number, { rejectWithValue }) => {
+    try {
+      const response = await walletApi.post('/wallet/create-payment-intent', { amount });
+      return response.data;
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to create payment intent';
+      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+    }
+  }
+);
+
+export const withdrawAsync = createAsyncThunk(
+  'wallet/withdraw',
+  async (amount: number, { rejectWithValue }) => {
+    try {
+      await walletApi.post('/wallet/withdraw', { amount });
+      return amount;
+    } catch (error: any) {
+      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to withdraw funds';
+      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+    }
+  }
+);
+
 const walletSlice = createSlice({
   name: 'wallet',
   initialState,
@@ -48,6 +74,9 @@ const walletSlice = createSlice({
       .addCase(fetchBalanceAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(withdrawAsync.fulfilled, (state, action) => {
+        state.balance -= action.payload;
       });
   },
 });
