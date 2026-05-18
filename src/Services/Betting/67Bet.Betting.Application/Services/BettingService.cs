@@ -6,6 +6,7 @@ using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Repositories;
 using _67Bet.Betting.Domain.Enums;
+using _67Bet.Betting.Domain.Entities.VirtualRacing;
 
 namespace _67Bet.Betting.Application.Services;
 
@@ -18,15 +19,18 @@ public class BettingService : IBettingService
     private readonly IEventRepository _eventRepository;
     private readonly IMarketRepository _marketRepository;
     private readonly ITicketRepository _ticketRepository;
+    private readonly IVirtualRaceRepository _virtualRaceRepository;
 
     public BettingService(
         IEventRepository eventRepository,
         IMarketRepository marketRepository,
-        ITicketRepository ticketRepository)
+        ITicketRepository ticketRepository,
+        IVirtualRaceRepository virtualRaceRepository)
     {
         _eventRepository = eventRepository;
         _marketRepository = marketRepository;
         _ticketRepository = ticketRepository;
+        _virtualRaceRepository = virtualRaceRepository;
     }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
@@ -68,10 +72,35 @@ public class BettingService : IBettingService
                 if (foundOutcome != null) break;
             }
 
-            if (foundOutcome == null)
-                throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku o ID: {outcomeId}");
+            if (foundOutcome != null)
+            {
+                ticket.AddBet(foundOutcome.Id, foundOutcome.CurrentPrice);
+            }
+            else
+            {
+                // Sprawdzamy czy to przypadek wirtualnych wyścigów
+                var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
+                VirtualRaceParticipant? foundVirtualParticipant = null;
+                
+                foreach (var race in virtualRaces)
+                {
+                    var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
+                    if (participant != null)
+                    {
+                        foundVirtualParticipant = participant;
+                        break;
+                    }
+                }
 
-            ticket.AddBet(foundOutcome.Id, foundOutcome.CurrentPrice);
+                if (foundVirtualParticipant != null)
+                {
+                    ticket.AddBet(foundVirtualParticipant.Id, foundVirtualParticipant.Odds);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
+                }
+            }
         }
 
         await _ticketRepository.AddAsync(ticket);

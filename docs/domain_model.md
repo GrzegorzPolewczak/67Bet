@@ -92,6 +92,29 @@ classDiagram
         +Reject(reason)
     }
 
+    %% Virtual Racing Aggregate
+    class VirtualRace {
+        +Guid Id
+        +string Name
+        +DateTime StartTime
+        +bool IsFinished
+        +Guid? WinningHorseId
+        +FinishRace(winningHorseId)
+    }
+
+    class Horse {
+        +Guid Id
+        +string Name
+        +int SkillLevel
+    }
+
+    class VirtualRaceParticipant {
+        +Guid Id
+        +Guid RaceId
+        +Guid HorseId
+        +decimal Odds
+    }
+
     %% Relationships
     User "1" -- "1" Wallet : owns
     Wallet "1" -- "*" Transaction : records
@@ -101,6 +124,8 @@ classDiagram
     Event "1" -- "*" Market : hosts
     Market "1" -- "*" Outcome : provides
     User "1" -- "*" CustomBetRequest : submits
+    VirtualRace "1" -- "*" VirtualRaceParticipant : includes
+    Horse "1" -- "*" VirtualRaceParticipant : participates in
 ```
 
 ### Kluczowe założenia modelu:
@@ -118,3 +143,8 @@ classDiagram
 
 4.  **CustomBetRequest:**
     *   Proces workflow: `Pending` (zgłoszony) -> `Reviewing` (AI wycenia) -> `Accepted/Rejected` (decyzja Admina).
+
+5.  **Virtual Racing (Moduł Wirtualnych Wyścigów Konnych):**
+    *   `VirtualRace` przechowuje informacje o wyścigu generowanym przez system.
+    *   `Horse` definiuje atrybuty koni.
+    *   `VirtualRaceParticipant` łączy konia z wyścigiem i przechowuje wyliczone szanse (kursy).

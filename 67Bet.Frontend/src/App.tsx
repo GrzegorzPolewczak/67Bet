@@ -4,6 +4,7 @@ import Home from './features/betting/Home';
 import SportPage from './features/betting/SportPage';
 import MatchDetailsView from './features/betting/MatchDetailsView';
 import CustomBetRequest from './features/betting/CustomBetRequest';
+import VirtualRacingPage from './features/betting/VirtualRacingPage';
 import SettingsPage from './features/user/SettingsPage';
 import BetHistoryPage from './features/user/BetHistoryPage';
 import AdminDashboard from './features/admin/AdminDashboard';
@@ -22,6 +23,7 @@ function App() {
         <Route path="sport/:sportName" element={<SportPage />} />
         <Route path="match/:matchId" element={<MatchDetailsView />} />
         <Route path="custom-bet" element={<CustomBetRequest />} />
+        <Route path="virtual-racing" element={<VirtualRacingPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="history" element={<BetHistoryPage />} />
         <Route path="deposit" element={<DepositPage />} />

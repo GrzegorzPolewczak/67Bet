@@ -20,6 +20,8 @@ public static class DependencyInjection
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IMarketRepository, MarketRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<IVirtualRaceRepository, VirtualRaceRepository>();
+        services.AddScoped<IHorseRepository, HorseRepository>();
 
         return services;
     }

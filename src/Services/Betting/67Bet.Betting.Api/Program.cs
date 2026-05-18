@@ -83,16 +83,27 @@ builder.Services.AddInfrastructure(builder.Configuration);
 var app = builder.Build();
 
 // Seed data
-/*
 using (var scope = app.Services.CreateScope())
 {
     try 
     {
         var context = scope.ServiceProvider.GetRequiredService<_67Bet.Betting.Infrastructure.Persistence.BettingDbContext>();
-        context.Database.EnsureCreated();
-        if (!context.Events.Any())
+        
+        // Seed Virtual Racing Horses
+        if (!context.Horses.Any())
         {
-            // Seeding logic...
+            context.Horses.AddRange(
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Thunder", 8),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Lightning", 7),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Storm", 6),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Blizzard", 9),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Tornado", 5),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Hurricane", 8),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Avalanche", 7),
+                new _67Bet.Betting.Domain.Entities.VirtualRacing.Horse("Typhoon", 8)
+            );
+            context.SaveChanges();
+            Console.WriteLine("Successfully seeded initial virtual horses.");
         }
     }
     catch (Exception ex)
@@ -100,7 +111,6 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"Error seeding data: {ex.Message}");
     }
 }
-*/
 
 app.UseMiddleware<ExceptionMiddleware>();
 
