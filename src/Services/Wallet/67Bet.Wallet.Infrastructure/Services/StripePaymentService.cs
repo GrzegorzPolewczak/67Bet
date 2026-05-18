@@ -85,33 +85,36 @@ public class StripePaymentService : IPaymentService
                 _configuration["Stripe:WebhookSecret"]
             );
 
-            if (stripeEvent.Type == "payment_intent.succeeded")
-            {
-                var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
-                if (paymentIntent != null)
-                {
-                    // Logic to update wallet balance
-                    // Usually we'd want to pass the UserId in metadata when creating PaymentIntent
-                    if (paymentIntent.Metadata.TryGetValue("UserId", out var userIdString) && 
-                        Guid.TryParse(userIdString, out var userId))
-                    {
-                        var amount = paymentIntent.Amount / 100m;
-                        await _walletService.DepositAsync(userId, amount);
-                        _logger.LogInformation("Successfully processed payment of {Amount} {Currency} for user {UserId}", amount, paymentIntent.Currency, userId);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("PaymentIntent succeeded but UserId was not found in metadata. IntentId: {IntentId}", paymentIntent.Id);
-                    }
-                }
-            }
-
-            return true;
+            return await ProcessEventAsync(stripeEvent);
         }
         catch (StripeException e)
         {
             _logger.LogError(e, "Stripe webhook error");
             return false;
         }
+    }
+
+    public async Task<bool> ProcessEventAsync(Event stripeEvent)
+    {
+        if (stripeEvent.Type == "payment_intent.succeeded")
+        {
+            var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
+            if (paymentIntent != null)
+            {
+                if (paymentIntent.Metadata.TryGetValue("UserId", out var userIdString) && 
+                    Guid.TryParse(userIdString, out var userId))
+                {
+                    var amount = paymentIntent.Amount / 100m;
+                    await _walletService.DepositAsync(userId, amount);
+                    _logger.LogInformation("Successfully processed payment of {Amount} {Currency} for user {UserId}", amount, paymentIntent.Currency, userId);
+                }
+                else
+                {
+                    _logger.LogWarning("PaymentIntent succeeded but UserId was not found in metadata. IntentId: {IntentId}", paymentIntent.Id);
+                }
+            }
+        }
+
+        return true;
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using _67Bet.Wallet.Application.Services;
+using WalletEntity = _67Bet.Wallet.Domain.Entities.Wallet;
 using _67Bet.Wallet.Domain.Entities;
 using _67Bet.Wallet.Domain.Enums;
 using _67Bet.Wallet.Domain.Repositories;
@@ -29,7 +30,7 @@ public class WalletServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
-            .ReturnsAsync((_67Bet.Wallet.Domain.Entities.Wallet?)null);
+            .ReturnsAsync((WalletEntity?)null);
 
         // Act
         var balance = await _walletService.GetBalanceAsync(userId);
@@ -43,7 +44,7 @@ public class WalletServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var wallet = new _67Bet.Wallet.Domain.Entities.Wallet(userId);
+        var wallet = new WalletEntity(userId);
         wallet.Deposit(100);
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
             .ReturnsAsync(wallet);
@@ -60,7 +61,7 @@ public class WalletServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var wallet = new _67Bet.Wallet.Domain.Entities.Wallet(userId);
+        var wallet = new WalletEntity(userId);
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
             .ReturnsAsync(wallet);
 
@@ -81,7 +82,7 @@ public class WalletServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var wallet = new _67Bet.Wallet.Domain.Entities.Wallet(userId);
+        var wallet = new WalletEntity(userId);
         wallet.Deposit(100);
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
             .ReturnsAsync(wallet);
@@ -104,7 +105,7 @@ public class WalletServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
-            .ReturnsAsync((_67Bet.Wallet.Domain.Entities.Wallet?)null);
+            .ReturnsAsync((WalletEntity?)null);
 
         // Act & Assert
         await _walletService.Invoking(s => s.WithdrawAsync(userId, 50))
@@ -117,7 +118,7 @@ public class WalletServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var wallet = new _67Bet.Wallet.Domain.Entities.Wallet(userId);
+        var wallet = new WalletEntity(userId);
         wallet.Deposit(100);
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
             .ReturnsAsync(wallet);
@@ -137,7 +138,7 @@ public class WalletServiceTests
     {
         // Arrange
         var userId = Guid.NewGuid();
-        var wallet = new _67Bet.Wallet.Domain.Entities.Wallet(userId);
+        var wallet = new WalletEntity(userId);
         wallet.Deposit(20);
         _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
             .ReturnsAsync(wallet);
@@ -149,5 +150,26 @@ public class WalletServiceTests
         result.Should().BeFalse();
         wallet.Balance.Should().Be(20);
         _transactionRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Transaction>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ProcessPayoutAsync_ShouldIncreaseBalanceAndCreateTransaction()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var wallet = new WalletEntity(userId);
+        _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
+            .ReturnsAsync(wallet);
+
+        // Act
+        await _walletService.ProcessPayoutAsync(userId, 75);
+
+        // Assert
+        wallet.Balance.Should().Be(75);
+        _walletRepositoryMock.Verify(x => x.UpdateAsync(wallet), Times.Once);
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
+            t.Amount == 75 && 
+            t.Type == TransactionType.Payout && 
+            t.Status == TransactionStatus.Completed)), Times.Once);
     }
 }
