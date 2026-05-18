@@ -10,16 +10,18 @@ import {
   History, 
   Settings,
   Star,
-  ShieldCheck
+  ShieldCheck,
+  Flag
 } from 'lucide-react';
 
 const sports = [
-  { icon: Flame, name: 'Popular', color: 'text-orange-500' },
-  { icon: Zap, name: 'Live', color: 'text-accent-success' },
-  { icon: Trophy, name: 'Football' },
-  { icon: Activity, name: 'Basketball' },
-  { icon: Gamepad2, name: 'Esports' },
-  { icon: Star, name: 'MMA' },
+  { icon: Flame, name: 'Popular', path: '/', color: 'text-orange-500' },
+  { icon: Flag, name: 'Virtual Racing', path: '/virtual-racing', color: 'text-purple-500' },
+  { icon: Zap, name: 'Live', path: '/sport/Live', color: 'text-accent-success' },
+  { icon: Trophy, name: 'Football', path: '/sport/Football' },
+  { icon: Activity, name: 'Basketball', path: '/sport/Basketball' },
+  { icon: Gamepad2, name: 'Esports', path: '/sport/Esports' },
+  { icon: Star, name: 'MMA', path: '/sport/MMA' },
 ];
 
 const Sidebar: React.FC = () => {
@@ -34,7 +36,7 @@ const Sidebar: React.FC = () => {
             {sports.map((sport) => (
               <li key={sport.name}>
                 <NavLink 
-                  to={sport.name === 'Popular' ? '/' : `/sport/${sport.name}`}
+                  to={sport.path}
                   className={({ isActive }) => `
                     w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
                     ${isActive 

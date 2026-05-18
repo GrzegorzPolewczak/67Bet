@@ -324,6 +324,56 @@ package "Betting Service" {
         +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
     }
 
+    class VirtualRace <<implemented, AggregateRoot>> {
+        +Name : string
+        +StartTime : DateTime
+        +IsFinished : bool
+        +WinningHorseId : Guid?
+        +VirtualRace(name: string, startTime: DateTime)
+        +FinishRace(winningHorseId: Guid) : void
+    }
+
+    class Horse <<implemented, AggregateRoot>> {
+        +Name : string
+        +SkillLevel : int
+        +Horse(name: string, skillLevel: int)
+    }
+
+    class VirtualRaceParticipant <<implemented>> {
+        +RaceId : Guid
+        +HorseId : Guid
+        +Odds : decimal
+        +VirtualRaceParticipant(raceId: Guid, horseId: Guid, odds: decimal)
+    }
+
+    interface IVirtualRaceRepository <<implemented>> {
+        +GetActiveRacesAsync() : Task<IEnumerable<VirtualRace>>
+        +GetByIdAsync(id: Guid) : Task<VirtualRace?>
+        +AddAsync(race: VirtualRace) : Task
+        +UpdateAsync(race: VirtualRace) : Task
+    }
+
+    interface IHorseRepository <<implemented>> {
+        +GetAllAsync() : Task<IEnumerable<Horse>>
+        +GetByIdAsync(id: Guid) : Task<Horse?>
+        +AddAsync(horse: Horse) : Task
+    }
+
+    interface IVirtualRacingService <<implemented>> {
+        +GenerateRaceAsync() : Task<VirtualRace>
+        +SimulateRaceAsync(raceId: Guid) : Task<Guid>
+        +GetActiveRacesAsync() : Task<IEnumerable<VirtualRace>>
+    }
+
+    class VirtualRacingService <<implemented>> {
+        -_raceRepository : IVirtualRaceRepository
+        -_horseRepository : IHorseRepository
+        -_bettingService : IBettingService
+        +GenerateRaceAsync() : Task<VirtualRace>
+        +SimulateRaceAsync(raceId: Guid) : Task<Guid>
+        +GetActiveRacesAsync() : Task<IEnumerable<VirtualRace>>
+    }
+
     class BettingDbContext <<implemented>> {
         +Sports : DbSet<Sport>
         +Events : DbSet<Event>
@@ -331,6 +381,9 @@ package "Betting Service" {
         +Outcomes : DbSet<Outcome>
         +Tickets : DbSet<Ticket>
         +Bets : DbSet<Bet>
+        +VirtualRaces : DbSet<VirtualRace>
+        +Horses : DbSet<Horse>
+        +VirtualRaceParticipants : DbSet<VirtualRaceParticipant>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }
