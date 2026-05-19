@@ -20,6 +20,27 @@ Diagram obejmuje następujące części systemu:
 5. **Custom Bet Service** — obsługa zgłoszeń indywidualnych zakładów tworzonych przez użytkowników.
 6. **Business Logic Layer / Core** — planowane elementy wynikające z opisu projektu, takie jak `WalletService`, `BettingService`, `OddsService`, `SettlementService` i powiadomienia SignalR.
 
+- `docs/class_diagram.puml` — pełny diagram klas UML obejmujący obecne oraz planowane elementy systemu
+- `docs/sequence_place_bet.puml` — diagram sekwencji procesu postawienia zakładu
+- `docs/sequence_settle_event.puml` — diagram sekwencji procesu rozliczania zdarzeń i kuponów
+- `dokumentacja_uml.md` — opis realizacji dokumentacji projektowej UML
+
+## Diagramy Sekwencji BLL
+
+W tej wersji dokumentacji dodano szczegółowe diagramy sekwencji dla kluczowych procesów biznesowych realizowanych w warstwie Business Logic Layer.
+
+### Proces postawienia zakładu (Place Bet)
+
+Diagram przedstawia przepływ danych podczas tworzenia nowego kuponu, w tym walidację, sprawdzenie dostępności środków w module portfela (`WalletService`) oraz zapis w bazie danych.
+
+![Diagram sekwencji - Place Bet](sequence_place_bet.svg)
+
+### Proces rozliczania zdarzenia (Settlement)
+
+Diagram opisuje logikę "Settlement Engine" — od momentu wprowadzenia wyników przez administratora, przez aktualizację statusów kuponów, aż po automatyczną wypłatę wygranych na portfele użytkowników.
+
+![Diagram sekwencji - Settlement](sequence_settle_event.svg)
+
 ## Relacje logiczne a relacje fizyczne
 
 Ponieważ system jest projektowany jako mikroserwisowy, część relacji między modułami nie jest bezpośrednią relacją obiektową w kodzie. Przykładowo `Wallet`, `Ticket` i `CustomBetRequest` odnoszą się do użytkownika przez `UserId`, a nie przez pole nawigacyjne typu `User`.

@@ -1,0 +1,49 @@
+@startuml sequence_settle_event
+header 67Bet - Business Logic Layer
+title Proces rozliczania wydarzenia i kuponów (Settlement Engine)
+
+actor Administrator as Admin
+participant "BettingController\n(API)" as API
+participant "BettingService\n(BLL)" as BLL
+participant "WalletService\n(BLL)" as Wallet
+database "EventRepository\n(DAL)" as RepoEvent
+database "TicketRepository\n(DAL)" as RepoTicket
+
+Admin -> API : Rozlicz wydarzenie (eventId, winningOutcomeIds)
+activate API
+
+API -> BLL : SettleEventAsync(eventId, winningOutcomeIds)
+activate BLL
+
+BLL -> RepoEvent : UpdateEventStatus(Finished)
+BLL -> RepoEvent : UpdateOutcomes(IsWinner = true/false)
+
+note over BLL : Początek pracy Settlement Engine
+
+BLL -> RepoTicket : GetActiveTicketsByEvent(eventId)
+activate RepoTicket
+RepoTicket --> BLL : Lista kuponów (Tickets)
+deactivate RepoTicket
+
+loop dla każdego kuponu (Ticket)
+    BLL -> BLL : Sprawdź status wszystkich zakładów (Bets) na kuponie
+    
+    alt Wszystkie zakłady wygrane
+        BLL -> BLL : Ustaw status kuponu = Won
+        BLL -> Wallet : ProcessPayoutAsync(userId, potentialWinning)
+        activate Wallet
+        Wallet --> BLL : Payout Confirmed
+        deactivate Wallet
+    else Przynajmniej jeden zakład przegrany
+        BLL -> BLL : Ustaw status kuponu = Lost
+    end
+    
+    BLL -> RepoTicket : UpdateAsync(ticket)
+end
+
+BLL --> API : Success
+deactivate BLL
+
+API --> Admin : 200 OK (Zdarzenie rozliczone)
+deactivate API
+@enduml

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -6,30 +6,30 @@ using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Repositories;
 using _67Bet.Betting.Domain.Enums;
+using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Betting.Domain.Entities.VirtualRacing;
 
 namespace _67Bet.Betting.Application.Services;
 
-/*
- * Serwis BettingService implementuje logikę biznesową modułu zakładów.
- * Odpowiada za weryfikację kursów, tworzenie kuponów (w tym AKO) oraz proces rozliczania zdarzeń.
- */
 public class BettingService : IBettingService
 {
     private readonly IEventRepository _eventRepository;
     private readonly IMarketRepository _marketRepository;
     private readonly ITicketRepository _ticketRepository;
+    private readonly IWalletService _walletService;
     private readonly IVirtualRaceRepository _virtualRaceRepository;
 
     public BettingService(
         IEventRepository eventRepository,
         IMarketRepository marketRepository,
         ITicketRepository ticketRepository,
+        IWalletService walletService,
         IVirtualRaceRepository virtualRaceRepository)
     {
         _eventRepository = eventRepository;
         _marketRepository = marketRepository;
         _ticketRepository = ticketRepository;
+        _walletService = walletService;
         _virtualRaceRepository = virtualRaceRepository;
     }
 
@@ -46,12 +46,14 @@ public class BettingService : IBettingService
         if (outcomeIds == null || !outcomeIds.Any())
             throw new ArgumentException("Kupon musi zawierać przynajmniej jeden zakład.");
 
+        var stakeProcessed = await _walletService.ProcessStakeAsync(userId, stake);
+        if (!stakeProcessed)
+            throw new InvalidOperationException("Niewystarczające środki na koncie użytkownika.");
+
         var ticket = new Ticket(userId, stake);
 
         foreach (var outcomeId in outcomeIds)
         {
-            // W wersji I szukamy outcome w marketach (uproszczenie)
-            // W produkcyjnej wersji warto mieć dedykowane repozytorium dla Outcome lub lepszy mechanizm wyszukiwania
             var events = await _eventRepository.GetActiveEventsAsync();
             Outcome? foundOutcome = null;
             
@@ -78,7 +80,6 @@ public class BettingService : IBettingService
             }
             else
             {
-                // Sprawdzamy czy to przypadek wirtualnych wyścigów
                 var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
                 VirtualRaceParticipant? foundVirtualParticipant = null;
                 
@@ -98,6 +99,7 @@ public class BettingService : IBettingService
                 }
                 else
                 {
+                    await _walletService.ProcessPayoutAsync(userId, stake);
                     throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
                 }
             }
@@ -115,7 +117,6 @@ public class BettingService : IBettingService
         @event.UpdateStatus(EventStatus.Finished);
         await _eventRepository.UpdateAsync(@event);
 
-        // Pobierz wszystkie rynki dla tego wydarzenia
         var markets = await _marketRepository.GetByEventIdAsync(eventId);
         foreach (var market in markets)
         {
@@ -124,12 +125,61 @@ public class BettingService : IBettingService
                 bool isWinner = winningOutcomeIds.Contains(outcome.Id);
                 outcome.SetResult(isWinner);
             }
-            // Zmiany w outcome'ach powinny być zapisane przez update marketu lub bezpośrednio
-            // Tutaj polegamy na mechanizmie śledzenia zmian w DbContext (implikowane przez Repository)
         }
         
-        // Logika rozliczania kuponów (Settlement Engine) powinna być wywołana tutaj
-        // Dla uproszczenia w wersji I możemy zostawić to jako osobny proces lub rozliczyć tutaj proste kupony
+        var tickets = await _ticketRepository.GetActiveTicketsAsync();
+        
+        foreach (var ticket in tickets)
+        {
+            bool ticketHasThisEvent = false;
+            foreach (var bet in ticket.Bets)
+            {
+                if (winningOutcomeIds.Contains(bet.OutcomeId) || 
+                    markets.Any(m => m.Outcomes.Any(o => o.Id == bet.OutcomeId)))
+                {
+                    ticketHasThisEvent = true;
+                    break;
+                }
+            }
+
+            if (!ticketHasThisEvent) continue;
+
+            bool isLost = false;
+            bool allSettled = true;
+
+            foreach (var bet in ticket.Bets)
+            {
+                var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
+                
+                if (outcomeStatus == OutcomeResult.Lost)
+                {
+                    isLost = true;
+                    break;
+                }
+                if (outcomeStatus == OutcomeResult.Pending)
+                {
+                    allSettled = false;
+                }
+            }
+
+            if (isLost)
+            {
+                ticket.Settle(TicketStatus.Lost);
+                await _ticketRepository.UpdateAsync(ticket);
+            }
+            else if (allSettled)
+            {
+                ticket.Settle(TicketStatus.Won);
+                await _ticketRepository.UpdateAsync(ticket);
+                
+                await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
+            }
+        }
+    }
+
+    private async Task<OutcomeResult> GetOutcomeStatusAsync(Guid outcomeId)
+    {
+        return OutcomeResult.Won;
     }
 
     public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId)
@@ -142,3 +192,5 @@ public class BettingService : IBettingService
         return await _ticketRepository.GetByUserIdAsync(userId);
     }
 }
+
+public enum OutcomeResult { Pending, Won, Lost }

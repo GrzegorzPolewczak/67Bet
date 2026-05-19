@@ -27,6 +27,7 @@ public interface IMarketRepository : IRepository<Market>
 public interface ITicketRepository : IRepository<Ticket>
 {
     Task<IEnumerable<Ticket>> GetByUserIdAsync(Guid userId);
+    Task<IEnumerable<Ticket>> GetActiveTicketsAsync();
 }
 
 public interface IAiMatchInsightRepository : IRepository<AiMatchInsight>
