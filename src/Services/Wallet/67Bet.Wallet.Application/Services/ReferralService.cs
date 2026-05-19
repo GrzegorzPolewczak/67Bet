@@ -116,6 +116,26 @@ namespace _67Bet.Wallet.Application.Services
             await _promoRepository.UpdateAsync(promo);
         }
 
+        public async Task ActivatePromoCodeAsync(string code)
+        {
+            var promo = await _promoRepository.GetByCodeAsync(code);
+            if (promo == null) throw new InvalidOperationException("Kod promo nie istnieje.");
+
+            promo.Activate();
+            await _promoRepository.UpdateAsync(promo);
+        }
+
+        public async Task<IEnumerable<PromoCodeDto>> GetAllPromoCodesAsync()
+        {
+            var codes = await _promoRepository.GetAllAsync();
+            return codes.Select(c => new PromoCodeDto
+            {
+                Code = c.Code,
+                RewardAmount = c.RewardAmount,
+                IsActive = c.IsActive
+            });
+        }
+
         private async Task CheckMilestonesAsync(ReferralCode code)
         {
             if (_milestones.Contains(code.UsageCount))

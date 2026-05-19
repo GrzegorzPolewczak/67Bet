@@ -59,6 +59,14 @@ namespace _67Bet.Wallet.Api.Controllers
         }
 
         [Authorize(Roles = "Admin")]
+        [HttpGet("admin/promo")]
+        public async Task<ActionResult<IEnumerable<PromoCodeDto>>> GetAllPromoCodes()
+        {
+            var codes = await _referralService.GetAllPromoCodesAsync();
+            return Ok(codes);
+        }
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("admin/promo")]
         public async Task<IActionResult> CreatePromoCode([FromBody] CreatePromoRequest request)
         {
@@ -80,6 +88,21 @@ namespace _67Bet.Wallet.Api.Controllers
             try
             {
                 await _referralService.DeactivatePromoCodeAsync(code);
+                return Ok();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("admin/promo/activate")]
+        public async Task<IActionResult> ActivatePromoCode([FromBody] string code)
+        {
+            try
+            {
+                await _referralService.ActivatePromoCodeAsync(code);
                 return Ok();
             }
             catch (InvalidOperationException ex)

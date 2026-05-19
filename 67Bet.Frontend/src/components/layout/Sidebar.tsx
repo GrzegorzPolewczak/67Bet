@@ -72,7 +72,7 @@ const Sidebar: React.FC = () => {
             </li>
             <li>
               <NavLink 
-                to="/promotions"
+                to="/referrals"
                 className={({ isActive }) => `
                   w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
                   ${isActive 
@@ -81,7 +81,7 @@ const Sidebar: React.FC = () => {
                 `}
               >
                 <Gift className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
-                Promotions
+                Refs & Codes
               </NavLink>
             </li>
             <li>

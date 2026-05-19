@@ -10,6 +10,8 @@ namespace _67Bet.Wallet.Application.Interfaces
         Task ApplyCodeAsync(Guid userId, string code);
         Task<ReferralStatusDto> GetReferralStatusAsync(Guid userId);
         Task DeactivatePromoCodeAsync(string code);
+        Task ActivatePromoCodeAsync(string code);
         Task CreatePromoCodeAsync(string code, decimal reward);
+        Task<System.Collections.Generic.IEnumerable<PromoCodeDto>> GetAllPromoCodesAsync();
     }
 }
