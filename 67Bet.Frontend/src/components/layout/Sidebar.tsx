@@ -11,7 +11,8 @@ import {
   Settings,
   Star,
   ShieldCheck,
-  Flag
+  Flag,
+  Gift
 } from 'lucide-react';
 
 const sports = [
@@ -67,6 +68,20 @@ const Sidebar: React.FC = () => {
               >
                 <History className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
                 Bet History
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/promotions"
+                className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${isActive 
+                    ? 'bg-primary-600/10 text-primary-500' 
+                    : 'text-gray-300 hover:bg-dark-700 hover:text-white'}
+                `}
+              >
+                <Gift className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                Promotions
               </NavLink>
             </li>
             <li>
