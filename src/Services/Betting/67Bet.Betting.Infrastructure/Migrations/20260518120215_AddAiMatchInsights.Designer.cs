@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _67Bet.Betting.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using _67Bet.Betting.Infrastructure.Persistence;
 namespace _67Bet.Betting.Infrastructure.Migrations
 {
     [DbContext(typeof(BettingDbContext))]
-    partial class BettingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518120215_AddAiMatchInsights")]
+    partial class AddAiMatchInsights
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,83 +223,6 @@ namespace _67Bet.Betting.Infrastructure.Migrations
                     b.ToTable("Tickets");
                 });
 
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.VirtualRacing.Horse", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("varchar(100)");
-
-                    b.Property<int>("SkillLevel")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Horses");
-                });
-
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.VirtualRacing.VirtualRace", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<bool>("IsFinished")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("StartTime")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid?>("WinningHorseId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("VirtualRaces");
-                });
-
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.VirtualRacing.VirtualRaceParticipant", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("HorseId")
-                        .HasColumnType("char(36)");
-
-                    b.Property<decimal>("Odds")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<Guid>("RaceId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HorseId");
-
-                    b.HasIndex("RaceId");
-
-                    b.ToTable("VirtualRaceParticipants");
-                });
-
             modelBuilder.Entity("_67Bet.Betting.Domain.Entities.Bet", b =>
                 {
                     b.HasOne("_67Bet.Betting.Domain.Entities.Ticket", null)
@@ -333,25 +259,6 @@ namespace _67Bet.Betting.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.VirtualRacing.VirtualRaceParticipant", b =>
-                {
-                    b.HasOne("_67Bet.Betting.Domain.Entities.VirtualRacing.Horse", "Horse")
-                        .WithMany()
-                        .HasForeignKey("HorseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("_67Bet.Betting.Domain.Entities.VirtualRacing.VirtualRace", "Race")
-                        .WithMany("Participants")
-                        .HasForeignKey("RaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Horse");
-
-                    b.Navigation("Race");
-                });
-
             modelBuilder.Entity("_67Bet.Betting.Domain.Entities.Event", b =>
                 {
                     b.Navigation("Markets");
@@ -365,11 +272,6 @@ namespace _67Bet.Betting.Infrastructure.Migrations
             modelBuilder.Entity("_67Bet.Betting.Domain.Entities.Ticket", b =>
                 {
                     b.Navigation("Bets");
-                });
-
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.VirtualRacing.VirtualRace", b =>
-                {
-                    b.Navigation("Participants");
                 });
 #pragma warning restore 612, 618
         }

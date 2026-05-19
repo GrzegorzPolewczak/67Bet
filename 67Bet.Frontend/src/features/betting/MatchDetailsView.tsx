@@ -12,6 +12,7 @@ import OddButton from './OddButton';
 import LivePitch from './LivePitch';
 import StatsBars from './StatsBars';
 import MatchTimeline from './MatchTimeline';
+import AiMatchInsights from './AiMatchInsights';
 
 const MatchDetailsView: React.FC = () => {
   const { matchId } = useParams<{ matchId: string }>();
@@ -147,6 +148,9 @@ const MatchDetailsView: React.FC = () => {
         <div className="bg-dark-800 border border-dark-700 rounded-3xl p-6 h-fit">
           <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-6">Match History</h2>
           <MatchTimeline events={currentMatch?.timelineEvents || []} />
+          
+          {/* AI Assistant Section */}
+          <AiMatchInsights eventId={matchId || ''} />
         </div>
 
         {/* Center: Main View (Pitch or Stream) */}

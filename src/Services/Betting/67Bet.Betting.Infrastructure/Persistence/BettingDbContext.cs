@@ -16,6 +16,7 @@ public class BettingDbContext : DbContext
     public DbSet<Outcome> Outcomes => Set<Outcome>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Bet> Bets => Set<Bet>();
+    public DbSet<AiMatchInsight> AiMatchInsights => Set<AiMatchInsight>();
     
     // Virtual Racing
     public DbSet<VirtualRace> VirtualRaces => Set<VirtualRace>();
@@ -26,6 +27,14 @@ public class BettingDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AiMatchInsight>(builder =>
+        {
+            builder.HasKey(a => a.Id);
+            builder.Property(a => a.EventId).IsRequired();
+            builder.Property(a => a.Content).IsRequired().HasColumnType("longtext");
+            builder.HasIndex(a => a.EventId).IsUnique();
+        });
+
         modelBuilder.Entity<Sport>(builder =>
         {
             builder.HasKey(s => s.Id);
