@@ -21,14 +21,29 @@ public class WalletController : ControllerBase
     }
 
     [HttpGet("balance")]
-    public async Task<ActionResult<WalletBalanceDto>> GetBalance()
+    public async Task<ActionResult<WalletBalanceDto>> GetBalance([FromQuery] Guid? userId)
     {
-        var userId = GetUserId();
-        var balance = await _walletService.GetBalanceAsync(userId);
-        var freebetBalance = await _walletService.GetFreebetBalanceAsync(userId);
-        var wallet = await _walletService.GetWalletByUserIdAsync(userId);
+        try
+        {
+            // Support both authenticated user and explicit userId for service-to-service calls
+            var targetUserId = userId ?? GetUserId();
+            
+            var wallet = await _walletService.GetWalletByUserIdAsync(targetUserId);
+            if (wallet == null)
+            {
+                return Ok(new WalletBalanceDto(0, 0, "PLN"));
+            }
 
-        return Ok(new WalletBalanceDto(balance, freebetBalance, wallet?.Currency ?? "PLN"));
+            return Ok(new WalletBalanceDto(wallet.Balance, wallet.FreebetBalance, wallet.Currency ?? "PLN"));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "BĹ‚Ä…d podczas pobierania salda.", details = ex.Message });
+        }
     }
 
     [HttpPost("create-payment-intent")]
@@ -36,8 +51,15 @@ public class WalletController : ControllerBase
     {
         if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
 
-        var result = await _paymentService.CreatePaymentIntentAsync(GetUserId(), request.Amount, request.Currency);
-        return Ok(result);
+        try
+        {
+            var result = await _paymentService.CreatePaymentIntentAsync(GetUserId(), request.Amount, request.Currency);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = "BĹ‚Ä…d procesora pĹ‚atnoĹ›ci.", details = ex.Message });
+        }
     }
 
     [AllowAnonymous]
@@ -108,7 +130,12 @@ public class WalletController : ControllerBase
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null) throw new UnauthorizedAccessException();
-        return Guid.Parse(userIdClaim.Value);
+        if (userIdClaim == null)
+            throw new UnauthorizedAccessException("Brak identyfikatora uĹĽytkownika w tokenie.");
+
+        if (!Guid.TryParse(userIdClaim.Value, out var userId))
+            throw new UnauthorizedAccessException("NieprawidĹ‚owy format identyfikatora uĹĽytkownika.");
+
+        return userId;
     }
 }
