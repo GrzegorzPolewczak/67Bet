@@ -1,64 +1,66 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { walletApi } from '../../api/axios';
+﻿import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { walletApi } from "../../api/axios";
 
 interface WalletState {
   balance: number;
+  freebetBalance: number;
   loading: boolean;
   error: string | null;
 }
 
 const initialState: WalletState = {
   balance: 0,
+  freebetBalance: 0,
   loading: false,
   error: null,
 };
 
 export const fetchBalanceAsync = createAsyncThunk(
-  'wallet/fetchBalance',
+  "wallet/fetchBalance",
   async (_, { rejectWithValue }) => {
     try {
-      // In a real app, the user ID would be taken from the token on the server
-      const response = await walletApi.get('/wallet/balance');
-      return typeof response.data === 'object' && response.data !== null && 'balance' in response.data ? response.data.balance : response.data;
+      const response = await walletApi.get("/wallet/balance");
+      return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to fetch balance';
-      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+      const message = error.response?.data?.message || error.response?.data || error.message || "Failed to fetch balance";
+      return rejectWithValue(typeof message === "object" ? JSON.stringify(message) : message);
     }
   }
 );
 
 export const createPaymentIntentAsync = createAsyncThunk(
-  'wallet/createPaymentIntent',
+  "wallet/createPaymentIntent",
   async (amount: number, { rejectWithValue }) => {
     try {
-      const response = await walletApi.post('/wallet/create-payment-intent', { amount });
+      const response = await walletApi.post("/wallet/create-payment-intent", { amount });
       return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to create payment intent';
-      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+      const message = error.response?.data?.message || error.response?.data || error.message || "Failed to create payment intent";
+      return rejectWithValue(typeof message === "object" ? JSON.stringify(message) : message);
     }
   }
 );
 
 export const withdrawAsync = createAsyncThunk(
-  'wallet/withdraw',
+  "wallet/withdraw",
   async (amount: number, { rejectWithValue }) => {
     try {
-      await walletApi.post('/wallet/withdraw', { amount });
+      await walletApi.post("/wallet/withdraw", { amount });
       return amount;
     } catch (error: any) {
-      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to withdraw funds';
-      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+      const message = error.response?.data?.message || error.response?.data || error.message || "Failed to withdraw funds";
+      return rejectWithValue(typeof message === "object" ? JSON.stringify(message) : message);
     }
   }
 );
 
 const walletSlice = createSlice({
-  name: 'wallet',
+  name: "wallet",
   initialState,
   reducers: {
     updateBalance: (state, action) => {
-      state.balance = action.payload;
+      state.balance = action.payload.balance;
+      state.freebetBalance = action.payload.freebetBalance;
     }
   },
   extraReducers: (builder) => {
@@ -69,7 +71,8 @@ const walletSlice = createSlice({
       })
       .addCase(fetchBalanceAsync.fulfilled, (state, action) => {
         state.loading = false;
-        state.balance = action.payload;
+        state.balance = action.payload.balance;
+        state.freebetBalance = action.payload.freebetBalance;
       })
       .addCase(fetchBalanceAsync.rejected, (state, action) => {
         state.loading = false;

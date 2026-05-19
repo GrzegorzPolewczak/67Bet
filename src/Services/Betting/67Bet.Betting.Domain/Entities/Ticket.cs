@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using _67Bet.Shared.Kernel;
@@ -13,14 +13,16 @@ public class Ticket : BaseEntity, IAggregateRoot
     public decimal Stake { get; private set; }
     public decimal PotentialWinning { get; private set; }
     public TicketStatus Status { get; private set; }
+    public bool IsFreebet { get; private set; }
     public List<Bet> Bets { get; private set; } = new();
 
-    public Ticket(Guid userId, decimal stake)
+    public Ticket(Guid userId, decimal stake, bool isFreebet = false)
     {
         UserId = userId;
         Stake = stake;
         Status = TicketStatus.Pending;
         TotalOdds = 1.0m;
+        IsFreebet = isFreebet;
     }
 
     public void AddBet(Guid outcomeId, decimal fixedPrice)
@@ -36,7 +38,17 @@ public class Ticket : BaseEntity, IAggregateRoot
     private void CalculateTotalOdds()
     {
         TotalOdds = Bets.Aggregate(1.0m, (acc, bet) => acc * bet.FixedPrice);
-        PotentialWinning = Stake * TotalOdds;
+        
+        var rawWinning = Stake * TotalOdds;
+        if (IsFreebet)
+        {
+            // Zasada 70% wygranej dla Freebetu
+            PotentialWinning = rawWinning * 0.7m;
+        }
+        else
+        {
+            PotentialWinning = rawWinning;
+        }
     }
 
     public void Settle(TicketStatus status)

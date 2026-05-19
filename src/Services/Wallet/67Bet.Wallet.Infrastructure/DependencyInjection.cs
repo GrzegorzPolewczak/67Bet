@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using _67Bet.Wallet.Domain.Repositories;
@@ -21,6 +21,9 @@ public static class DependencyInjection
 
         services.AddScoped<IWalletRepository, WalletRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+        services.AddScoped<IReferralCodeRepository, ReferralCodeRepository>();
+        services.AddScoped<IPromoCodeRepository, PromoCodeRepository>();
+        services.AddScoped<IUserCodeUsageRepository, UserCodeUsageRepository>();
         services.AddScoped<IPaymentService, StripePaymentService>();
 
         return services;

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Wallet.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -25,16 +25,17 @@ public class WalletController : ControllerBase
     {
         var userId = GetUserId();
         var balance = await _walletService.GetBalanceAsync(userId);
+        var freebetBalance = await _walletService.GetFreebetBalanceAsync(userId);
         var wallet = await _walletService.GetWalletByUserIdAsync(userId);
-        
-        return Ok(new WalletBalanceDto(balance, wallet?.Currency ?? "PLN"));
+
+        return Ok(new WalletBalanceDto(balance, freebetBalance, wallet?.Currency ?? "PLN"));
     }
 
     [HttpPost("create-payment-intent")]
     public async Task<ActionResult<PaymentIntentResponseDto>> CreatePaymentIntent(CreatePaymentIntentRequest request)
     {
-        if (request.Amount <= 0) return BadRequest("Kwota musi być dodatnia.");
-        
+        if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
+
         var result = await _paymentService.CreatePaymentIntentAsync(GetUserId(), request.Amount, request.Currency);
         return Ok(result);
     }
@@ -47,7 +48,7 @@ public class WalletController : ControllerBase
         var signature = Request.Headers["Stripe-Signature"];
 
         var result = await _paymentService.HandleWebhookAsync(json, signature!);
-        
+
         if (result) return Ok();
         return BadRequest();
     }
@@ -55,8 +56,8 @@ public class WalletController : ControllerBase
     [HttpPost("deposit")]
     public async Task<IActionResult> Deposit(DepositRequest request)
     {
-        if (request.Amount <= 0) return BadRequest("Kwota musi być dodatnia.");
-        
+        if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
+
         await _walletService.DepositAsync(GetUserId(), request.Amount);
         return NoContent();
     }
@@ -64,21 +65,21 @@ public class WalletController : ControllerBase
     [HttpPost("withdraw")]
     public async Task<IActionResult> Withdraw(WithdrawRequest request)
     {
-        if (request.Amount <= 0) return BadRequest("Kwota musi być dodatnia.");
-        
+        if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
+
         var userId = GetUserId();
-        
+
         try
         {
             // 1. Check local balance first
             var balance = await _walletService.GetBalanceAsync(userId);
-            if (balance < request.Amount) return BadRequest("Niewystarczające środki na koncie.");
+            if (balance < request.Amount) return BadRequest("NiewystarczajÄ…ce Ĺ›rodki na koncie.");
 
             // 2. Trigger Stripe Payout (Sandbox)
             var errorMessage = await _paymentService.CreatePayoutAsync(userId, request.Amount);
-            if (!string.IsNullOrEmpty(errorMessage)) 
+            if (!string.IsNullOrEmpty(errorMessage))
             {
-                return BadRequest($"Błąd procesora płatności Stripe: {errorMessage}");
+                return BadRequest($"BĹ‚Ä…d procesora pĹ‚atnoĹ›ci Stripe: {errorMessage}");
             }
 
             // 3. Update local balance and register transaction
@@ -91,7 +92,7 @@ public class WalletController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, "Wystąpił nieoczekiwany błąd podczas wypłaty.");
+            return StatusCode(500, "WystÄ…piĹ‚ nieoczekiwany bĹ‚Ä…d podczas wypĹ‚aty.");
         }
     }
 

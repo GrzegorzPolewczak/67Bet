@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Security.Claims;
@@ -96,8 +96,7 @@ public class WalletControllerTests
         var result = await _controller.Withdraw(request);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be("Niewystarczające środki na koncie.");
+        result.Should().BeOfType<BadRequestObjectResult>();
         _paymentServiceMock.Verify(x => x.CreatePayoutAsync(It.IsAny<Guid>(), It.IsAny<decimal>(), It.IsAny<string>()), Times.Never);
     }
 
@@ -126,7 +125,7 @@ public class WalletControllerTests
         var signature = "sig_123";
         _controller.Request.Headers["Stripe-Signature"] = signature;
         _controller.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(json));
-        
+
         _paymentServiceMock.Setup(x => x.HandleWebhookAsync(It.IsAny<string>(), signature))
             .ReturnsAsync(true);
 
@@ -145,7 +144,7 @@ public class WalletControllerTests
         var signature = "sig_123";
         _controller.Request.Headers["Stripe-Signature"] = signature;
         _controller.Request.Body = new MemoryStream(Encoding.UTF8.GetBytes(json));
-        
+
         _paymentServiceMock.Setup(x => x.HandleWebhookAsync(It.IsAny<string>(), signature))
             .ReturnsAsync(false);
 

@@ -1,0 +1,78 @@
+﻿@startuml Referral_ClassDiagram
+!theme plain
+
+package "Wallet Service" {
+    class Wallet <<implemented>> {
+        +FreebetBalance : decimal
+        +DepositFreebet(amount: decimal) : void
+        +WithdrawFreebet(amount: decimal) : void
+    }
+
+    class ReferralCode <<planned, AggregateRoot>> {
+        +UserId : Guid
+        +Code : string
+        +UsageCount : int
+        +ReferralCode(userId: Guid, code: string)
+        +IncrementUsage() : void
+    }
+
+    class PromoCode <<planned, AggregateRoot>> {
+        +Code : string
+        +RewardAmount : decimal
+        +IsActive : bool
+        +PromoCode(code: string, reward: decimal)
+        +Deactivate() : void
+    }
+
+    class UserCodeUsage <<planned>> {
+        +UserId : Guid
+        +CodeId : Guid
+        +UsedAt : DateTime
+        +UserCodeUsage(userId: Guid, codeId: Guid)
+    }
+
+    interface IReferralRepository <<planned>> {
+        +GetByCodeAsync(code: string) : Task<ReferralCode?>
+        +GetByUserIdAsync(userId: Guid) : Task<ReferralCode?>
+        +AddAsync(code: ReferralCode) : Task
+        +UpdateAsync(code: ReferralCode) : Task
+    }
+
+    interface IPromoRepository <<planned>> {
+        +GetByCodeAsync(code: string) : Task<PromoCode?>
+        +GetAllAsync() : Task<IEnumerable<PromoCode>>
+        +AddAsync(code: PromoCode) : Task
+        +UpdateAsync(code: PromoCode) : Task
+    }
+
+    interface ICodeUsageRepository <<planned>> {
+        +HasUsedCodeAsync(userId: Guid, codeId: Guid) : Task<bool>
+        +HasUsedAnyReferralAsync(userId: Guid) : Task<bool>
+        +AddAsync(usage: UserCodeUsage) : Task
+    }
+
+    interface IReferralService <<planned>> {
+        +CreateCreatorCodeAsync(userId: Guid, code: string) : Task
+        +ApplyCodeAsync(userId: Guid, code: string) : Task
+        +GetCreatorStatusAsync(userId: Guid) : Task<ReferralStatusDto>
+    }
+
+    class ReferralService <<planned>> {
+        -_referralRepository : IReferralRepository
+        -_promoRepository : IPromoRepository
+        -_usageRepository : ICodeUsageRepository
+        -_walletService : IWalletService
+    }
+}
+
+package "Betting Service" {
+    class Ticket <<implemented>> {
+        +IsFreebet : bool
+    }
+}
+
+ReferralCode "1" -- "0..*" UserCodeUsage : tracked by
+PromoCode "1" -- "0..*" UserCodeUsage : tracked by
+Wallet "1" -- "0..1" ReferralCode : owns
+
+@enduml
