@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { customBetApi } from '../../api/axios';
+import { referralApi } from '../../api/referral';
 
 export interface CustomBetRequest {
   id: string;
@@ -11,8 +12,15 @@ export interface CustomBetRequest {
   adminNote?: string;
 }
 
+export interface PromoCode {
+  code: string;
+  rewardAmount: number;
+  isActive: boolean;
+}
+
 interface AdminState {
   pendingRequests: CustomBetRequest[];
+  promoCodes: PromoCode[];
   loading: boolean;
   error: string | null;
   stats: {
@@ -24,6 +32,7 @@ interface AdminState {
 
 const initialState: AdminState = {
   pendingRequests: [],
+  promoCodes: [],
   loading: false,
   error: null,
   stats: {
@@ -32,6 +41,46 @@ const initialState: AdminState = {
     revenue: 15420.50,
   }
 };
+
+export const fetchPromoCodesAsync = createAsyncThunk(
+  'admin/fetchPromoCodes',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await referralApi.getAllPromos();
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const createPromoCodeAsync = createAsyncThunk(
+  'admin/createPromoCode',
+  async ({ code, reward }: { code: string; reward: number }, { rejectWithValue }) => {
+    try {
+      await referralApi.createPromo(code, reward);
+      return { code, rewardAmount: reward, isActive: true };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const togglePromoCodeStatusAsync = createAsyncThunk(
+  'admin/togglePromoCodeStatus',
+  async ({ code, isActive }: { code: string; isActive: boolean }, { rejectWithValue }) => {
+    try {
+      if (isActive) {
+        await referralApi.deactivatePromo(code);
+      } else {
+        await referralApi.activatePromo(code);
+      }
+      return { code, isActive: !isActive };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 export const fetchPendingRequestsAsync = createAsyncThunk(
   'admin/fetchPendingRequests',
@@ -112,6 +161,18 @@ const adminSlice = createSlice({
       .addCase(submitCustomBetAsync.fulfilled, (state, action) => {
         // Add the newly created request to the pending list so it shows up in the dashboard
         state.pendingRequests.unshift(action.payload);
+      })
+      .addCase(fetchPromoCodesAsync.fulfilled, (state, action) => {
+        state.promoCodes = action.payload;
+      })
+      .addCase(createPromoCodeAsync.fulfilled, (state, action) => {
+        state.promoCodes.unshift(action.payload);
+      })
+      .addCase(togglePromoCodeStatusAsync.fulfilled, (state, action) => {
+        const promo = state.promoCodes.find(p => p.code === action.payload.code);
+        if (promo) {
+          promo.isActive = action.payload.isActive;
+        }
       });
   },
 });

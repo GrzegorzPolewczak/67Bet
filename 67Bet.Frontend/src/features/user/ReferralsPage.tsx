@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../app/store";
 import { ChevronLeft, Gift, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { referralApi } from "../../api/referral";
 
-const PromotionsPage: React.FC = () => {
+const ReferralsPage: React.FC = () => {
   const [referralStatus, setReferralStatus] = useState<any>(null);
   const [newCreatorCode, setNewCreatorCode] = useState("");
   const [applyCode, setApplyCode] = useState("");
@@ -30,10 +28,10 @@ const PromotionsPage: React.FC = () => {
     setLoading(true);
     try {
       await referralApi.createCode(newCreatorCode);
-      toast.success("Twój kod twórcy został utworzony!");
+      toast.success("Your creator code has been created!");
       fetchReferralStatus();
     } catch (error: any) {
-      toast.error(error.response?.data || "Błąd podczas tworzenia kodu");
+      toast.error(error.response?.data || "Error creating code");
     } finally {
       setLoading(false);
     }
@@ -48,7 +46,7 @@ const PromotionsPage: React.FC = () => {
       setApplyCode("");
       fetchReferralStatus();
     } catch (error: any) {
-      toast.error(error.response?.data || "Nieprawidłowy kod");
+      toast.error(error.response?.data || "Invalid code");
     } finally {
       setLoading(false);
     }
@@ -67,9 +65,9 @@ const PromotionsPage: React.FC = () => {
 
       <div>
         <h1 className="text-3xl font-black text-white flex items-center gap-3">
-          <Gift className="w-8 h-8 text-primary-500" /> Promocje i Bonusy
+          <Gift className="w-8 h-8 text-primary-500" /> Referrals & Rewards
         </h1>
-        <p className="text-gray-400 text-sm">Zgarnij dodatkowe środki na grę dzięki kodom poleceń i promocjom.</p>
+        <p className="text-gray-400 text-sm">Earn extra credits by sharing your code and using promotional coupons.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-8">
@@ -79,28 +77,28 @@ const PromotionsPage: React.FC = () => {
             {/* Creator Code */}
             <div className="bg-dark-900 p-6 rounded-2xl border border-dark-600 flex flex-col justify-between">
               <div>
-                <h3 className="text-lg font-bold text-white mb-2">Program Poleceń</h3>
-                <p className="text-xs text-gray-400 mb-6">Udostępnij swój kod znajomym. Gdy go użyją, obaj otrzymacie bonus!</p>
+                <h3 className="text-lg font-bold text-white mb-2">Affiliate Program</h3>
+                <p className="text-xs text-gray-400 mb-6">Share your unique code with friends. When they use it, you both get a bonus!</p>
                 
                 {referralStatus?.myCode ? (
                   <div className="bg-dark-800 p-4 rounded-xl border border-dashed border-primary-500/50 flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Twój Kod</p>
+                      <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Your Code</p>
                       <span className="text-2xl font-black text-primary-500 tracking-widest uppercase">{referralStatus.myCode}</span>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold">Poleconych</p>
+                      <p className="text-[10px] text-gray-500 uppercase font-bold">Referrals</p>
                       <p className="text-xl font-black text-white">{currentCount}</p>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-4 mb-6">
-                    <p className="text-sm font-bold text-gray-300">Utwórz swój własny kod:</p>
+                    <p className="text-sm font-bold text-gray-300">Create your custom code:</p>
                     <div className="flex gap-2">
                       <input
                         type="text"
                         maxLength={10}
-                        placeholder="np. TWOJ-NICK"
+                        placeholder="e.g. YOUR-NICK"
                         value={newCreatorCode}
                         onChange={(e) => setNewCreatorCode(e.target.value.toUpperCase())}
                         className="flex-1 bg-dark-800 border border-dark-600 rounded-xl py-3 px-4 text-white focus:border-primary-500 outline-none font-bold"
@@ -110,7 +108,7 @@ const PromotionsPage: React.FC = () => {
                         disabled={loading || !newCreatorCode}
                         className="bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white px-6 rounded-xl font-black text-xs uppercase transition-all active:scale-95"
                       >
-                        Utwórz
+                        Create
                       </button>
                     </div>
                   </div>
@@ -121,7 +119,7 @@ const PromotionsPage: React.FC = () => {
                 <div>
                   <div className="flex justify-between items-end mb-2">
                     <p className="text-xs font-bold text-gray-400 flex items-center gap-1">
-                      <Trophy className="w-3 h-3 text-yellow-500" /> Postęp do nagrody
+                      <Trophy className="w-3 h-3 text-yellow-500" /> Progress to next reward
                     </p>
                     <p className="text-xs font-black text-white">{currentCount} / {nextMilestone}</p>
                   </div>
@@ -142,13 +140,13 @@ const PromotionsPage: React.FC = () => {
 
             {/* Apply Code */}
             <div className="bg-dark-900 p-6 rounded-2xl border border-dark-600 flex flex-col">
-              <h3 className="text-lg font-bold text-white mb-2">Aktywuj Kod</h3>
-              <p className="text-xs text-gray-400 mb-8">Masz kod od znajomego lub kod promocyjny? Wpisz go tutaj, aby odebrać bonus.</p>
+              <h3 className="text-lg font-bold text-white mb-2">Activate Code</h3>
+              <p className="text-xs text-gray-400 mb-8">Have a friend's referral code or a promotional coupon? Enter it below to claim your bonus.</p>
               
               <div className="space-y-4">
                 <input
                   type="text"
-                  placeholder="KOD-PROMOCYJNY"
+                  placeholder="PROMO-CODE"
                   value={applyCode}
                   onChange={(e) => setApplyCode(e.target.value.toUpperCase())}
                   className="w-full bg-dark-800 border border-dark-600 rounded-xl py-4 px-4 text-white focus:border-primary-500 outline-none text-center font-black tracking-widest"
@@ -158,18 +156,18 @@ const PromotionsPage: React.FC = () => {
                   disabled={loading || !applyCode}
                   className="w-full bg-accent-success hover:bg-green-600 disabled:opacity-50 text-dark-900 py-4 rounded-xl font-black text-sm uppercase transition-all active:scale-95"
                 >
-                  Odbierz Bonus
+                  Claim Bonus
                 </button>
               </div>
               
               <div className="mt-auto pt-8">
                 <div className="bg-dark-800/50 p-4 rounded-xl border border-dark-700">
-                  <h4 className="text-xs font-bold text-gray-300 mb-1">Zasady:</h4>
+                  <h4 className="text-xs font-bold text-gray-300 mb-1">Rules:</h4>
                   <ul className="text-[10px] text-gray-500 space-y-1 list-disc pl-3">
-                    <li>Kody poleceń od znajomych działają tylko dla nowych kont.</li>
-                    <li>Możesz użyć tylko jednego kodu polecenia.</li>
-                    <li>Kody promocyjne mogą mieć datę ważności.</li>
-                    <li>Bonusy są przyznawane w formie Freebetów.</li>
+                    <li>Friend referral codes only work for new accounts.</li>
+                    <li>You can only use one referral code per account.</li>
+                    <li>Promotional codes may have an expiration date.</li>
+                    <li>Bonuses are credited as Freebets.</li>
                   </ul>
                 </div>
               </div>
@@ -183,22 +181,22 @@ const PromotionsPage: React.FC = () => {
             <div className="w-10 h-10 bg-primary-500/10 rounded-xl flex items-center justify-center mb-4">
               <Gift className="w-6 h-6 text-primary-500" />
             </div>
-            <h4 className="font-bold text-white mb-1">Darmowe Freebety</h4>
-            <p className="text-xs text-gray-400">Każde polecenie to 20 PLN Freebetu dla Ciebie i Twojego znajomego.</p>
+            <h4 className="font-bold text-white mb-1">Freebets</h4>
+            <p className="text-xs text-gray-400">Every referral grants a $20 Freebet for both you and your friend.</p>
           </div>
           <div className="bg-dark-800 border border-dark-700 p-6 rounded-3xl">
             <div className="w-10 h-10 bg-yellow-500/10 rounded-xl flex items-center justify-center mb-4">
               <Trophy className="w-6 h-6 text-yellow-500" />
             </div>
-            <h4 className="font-bold text-white mb-1">Kamienie Milowe</h4>
-            <p className="text-xs text-gray-400">Osiągaj progi poleceń (5, 15, 25...) i zgarniaj jeszcze większe nagrody!</p>
+            <h4 className="font-bold text-white mb-1">Milestones</h4>
+            <p className="text-xs text-gray-400">Reach referral thresholds (5, 15, 25...) to unlock even bigger rewards!</p>
           </div>
           <div className="bg-dark-800 border border-dark-700 p-6 rounded-3xl">
             <div className="w-10 h-10 bg-accent-success/10 rounded-xl flex items-center justify-center mb-4">
               <Gift className="w-6 h-6 text-accent-success" />
             </div>
-            <h4 className="font-bold text-white mb-1">Kody Promo</h4>
-            <p className="text-xs text-gray-400">Śledź nasze social media, aby nie przegapić limitowanych kodów promo.</p>
+            <h4 className="font-bold text-white mb-1">Promo Codes</h4>
+            <p className="text-xs text-gray-400">Follow our social media to never miss out on limited promotional codes.</p>
           </div>
         </div>
       </div>
@@ -206,4 +204,4 @@ const PromotionsPage: React.FC = () => {
   );
 };
 
-export default PromotionsPage;
+export default ReferralsPage;
