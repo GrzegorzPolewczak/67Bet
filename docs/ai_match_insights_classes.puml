@@ -1,0 +1,55 @@
+@startuml AI_Match_Insights_Classes
+!theme plain
+title Diagram Klas: AI Match Insights (Gemini Implementation)
+
+package "Betting.Domain" {
+    class AiMatchInsight {
+        +Guid EventId
+        +string Content
+        +AiMatchInsight(Guid eventId, string content)
+    }
+}
+
+package "Betting.Application" {
+    interface IAiAssistantService {
+        +Task<string> GetMatchInsightAsync(Guid eventId)
+    }
+
+    interface IGeminiClient {
+        +Task<string> GenerateTextAsync(string prompt)
+    }
+}
+
+package "Betting.Infrastructure" {
+    interface IAiMatchInsightRepository {
+        +Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId)
+        +Task AddAsync(AiMatchInsight insight)
+    }
+
+    class AiAssistantService {
+        -IAiMatchInsightRepository _repo
+        -IEventRepository _eventRepo
+        -IGeminiClient _geminiClient
+        +Task<string> GetMatchInsightAsync(Guid eventId)
+    }
+
+    class AiMatchInsightRepository {
+        -BettingDbContext _context
+        +Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId)
+        +Task AddAsync(AiMatchInsight insight)
+    }
+
+    class GeminiClient {
+        -string _apiKey
+        +Task<string> GenerateTextAsync(string prompt)
+    }
+}
+
+IAiAssistantService <|.. AiAssistantService
+IAiMatchInsightRepository <|.. AiMatchInsightRepository
+IGeminiClient <|.. GeminiClient
+
+AiAssistantService --> IAiMatchInsightRepository
+AiAssistantService --> IGeminiClient
+AiMatchInsightRepository --> AiMatchInsight
+@enduml

@@ -6,16 +6,39 @@ on:
   workflow_dispatch:
 env:
   AZURE_WEBAPP_NAME: '67bet-custombet-api'
-  WORKING_DIRECTORY: 'src/Services/CustomBet/67Bet.CustomBet.Api'
+  PROJECT_PATH: 'src/Services/CustomBet/67Bet.CustomBet.Api/67Bet.CustomBet.Api.csproj'
+  INFRA_PATH: 'src/Services/CustomBet/67Bet.CustomBet.Infrastructure'
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '10.0.x' }
-      - run: dotnet publish ${{ env.WORKING_DIRECTORY }} -c Release -o ./publish_output
-      - uses: azure/webapps-deploy@v3
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+      
+      - name: Build
+        run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+      
+      - name: Apply Migrations (Smart Check)
+        run: |
+          if [ -d "${{ env.INFRA_PATH }}/Migrations" ]; then
+            echo "Migrations directory found. Installing tools and updating database..."
+            dotnet tool install --global dotnet-ef
+            dotnet ef database update --project ${{ env.INFRA_PATH }} --startup-project ${{ env.PROJECT_PATH }}
+          else
+            echo "No Migrations directory found. Skipping database update."
+          fi
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_MYSQL_CONNECTION_STRING_CUSTOMBET }}
+
+      - name: Publish
+        run: dotnet publish ${{ env.PROJECT_PATH }} -c Release -o ./publish_output
+      
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_CUSTOMBET }}

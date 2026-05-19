@@ -324,6 +324,86 @@ package "Betting Service" {
         +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
     }
 
+    class AiMatchInsight <<implemented, AggregateRoot>> {
+        +EventId : Guid
+        +Content : string
+        +AiMatchInsight(eventId: Guid, content: string)
+    }
+
+    interface IAiMatchInsightRepository <<implemented>> {
+        +GetByEventIdAsync(eventId: Guid) : Task<AiMatchInsight?>
+        +AddAsync(insight: AiMatchInsight) : Task
+    }
+
+    interface IAiAssistantService <<implemented>> {
+        +GetMatchInsightAsync(eventId: Guid) : Task<string>
+    }
+
+    class AiMatchInsightRepository <<implemented>> {
+        -_context : BettingDbContext
+        +GetByEventIdAsync(eventId: Guid) : Task<AiMatchInsight?>
+        +AddAsync(insight: AiMatchInsight) : Task
+    }
+
+    class AiAssistantService <<implemented>> {
+        -_insightRepository : IAiMatchInsightRepository
+        -_eventRepository : IEventRepository
+        -_geminiClient : IGeminiClient
+        +GetMatchInsightAsync(eventId: Guid) : Task<string>
+    }
+
+    interface IGeminiClient <<planned>> {
+        +GenerateTextAsync(prompt: string) : Task<string>
+    class VirtualRace <<implemented, AggregateRoot>> {
+        +Name : string
+        +StartTime : DateTime
+        +IsFinished : bool
+        +WinningHorseId : Guid?
+        +VirtualRace(name: string, startTime: DateTime)
+        +FinishRace(winningHorseId: Guid) : void
+    }
+
+    class Horse <<implemented, AggregateRoot>> {
+        +Name : string
+        +SkillLevel : int
+        +Horse(name: string, skillLevel: int)
+    }
+
+    class VirtualRaceParticipant <<implemented>> {
+        +RaceId : Guid
+        +HorseId : Guid
+        +Odds : decimal
+        +VirtualRaceParticipant(raceId: Guid, horseId: Guid, odds: decimal)
+    }
+
+    interface IVirtualRaceRepository <<implemented>> {
+        +GetActiveRacesAsync() : Task<IEnumerable<VirtualRace>>
+        +GetByIdAsync(id: Guid) : Task<VirtualRace?>
+        +AddAsync(race: VirtualRace) : Task
+        +UpdateAsync(race: VirtualRace) : Task
+    }
+
+    interface IHorseRepository <<implemented>> {
+        +GetAllAsync() : Task<IEnumerable<Horse>>
+        +GetByIdAsync(id: Guid) : Task<Horse?>
+        +AddAsync(horse: Horse) : Task
+    }
+
+    interface IVirtualRacingService <<implemented>> {
+        +GenerateRaceAsync() : Task<VirtualRace>
+        +SimulateRaceAsync(raceId: Guid) : Task<Guid>
+        +GetActiveRacesAsync() : Task<IEnumerable<VirtualRace>>
+    }
+
+    class VirtualRacingService <<implemented>> {
+        -_raceRepository : IVirtualRaceRepository
+        -_horseRepository : IHorseRepository
+        -_bettingService : IBettingService
+        +GenerateRaceAsync() : Task<VirtualRace>
+        +SimulateRaceAsync(raceId: Guid) : Task<Guid>
+        +GetActiveRacesAsync() : Task<IEnumerable<VirtualRace>>
+    }
+
     class BettingDbContext <<implemented>> {
         +Sports : DbSet<Sport>
         +Events : DbSet<Event>
@@ -331,9 +411,21 @@ package "Betting Service" {
         +Outcomes : DbSet<Outcome>
         +Tickets : DbSet<Ticket>
         +Bets : DbSet<Bet>
+        +AiMatchInsights : DbSet<AiMatchInsight>
+        +VirtualRaces : DbSet<VirtualRace>
+        +Horses : DbSet<Horse>
+        +VirtualRaceParticipants : DbSet<VirtualRaceParticipant>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }
+
+' Relacje dla AI Match Insights
+Event "1" -- "0..1" AiMatchInsight : EventId
+AiMatchInsightRepository ..|> IAiMatchInsightRepository
+AiAssistantService ..|> IAiAssistantService
+AiAssistantService --> IAiMatchInsightRepository : uses
+AiAssistantService --> IGeminiClient : uses
+
 
 package "Odds Service" {
     interface IOddsService <<implemented>> {
@@ -346,6 +438,39 @@ package "Odds Service" {
         +CalculateOddsAsync(probability: decimal) : Task<decimal>
         +UpdateMarketOddsAsync(marketId: Guid) : Task
         +GetLiveProbabilityAsync(eventId: Guid, contextJson: string) : Task<decimal>
+    }
+
+    ' Rozszerzenie o integracje z API
+    class ExternalEvent <<planned, AggregateRoot>> {
+        +ExternalId : string
+        +SportKey : string
+        +Name : string
+        +StartTime : DateTime
+    }
+
+    class ExternalMarket <<planned>> {
+        +ExternalEventId : Guid
+        +Name : string
+    }
+
+    class ExternalOutcome <<planned>> {
+        +ExternalMarketId : Guid
+        +Name : string
+        +Price : decimal
+    }
+
+    interface ITheOddsApiClient <<planned>> {
+        +GetUpcomingEventsAsync(sport: string) : Task<IEnumerable<ExternalEventDto>>
+    }
+
+    interface IOddsIntegrationService <<planned>> {
+        +SyncExternalOddsAsync() : Task<SyncResult>
+    }
+
+    class OddsIntegrationService <<planned>> {
+        -_apiClient : ITheOddsApiClient
+        -_eventRepository : IExternalEventRepository
+        +SyncExternalOddsAsync() : Task<SyncResult>
     }
 }
 

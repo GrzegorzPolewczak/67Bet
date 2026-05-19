@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,31 +7,30 @@ using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Repositories;
 using _67Bet.Betting.Domain.Enums;
 using _67Bet.Wallet.Application.Interfaces;
+using _67Bet.Betting.Domain.Entities.VirtualRacing;
 
 namespace _67Bet.Betting.Application.Services;
 
-/*
- * Serwis BettingService implementuje logikę biznesową modułu zakładów.
- * Odpowiada za weryfikację kursów, tworzenie kuponów (w tym AKO) oraz proces rozliczania zdarzeń.
- * Zintegrowany z WalletService w celu automatycznej obsługi stawek i wygranych.
- */
 public class BettingService : IBettingService
 {
     private readonly IEventRepository _eventRepository;
     private readonly IMarketRepository _marketRepository;
     private readonly ITicketRepository _ticketRepository;
     private readonly IWalletService _walletService;
+    private readonly IVirtualRaceRepository _virtualRaceRepository;
 
     public BettingService(
         IEventRepository eventRepository,
         IMarketRepository marketRepository,
         ITicketRepository ticketRepository,
-        IWalletService walletService)
+        IWalletService walletService,
+        IVirtualRaceRepository virtualRaceRepository)
     {
         _eventRepository = eventRepository;
         _marketRepository = marketRepository;
         _ticketRepository = ticketRepository;
         _walletService = walletService;
+        _virtualRaceRepository = virtualRaceRepository;
     }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
@@ -47,14 +46,12 @@ public class BettingService : IBettingService
         if (outcomeIds == null || !outcomeIds.Any())
             throw new ArgumentException("Kupon musi zawierać przynajmniej jeden zakład.");
 
-        // 1. Sprawdzenie i pobranie środków z portfela
         var stakeProcessed = await _walletService.ProcessStakeAsync(userId, stake);
         if (!stakeProcessed)
             throw new InvalidOperationException("Niewystarczające środki na koncie użytkownika.");
 
         var ticket = new Ticket(userId, stake);
 
-        // 2. Pobranie kursów i walidacja typów
         foreach (var outcomeId in outcomeIds)
         {
             var events = await _eventRepository.GetActiveEventsAsync();
@@ -77,14 +74,35 @@ public class BettingService : IBettingService
                 if (foundOutcome != null) break;
             }
 
-            if (foundOutcome == null)
+            if (foundOutcome != null)
             {
-                // W przypadku błędu należałoby zwrócić środki (uproszczenie: throw exception)
-                await _walletService.ProcessPayoutAsync(userId, stake);
-                throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku o ID: {outcomeId}");
+                ticket.AddBet(foundOutcome.Id, foundOutcome.CurrentPrice);
             }
+            else
+            {
+                var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
+                VirtualRaceParticipant? foundVirtualParticipant = null;
+                
+                foreach (var race in virtualRaces)
+                {
+                    var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
+                    if (participant != null)
+                    {
+                        foundVirtualParticipant = participant;
+                        break;
+                    }
+                }
 
-            ticket.AddBet(foundOutcome.Id, foundOutcome.CurrentPrice);
+                if (foundVirtualParticipant != null)
+                {
+                    ticket.AddBet(foundVirtualParticipant.Id, foundVirtualParticipant.Odds);
+                }
+                else
+                {
+                    await _walletService.ProcessPayoutAsync(userId, stake);
+                    throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
+                }
+            }
         }
 
         await _ticketRepository.AddAsync(ticket);
@@ -96,7 +114,6 @@ public class BettingService : IBettingService
         var @event = await _eventRepository.GetByIdAsync(eventId);
         if (@event == null) throw new InvalidOperationException("Wydarzenie nie istnieje.");
 
-        // 1. Aktualizacja statusu wydarzenia i wyników
         @event.UpdateStatus(EventStatus.Finished);
         await _eventRepository.UpdateAsync(@event);
 
@@ -110,13 +127,10 @@ public class BettingService : IBettingService
             }
         }
         
-        // 2. Logika Settlement Engine - Rozliczanie kuponów
-        // Pobieramy wszystkie kupony, które zawierają to wydarzenie (uproszczenie: wszystkie aktywne)
         var tickets = await _ticketRepository.GetActiveTicketsAsync();
         
         foreach (var ticket in tickets)
         {
-            // Sprawdzamy tylko te kupony, które mają typy z tego wydarzenia
             bool ticketHasThisEvent = false;
             foreach (var bet in ticket.Bets)
             {
@@ -130,7 +144,6 @@ public class BettingService : IBettingService
 
             if (!ticketHasThisEvent) continue;
 
-            // Logika AKO: Kupon jest wygrany tylko jeśli WSZYSTKIE typy są wygrane
             bool isLost = false;
             bool allSettled = true;
 
@@ -159,7 +172,6 @@ public class BettingService : IBettingService
                 ticket.Settle(TicketStatus.Won);
                 await _ticketRepository.UpdateAsync(ticket);
                 
-                // Automatyczna wypłata wygranej
                 await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
             }
         }
@@ -167,8 +179,7 @@ public class BettingService : IBettingService
 
     private async Task<OutcomeResult> GetOutcomeStatusAsync(Guid outcomeId)
     {
-        // Symulacja sprawdzania statusu wyniku
-        return OutcomeResult.Won; // Placeholder
+        return OutcomeResult.Won;
     }
 
     public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId)

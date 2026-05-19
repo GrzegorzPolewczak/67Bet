@@ -4,6 +4,7 @@
  */
 using Microsoft.EntityFrameworkCore;
 using _67Bet.Betting.Domain.Entities;
+using _67Bet.Betting.Domain.Entities.VirtualRacing;
 
 namespace _67Bet.Betting.Infrastructure.Persistence;
 
@@ -15,11 +16,25 @@ public class BettingDbContext : DbContext
     public DbSet<Outcome> Outcomes => Set<Outcome>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Bet> Bets => Set<Bet>();
+    public DbSet<AiMatchInsight> AiMatchInsights => Set<AiMatchInsight>();
+    
+    // Virtual Racing
+    public DbSet<VirtualRace> VirtualRaces => Set<VirtualRace>();
+    public DbSet<Horse> Horses => Set<Horse>();
+    public DbSet<VirtualRaceParticipant> VirtualRaceParticipants => Set<VirtualRaceParticipant>();
 
     public BettingDbContext(DbContextOptions<BettingDbContext> options) : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AiMatchInsight>(builder =>
+        {
+            builder.HasKey(a => a.Id);
+            builder.Property(a => a.EventId).IsRequired();
+            builder.Property(a => a.Content).IsRequired().HasColumnType("longtext");
+            builder.HasIndex(a => a.EventId).IsUnique();
+        });
+
         modelBuilder.Entity<Sport>(builder =>
         {
             builder.HasKey(s => s.Id);
@@ -62,6 +77,33 @@ public class BettingDbContext : DbContext
         {
             builder.HasKey(b => b.Id);
             builder.Property(b => b.FixedPrice).HasColumnType("decimal(18,2)");
+        });
+
+        // Virtual Racing Configurations
+        modelBuilder.Entity<VirtualRace>(builder =>
+        {
+            builder.HasKey(r => r.Id);
+            builder.Property(r => r.Name).IsRequired().HasMaxLength(255);
+            builder.HasMany(r => r.Participants)
+                   .WithOne(p => p.Race)
+                   .HasForeignKey(p => p.RaceId)
+                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Horse>(builder =>
+        {
+            builder.HasKey(h => h.Id);
+            builder.Property(h => h.Name).IsRequired().HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<VirtualRaceParticipant>(builder =>
+        {
+            builder.HasKey(p => p.Id);
+            builder.Property(p => p.Odds).HasColumnType("decimal(18,2)");
+            builder.HasOne(p => p.Horse)
+                   .WithMany()
+                   .HasForeignKey(p => p.HorseId)
+                   .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

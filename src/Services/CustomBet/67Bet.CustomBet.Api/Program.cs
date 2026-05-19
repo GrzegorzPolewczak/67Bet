@@ -97,7 +97,7 @@ app.UseSwaggerUI(c => {
     c.RoutePrefix = string.Empty;
 });
 
-// app.UseHttpsRedirection(); // Commented for local HTTP debugging
+// // app.UseHttpsRedirection(); // Commented for local HTTP debugging
 
 app.UseCors("AllowAll");
 

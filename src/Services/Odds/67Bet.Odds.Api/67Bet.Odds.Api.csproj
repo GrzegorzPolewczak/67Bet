@@ -9,11 +9,16 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\67Bet.Odds.Application\67Bet.Odds.Application.csproj" />
+    <ProjectReference Include="..\67Bet.Odds.Infrastructure\67Bet.Odds.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

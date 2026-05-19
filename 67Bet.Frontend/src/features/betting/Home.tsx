@@ -71,6 +71,30 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Virtual Racing Banner */}
+      <Link to="/virtual-racing" className="block relative h-32 rounded-2xl overflow-hidden group cursor-pointer border border-purple-500/30 hover:border-purple-500 transition-colors">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-900/90 to-dark-800/80 z-10" />
+        <div className="absolute -right-10 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-40 transition-opacity">
+          <svg width="200" height="200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+            <line x1="4" y1="22" x2="4" y2="15"></line>
+          </svg>
+        </div>
+        <div className="relative z-20 h-full flex items-center justify-between px-8">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-purple-500/30">
+              <Zap className="w-3 h-3" />
+              New Feature
+            </div>
+            <h2 className="text-2xl font-black text-white italic">VIRTUAL HORSE RACING</h2>
+            <p className="text-sm text-gray-400 font-medium">Bet on AI-simulated races 24/7. Instant results!</p>
+          </div>
+          <div className="hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-purple-600 group-hover:bg-purple-500 transition-colors text-white transform group-hover:translate-x-2">
+            <ChevronRight className="w-6 h-6" />
+          </div>
+        </div>
+      </Link>
+
       {/* Featured Matches */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
@@ -126,15 +150,19 @@ const Home: React.FC = () => {
                           onClick={() => {
                             const market = event.markets[0];
                             if (market && outcome?.id) {
-                              dispatch(addSelection({
-                                eventId: event.id,
-                                eventName: event.name || 'Unknown Event',
-                                marketId: market.id,
-                                marketName: market.name || 'Unknown Market',
-                                outcomeId: outcome.id,
-                                outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : 'Draw',
-                                odd: outcome.odd || 0
-                              }));
+                              if (isSelected(outcome.id)) {
+                                dispatch(removeSelection(outcome.id));
+                              } else {
+                                dispatch(addSelection({
+                                  eventId: event.id,
+                                  eventName: event.name || 'Unknown Event',
+                                  marketId: market.id,
+                                  marketName: market.name || 'Unknown Market',
+                                  outcomeId: outcome.id,
+                                  outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : outcome.name,
+                                  odd: outcome.odd || 0
+                                }));
+                              }
                             }
                           }}
                         />

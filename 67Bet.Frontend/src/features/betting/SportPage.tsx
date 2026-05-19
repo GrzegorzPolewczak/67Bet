@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { addSelection } from '../betslip/betslipSlice';
+import { addSelection, removeSelection } from '../betslip/betslipSlice';
 import { fetchEventsAsync } from './bettingSlice';
 import type { RootState, AppDispatch } from '../../app/store';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,12 +27,25 @@ const SportPage: React.FC = () => {
     const safeSportName = sportName?.toLowerCase() || '';
     const safeLeague = e.league?.toLowerCase() || '';
     const safeName = e.name?.toLowerCase() || '';
+    const safeSportKey = (e as any).sportKey?.toLowerCase() || '';
 
-    if (safeSportName === 'popular' || safeSportName === 'live') return true;
+    if (safeSportName === 'popular') return true;
+    
+    // Live: Wydarzenia trwające lub zaczynające się za mniej niż 2 godziny
+    if (safeSportName === 'live') {
+      const eventTime = new Date((e as any).rawTime).getTime();
+      const now = Date.now();
+      return eventTime <= now + 2 * 60 * 60 * 1000;
+    }
+    
+    // Exact mapping based on sportKey
+    if (safeSportName === 'football' && safeSportKey.includes('soccer')) return true;
+    if (safeSportName === 'basketball' && safeSportKey.includes('basketball')) return true;
+    if (safeSportName === 'esports' && safeSportKey.includes('esports')) return true;
+    if (safeSportName === 'mma' && safeSportKey.includes('mma')) return true;
+
+    // Fallback for custom search/clicks
     if (safeLeague.includes(safeSportName) || safeName.includes(safeSportName)) return true;
-    if (safeSportName === 'football' && (safeLeague === 'la liga' || safeLeague === 'premier league' || safeLeague === 'bundesliga')) return true;
-    if (safeSportName === 'basketball' && safeLeague === 'nba') return true;
-    if (safeSportName === 'mma' && safeLeague.startsWith('ufc')) return true;
 
     return false;
   }) : [];
@@ -90,7 +103,9 @@ const SportPage: React.FC = () => {
                         {event.time || 'Scheduled'}
                       </div>
                     </div>
-                    <h3 className="text-lg font-bold text-white">{event.name}</h3>
+                    <Link to={`/match/${event.id}`}>
+                      <h3 className="text-lg font-bold text-white hover:text-primary-500 cursor-pointer transition-colors">{event.name}</h3>
+                    </Link>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -104,15 +119,19 @@ const SportPage: React.FC = () => {
                           onClick={() => {
                             const market = event.markets[0];
                             if (market && outcome?.id) {
-                              dispatch(addSelection({
-                                eventId: event.id,
-                                eventName: event.name || 'Unknown Event',
-                                marketId: market.id,
-                                marketName: market.name || 'Unknown Market',
-                                outcomeId: outcome.id,
-                                outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : 'Draw',
-                                odd: outcome.odd || 0
-                              }));
+                              if (isSelected(outcome.id)) {
+                                dispatch(removeSelection(outcome.id));
+                              } else {
+                                dispatch(addSelection({
+                                  eventId: event.id,
+                                  eventName: event.name || 'Unknown Event',
+                                  marketId: market.id,
+                                  marketName: market.name || 'Unknown Market',
+                                  outcomeId: outcome.id,
+                                  outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : 'Draw',
+                                  odd: outcome.odd || 0
+                                }));
+                              }
                             }
                           }}
                         />

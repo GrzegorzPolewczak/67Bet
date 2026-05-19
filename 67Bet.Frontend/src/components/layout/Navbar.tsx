@@ -95,11 +95,27 @@ const Navbar: React.FC = () => {
       <div className="flex items-center gap-6">
         {isAuthenticated ? (
           <>
-            <div className="flex flex-col items-end">
-              <span className="text-xs text-gray-400 font-medium">Balance</span>
-              <div className="flex items-center gap-2 text-accent-success font-bold">
-                <Wallet className="w-4 h-4" />
-                <span>${(balance || 0).toFixed(2)}</span>
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-gray-400 font-medium">Balance</span>
+                <div className="flex items-center gap-2 text-accent-success font-bold">
+                  <Wallet className="w-4 h-4" />
+                  <span>{Number(balance || 0).toFixed(2)} PLN</span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Link 
+                  to="/deposit" 
+                  className="bg-accent-success hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition-all transform hover:scale-105 active:scale-95 text-center"
+                >
+                  DEPOSIT
+                </Link>
+                <Link 
+                  to="/withdraw" 
+                  className="bg-dark-600 hover:bg-dark-500 text-gray-200 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all transform hover:scale-105 active:scale-95 text-center border border-dark-500"
+                >
+                  WITHDRAW
+                </Link>
               </div>
             </div>
             
