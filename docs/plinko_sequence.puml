@@ -1,0 +1,25 @@
+@startuml
+actor User
+participant "plinko.html" as Frontend
+participant "PlinkoController" as PlinkoController
+participant "PlinkoService" as PlinkoService
+participant "InMemoryPlinkoRoundRepository" as Repository
+participant "PlinkoWalletController" as WalletController
+participant "WalletService" as WalletService
+
+User -> Frontend: wybiera stawke, ryzyko i liczbe rzedow
+Frontend -> PlinkoController: POST /api/Plinko/play
+PlinkoController -> PlinkoService: PlayAsync(userId, request, token)
+PlinkoService -> WalletController: POST /api/PlinkoWallet/process-stake
+WalletController -> WalletService: ProcessStakeAsync(userId, amount)
+WalletService --> WalletController: true
+WalletController --> PlinkoService: 204 No Content
+PlinkoService -> PlinkoService: losuje sciezke i oblicza mnoznik
+PlinkoService -> WalletController: POST /api/PlinkoWallet/process-payout
+WalletController -> WalletService: ProcessPayoutAsync(userId, payout)
+WalletController --> PlinkoService: 204 No Content
+PlinkoService -> Repository: AddAsync(round)
+PlinkoService --> PlinkoController: PlinkoRoundDto
+PlinkoController --> Frontend: wynik rundy
+Frontend --> User: pokazuje slot, mnoznik i wyplate
+@enduml
