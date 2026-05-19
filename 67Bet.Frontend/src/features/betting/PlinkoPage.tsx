@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CircleDot, Coins, RefreshCw, Trophy, Zap, AlertCircle, SlidersHorizontal } from 'lucide-react';
+import type { RootState } from '../../app/store';
 import { bettingApi, walletApi } from '../../api/axios';
 
 type RiskLevel = 'Low' | 'Medium' | 'High';
@@ -40,6 +42,39 @@ const calculateBoardFee = (stake: number, balls: number, rows: number) => {
   const missingRows = Math.max(0, 16 - rows);
   const feeRate = missingRows * 0.08;
   return Math.round(stake * balls * feeRate * 100) / 100;
+};
+
+const createMultipliers = (riskLevel: RiskLevel, rows: number) => {
+  const edge = riskLevel === 'Low' ? 3.2 : riskLevel === 'High' ? 70 : 12;
+  const center = riskLevel === 'Low' ? 0.72 : riskLevel === 'High' ? 0 : 0.28;
+  const houseEdge = riskLevel === 'Low' ? 0.92 : riskLevel === 'High' ? 0.78 : 0.86;
+  const curvePower = riskLevel === 'Low' ? 2 : riskLevel === 'High' ? 3.1 : 2.45;
+
+  return Array.from({ length: rows + 1 }, (_, slot) => {
+    const distanceFromCenter = Math.abs(slot - rows / 2) / (rows / 2);
+    const rawValue = center + (edge - center) * Math.pow(distanceFromCenter, curvePower);
+    return Math.round(rawValue * houseEdge * 100) / 100;
+  });
+};
+
+const createDemoRound = (stake: number, riskLevel: RiskLevel, rows: number, batchId: string): PlinkoRound => {
+  const path = Array.from({ length: rows }, () => (Math.random() < 0.5 ? 'L' : 'R')).join('');
+  const landingSlot = [...path].filter(move => move === 'R').length;
+  const multiplier = createMultipliers(riskLevel, rows)[landingSlot];
+  const payout = Math.round(stake * multiplier * 100) / 100;
+
+  return {
+    id: crypto.randomUUID(),
+    batchId,
+    stake,
+    riskLevel,
+    rows,
+    landingSlot,
+    multiplier,
+    payout,
+    path,
+    createdAt: new Date()
+  };
 };
 
 const getSlotClassName = (index: number, totalSlots: number, multiplier: number, isHit: boolean) => {
@@ -102,6 +137,8 @@ const createBallAnimation = (round: PlinkoRound) => {
 };
 
 const PlinkoPage: React.FC = () => {
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const isDemoMode = !isAuthenticated;
   const [stake, setStake] = useState(10);
   const [ballCount, setBallCount] = useState(1);
   const [riskLevel, setRiskLevel] = useState<RiskLevel>('Medium');
@@ -124,14 +161,22 @@ const PlinkoPage: React.FC = () => {
   const boardFeePerBall = Math.round((boardFee / ballCount) * 100) / 100;
 
   useEffect(() => {
+    if (isDemoMode) {
+      setBalance(1000);
+      setError(null);
+      return;
+    }
+
     fetchWalletBalance();
-  }, []);
+  }, [isDemoMode]);
 
   useEffect(() => {
     fetchBoard();
-  }, [riskLevel, rows]);
+  }, [riskLevel, rows, isDemoMode]);
 
   const fetchWalletBalance = async () => {
+    if (isDemoMode) return;
+
     try {
       const response = await walletApi.get('/wallet/balance');
       setBalance(Number(response.data.balance || response.data.Balance || 0));
@@ -141,6 +186,12 @@ const PlinkoPage: React.FC = () => {
   };
 
   const fetchBoard = async () => {
+    if (isDemoMode) {
+      setMultipliers(createMultipliers(riskLevel, rows));
+      setError(null);
+      return;
+    }
+
     try {
       const response = await bettingApi.get('/plinko/board', {
         params: { riskLevel: riskApiValue[riskLevel], rows }
@@ -180,6 +231,27 @@ const PlinkoPage: React.FC = () => {
     const batchId = crypto.randomUUID();
 
     try {
+      if (isDemoMode) {
+        if (totalCost > balance) {
+          setError('Demo balance is too low for this batch.');
+          return;
+        }
+
+        const rounds = Array.from({ length: ballCount }, () => createDemoRound(stake, riskLevel, rows, batchId));
+
+        setBalance(current => Math.round((current - totalCost) * 100) / 100);
+        setActiveBatch({
+          id: batchId,
+          balls: ballCount,
+          completed: 0,
+          totalStake,
+          boardFee,
+          totalPayout: 0
+        });
+        setPendingRounds(current => [...current, ...rounds]);
+        return;
+      }
+
       const rounds = await Promise.all(
         Array.from({ length: ballCount }, () =>
           bettingApi.post('/plinko/play', {
@@ -228,7 +300,11 @@ const PlinkoPage: React.FC = () => {
         };
       });
       setHistory(current => [round, ...current].slice(0, 8));
-      fetchWalletBalance();
+      if (isDemoMode) {
+        setBalance(current => Math.round((current + round.payout) * 100) / 100);
+      } else {
+        fetchWalletBalance();
+      }
     }, delayMs + dropDurationMs);
   };
 
@@ -258,14 +334,18 @@ const PlinkoPage: React.FC = () => {
             <h1 className="text-3xl md:text-4xl font-black text-white italic tracking-tight">PLINKO</h1>
           </div>
           <p className="text-gray-400 text-base">
-            Drop the ball through the board, hit a multiplier and collect the payout from your wallet.
+            {isDemoMode
+              ? 'Try Plinko without logging in using a demo balance. Real wallet payouts are enabled after login.'
+              : 'Drop the ball through the board, hit a multiplier and collect the payout from your wallet.'}
           </p>
         </div>
 
         <div className="flex items-center gap-4 bg-dark-900 px-6 py-4 rounded-2xl border border-dark-700">
           <Coins className="w-6 h-6 text-accent-success" />
           <div>
-            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">Wallet Balance</p>
+            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+              {isDemoMode ? 'Demo Balance' : 'Wallet Balance'}
+            </p>
             <p className="text-xl font-black text-white">{balance.toFixed(2)} PLN</p>
           </div>
         </div>
@@ -367,12 +447,12 @@ const PlinkoPage: React.FC = () => {
               {isBuying ? (
                 <>
                   <RefreshCw className="w-6 h-6 animate-spin" />
-                  Buying...
+                  {isDemoMode ? 'Preparing...' : 'Buying...'}
                 </>
               ) : (
                 <>
                   <Zap className="w-6 h-6 group-hover:scale-125 transition-transform" />
-                  Buy Balls
+                  {isDemoMode ? 'Get Demo Balls' : 'Buy Balls'}
                 </>
               )}
             </div>
@@ -475,7 +555,7 @@ const PlinkoPage: React.FC = () => {
               <p className="text-gray-400 text-sm mt-1">{riskLevel} risk / {rows} rows</p>
             </div>
             <div className="px-4 py-2 rounded-lg bg-cyan-500/10 text-cyan-400 text-xs uppercase tracking-widest font-black border border-cyan-500/20 relative z-10">
-              API Mode
+              {isDemoMode ? 'Demo Mode' : 'API Mode'}
             </div>
           </div>
 
