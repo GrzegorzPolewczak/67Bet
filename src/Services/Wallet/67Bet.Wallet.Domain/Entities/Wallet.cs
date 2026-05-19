@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using _67Bet.Shared.Kernel;
 
 namespace _67Bet.Wallet.Domain.Enums
@@ -8,7 +8,8 @@ namespace _67Bet.Wallet.Domain.Enums
         Deposit,
         Withdrawal,
         Stake,
-        Payout
+        Payout,
+        FreebetDeposit
     }
 
     public enum TransactionStatus
@@ -27,6 +28,7 @@ namespace _67Bet.Wallet.Domain.Entities
     {
         public Guid UserId { get; private set; }
         public decimal Balance { get; private set; }
+        public decimal FreebetBalance { get; private set; }
         public string Currency { get; private set; } = null!;
         public int Version { get; private set; } // Optimistic Locking
 
@@ -35,6 +37,7 @@ namespace _67Bet.Wallet.Domain.Entities
             UserId = userId;
             Currency = currency;
             Balance = 0;
+            FreebetBalance = 0;
             Version = 1;
         }
 
@@ -50,6 +53,21 @@ namespace _67Bet.Wallet.Domain.Entities
             if (amount <= 0) throw new ArgumentException("Amount must be positive.");
             if (Balance < amount) throw new InvalidOperationException("Insufficient funds.");
             Balance -= amount;
+            Version++;
+        }
+
+        public void DepositFreebet(decimal amount)
+        {
+            if (amount <= 0) throw new ArgumentException("Amount must be positive.");
+            FreebetBalance += amount;
+            Version++;
+        }
+
+        public void WithdrawFreebet(decimal amount)
+        {
+            if (amount <= 0) throw new ArgumentException("Amount must be positive.");
+            if (FreebetBalance < amount) throw new InvalidOperationException("Insufficient freebet funds.");
+            FreebetBalance -= amount;
             Version++;
         }
 

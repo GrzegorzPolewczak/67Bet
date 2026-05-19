@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Wallet, Menu, Search, Bell, LogOut } from 'lucide-react';
-import { useSelector, useDispatch } from 'react-redux';
-import type { RootState, AppDispatch } from '../../app/store';
-import { toggleBetslip } from '../../features/betslip/betslipSlice';
-import { logout } from '../../features/auth/authSlice';
-import { fetchBalanceAsync } from '../../features/wallet/walletSlice';
-import { motion, AnimatePresence } from 'framer-motion';
+﻿import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Wallet, Menu, Search, Bell, LogOut, Gift } from "lucide-react";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "../../app/store";
+import { toggleBetslip } from "../../features/betslip/betslipSlice";
+import { logout } from "../../features/auth/authSlice";
+import { fetchBalanceAsync } from "../../features/wallet/walletSlice";
+import { motion } from "framer-motion";
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const { balance } = useSelector((state: RootState) => state.wallet);
+  const { balance, freebetBalance } = useSelector((state: RootState) => state.wallet);
   const betSelectionsCount = useSelector((state: RootState) => state.betslip.selections.length);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
 
@@ -24,32 +24,32 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
-    <nav className="bg-dark-800 border-b border-dark-700 h-16 flex items-center justify-between px-6 z-50">
+    <nav className="bg-dark-800 border-b border-dark-700 h-16 flex items-center justify-between px-6 z-50">     
       <div className="flex items-center gap-4">
         <Menu className="text-gray-400 cursor-pointer lg:hidden" />
-        <Link 
-          to="/" 
-          className="text-3xl font-black text-primary-500 tracking-tighter italic flex items-center group"
+        <Link
+          to="/"
+          className="text-3xl font-black text-primary-500 tracking-tighter italic flex items-center group"      
           onMouseEnter={() => setIsLogoHovered(true)}
           onMouseLeave={() => setIsLogoHovered(false)}
         >
           <div className="flex items-center">
             <motion.span
-              animate={isLogoHovered ? { 
-                y: [-8, 8, -8], 
-                rotate: [-5, 5, -5] 
+              animate={isLogoHovered ? {
+                y: [-8, 8, -8],
+                rotate: [-5, 5, -5]
               } : { y: 0, rotate: 0 }}
-              transition={isLogoHovered ? { 
-                duration: 0.6, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              } : { 
-                type: "spring", 
-                stiffness: 200, 
+              transition={isLogoHovered ? {
+                duration: 0.6,
+                repeat: Infinity,
+                ease: "easeInOut"
+              } : {
+                type: "spring",
+                stiffness: 200,
                 damping: 25,
                 mass: 1.2
               }}
@@ -58,17 +58,17 @@ const Navbar: React.FC = () => {
               6
             </motion.span>
             <motion.span
-              animate={isLogoHovered ? { 
-                y: [8, -8, 8], 
-                rotate: [5, -5, 5] 
+              animate={isLogoHovered ? {
+                y: [8, -8, 8],
+                rotate: [5, -5, 5]
               } : { y: 0, rotate: 0 }}
-              transition={isLogoHovered ? { 
-                duration: 0.6, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              } : { 
-                type: "spring", 
-                stiffness: 200, 
+              transition={isLogoHovered ? {
+                duration: 0.6,
+                repeat: Infinity,
+                ease: "easeInOut"
+              } : {
+                type: "spring",
+                stiffness: 200,
                 damping: 25,
                 mass: 1.2
               }}
@@ -97,38 +97,46 @@ const Navbar: React.FC = () => {
           <>
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-end">
-                <span className="text-xs text-gray-400 font-medium">Balance</span>
-                <div className="flex items-center gap-2 text-accent-success font-bold">
-                  <Wallet className="w-4 h-4" />
-                  <span>{Number(balance || 0).toFixed(2)} PLN</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Saldo</span>
+                <div className="flex flex-col items-end gap-0.5">
+                  <div className="flex items-center gap-1.5 text-accent-success font-black text-sm">
+                    <Wallet className="w-3.5 h-3.5" />
+                    <span>{Number(balance || 0).toFixed(2)} PLN</span>
+                  </div>
+                  {freebetBalance > 0 && (
+                    <div className="flex items-center gap-1 text-primary-400 font-bold text-[10px] bg-primary-500/10 px-1.5 rounded-full border border-primary-500/20">
+                      <Gift className="w-2.5 h-2.5" />
+                      <span>{Number(freebetBalance).toFixed(2)} FREEBET</span>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-1">
-                <Link 
-                  to="/deposit" 
-                  className="bg-accent-success hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-[10px] font-black transition-all transform hover:scale-105 active:scale-95 text-center"
+                <Link
+                  to="/deposit"
+                  className="bg-accent-success hover:bg-green-600 text-white px-3 py-1 rounded-lg text-[9px] font-black transition-all transform hover:scale-105 active:scale-95 text-center"
                 >
                   DEPOSIT
                 </Link>
-                <Link 
-                  to="/withdraw" 
-                  className="bg-dark-600 hover:bg-dark-500 text-gray-200 px-3 py-1.5 rounded-lg text-[10px] font-black transition-all transform hover:scale-105 active:scale-95 text-center border border-dark-500"
+                <Link
+                  to="/withdraw"
+                  className="bg-dark-600 hover:bg-dark-500 text-gray-200 px-3 py-1 rounded-lg text-[9px] font-black transition-all transform hover:scale-105 active:scale-95 text-center border border-dark-500"
                 >
                   WITHDRAW
                 </Link>
               </div>
             </div>
-            
-            <button className="relative text-gray-400 hover:text-white transition-colors">
+
+            <Link to="/settings" className="relative text-gray-400 hover:text-white transition-colors">
               <Bell className="w-6 h-6" />
               <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">2</span>
-            </button>
+            </Link>
 
-            <button 
+            <button
               onClick={() => dispatch(toggleBetslip())}
               className="relative p-2 bg-dark-700 rounded-lg hover:bg-dark-600 transition-colors"
             >
-              <div className="text-xs font-bold px-2 py-1 bg-primary-600 rounded text-white mb-1">SLIP</div>
+              <div className="text-xs font-bold px-2 py-1 bg-primary-600 rounded text-white">SLIP</div>    
               {betSelectionsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-accent-danger text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-dark-800 font-bold">
                   {betSelectionsCount}
@@ -137,10 +145,10 @@ const Navbar: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-3 pl-4 border-l border-dark-600">
-              <div className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold">
-                {user?.username?.[0]?.toUpperCase() || 'U'}
-              </div>
-              <button 
+              <Link to="/settings" className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold hover:bg-primary-500 transition-colors cursor-pointer text-white">
+                {user?.username?.[0]?.toUpperCase() || "U"}
+              </Link>
+              <button
                 onClick={handleLogout}
                 className="text-gray-500 hover:text-white transition-colors"
                 title="Log Out"

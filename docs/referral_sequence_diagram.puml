@@ -1,0 +1,48 @@
+﻿@startuml Referral_SequenceDiagram
+actor User
+participant "ReferralController" as API
+participant "ReferralService" as Service
+participant "ReferralRepository" as RefRepo
+participant "PromoRepository" as PromoRepo
+participant "UsageRepository" as UsageRepo
+participant "WalletService" as Wallet
+
+== Applying a Code ==
+User -> API: ApplyCode(code)
+API -> Service: ApplyCodeAsync(userId, code)
+
+Service -> PromoRepo: GetByCodeAsync(code)
+alt Code is PromoCode
+    Service -> UsageRepo: HasUsedCodeAsync(userId, promoId)
+    alt Not used yet
+        Service -> Wallet: DepositFreebetAsync(userId, reward)
+        Service -> UsageRepo: AddAsync(usage)
+        Service --> API: Success
+    else Already used
+        Service --> API: Error: Code already used
+    end
+else Not a PromoCode
+    Service -> RefRepo: GetByCodeAsync(code)
+    alt Code is CreatorCode
+        Service -> UsageRepo: HasUsedAnyReferralAsync(userId)
+        alt User never used a referral
+            Service -> Wallet: DepositFreebetAsync(userId, referralReward)
+            Service -> UsageRepo: AddAsync(usage)
+            Service -> RefRepo: IncrementUsage(refId)
+            
+            note over Service: Check Milestones
+            alt New Milestone reached
+                Service -> Wallet: DepositFreebetAsync(creatorId, milestoneReward)
+            end
+            
+            Service --> API: Success
+        else Already used a referral
+            Service --> API: Error: Only one referral allowed
+        end
+    else Code not found
+        Service --> API: Error: Invalid code
+    end
+end
+
+API --> User: Result
+@enduml

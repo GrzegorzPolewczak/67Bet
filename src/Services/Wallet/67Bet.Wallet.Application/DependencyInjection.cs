@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Wallet.Application.Services;
 
@@ -9,7 +9,8 @@ public static class DependencyInjection
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         services.AddScoped<IWalletService, WalletService>();
-        
+        services.AddScoped<IReferralService, ReferralService>();
+
         return services;
     }
 }

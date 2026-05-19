@@ -1,5 +1,5 @@
-/*
- * Interfejsy repozytoriów dla modułu portfela (Wallet).
+﻿/*
+ * Interfejsy repozytoriĂłw dla moduĹ‚u portfela (Wallet).
  * Kontrakty dla operacji na portfelach i historii transakcji.
  */
 using System;
@@ -18,4 +18,23 @@ public interface IWalletRepository : IRepository<_67Bet.Wallet.Domain.Entities.W
 public interface ITransactionRepository : IRepository<Transaction>
 {
     Task<IEnumerable<Transaction>> GetByWalletIdAsync(Guid walletId);
+}
+
+public interface IReferralCodeRepository : IRepository<ReferralCode>
+{
+    Task<ReferralCode?> GetByCodeAsync(string code);
+    Task<ReferralCode?> GetByUserIdAsync(Guid userId);
+}
+
+public interface IPromoCodeRepository : IRepository<PromoCode>
+{
+    Task<PromoCode?> GetByCodeAsync(string code);
+    Task<IEnumerable<PromoCode>> GetAllActiveAsync();
+}
+
+public interface IUserCodeUsageRepository : IRepository<UserCodeUsage>
+{
+    Task<bool> HasUsedCodeAsync(Guid userId, Guid codeId);
+    Task<bool> HasUsedAnyReferralAsync(Guid userId);
+    Task<int> GetUsageCountForReferralAsync(Guid codeId);
 }
