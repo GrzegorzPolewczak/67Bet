@@ -1,0 +1,22 @@
+@startuml
+actor Użytkownik
+participant Frontend
+participant WalletController
+participant StripePaymentService
+participant StripeAPI
+participant IWalletService
+
+Użytkownik -> Frontend: Wpłać środki (kwota)
+Frontend -> WalletController: POST /api/wallet/deposit (kwota)
+WalletController -> StripePaymentService: CreatePaymentIntentAsync(userId, kwota)
+StripePaymentService -> StripeAPI: Create PaymentIntent
+StripeAPI --> StripePaymentService: Intent ID, ClientSecret
+StripePaymentService --> WalletController: PaymentIntentResponseDto
+WalletController --> Frontend: ClientSecret
+Frontend -> StripeAPI: Inicjalizacja płatności (karta/BLIK)
+StripeAPI --> Użytkownik: Potwierdzenie płatności
+StripeAPI -> WalletController: Webhook (payment_intent.succeeded)
+WalletController -> StripePaymentService: HandleWebhookAsync(json, signature)
+StripePaymentService -> IWalletService: DepositAsync(userId, kwota)
+IWalletService --> StripePaymentService: OK
+@enduml

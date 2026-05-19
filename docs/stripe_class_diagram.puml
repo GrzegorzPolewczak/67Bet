@@ -1,0 +1,19 @@
+@startuml
+interface IPaymentService {
+    +Task<PaymentIntentResponseDto> CreatePaymentIntentAsync(Guid userId, decimal amount, string currency)
+    +Task<string?> CreatePayoutAsync(Guid userId, decimal amount, string currency)
+    +Task<bool> HandleWebhookAsync(string json, string signature)
+}
+
+class StripePaymentService {
+    -IConfiguration _configuration
+    -ILogger _logger
+    -IWalletService _walletService
+    +CreatePaymentIntentAsync(...)
+    +CreatePayoutAsync(...)
+    +HandleWebhookAsync(...)
+    +ProcessEventAsync(Event stripeEvent)
+}
+
+IPaymentService <|.. StripePaymentService
+@enduml
