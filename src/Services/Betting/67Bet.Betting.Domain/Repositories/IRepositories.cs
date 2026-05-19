@@ -28,3 +28,8 @@ public interface ITicketRepository : IRepository<Ticket>
 {
     Task<IEnumerable<Ticket>> GetByUserIdAsync(Guid userId);
 }
+
+public interface IAiMatchInsightRepository : IRepository<AiMatchInsight>
+{
+    Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId);
+}

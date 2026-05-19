@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using _67Bet.Betting.Domain.Repositories;
+using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Infrastructure.Persistence;
 using _67Bet.Betting.Infrastructure.Repositories;
+using _67Bet.Betting.Infrastructure.Integrations;
 
 namespace _67Bet.Betting.Infrastructure;
 
@@ -20,6 +22,14 @@ public static class DependencyInjection
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IMarketRepository, MarketRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
+        services.AddScoped<IAiMatchInsightRepository, AiMatchInsightRepository>();
+
+        services.AddHttpClient<IOddsServiceClient, OddsServiceClient>();
+
+        services.AddHttpClient<IGeminiClient, GeminiClient>(client =>
+        {
+            client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
+        });
 
         return services;
     }

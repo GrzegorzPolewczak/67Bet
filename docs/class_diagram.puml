@@ -324,6 +324,38 @@ package "Betting Service" {
         +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
     }
 
+    class AiMatchInsight <<implemented, AggregateRoot>> {
+        +EventId : Guid
+        +Content : string
+        +AiMatchInsight(eventId: Guid, content: string)
+    }
+
+    interface IAiMatchInsightRepository <<implemented>> {
+        +GetByEventIdAsync(eventId: Guid) : Task<AiMatchInsight?>
+        +AddAsync(insight: AiMatchInsight) : Task
+    }
+
+    interface IAiAssistantService <<implemented>> {
+        +GetMatchInsightAsync(eventId: Guid) : Task<string>
+    }
+
+    class AiMatchInsightRepository <<implemented>> {
+        -_context : BettingDbContext
+        +GetByEventIdAsync(eventId: Guid) : Task<AiMatchInsight?>
+        +AddAsync(insight: AiMatchInsight) : Task
+    }
+
+    class AiAssistantService <<implemented>> {
+        -_insightRepository : IAiMatchInsightRepository
+        -_eventRepository : IEventRepository
+        -_geminiClient : IGeminiClient
+        +GetMatchInsightAsync(eventId: Guid) : Task<string>
+    }
+
+    interface IGeminiClient <<planned>> {
+        +GenerateTextAsync(prompt: string) : Task<string>
+    }
+
     class BettingDbContext <<implemented>> {
         +Sports : DbSet<Sport>
         +Events : DbSet<Event>
@@ -331,9 +363,18 @@ package "Betting Service" {
         +Outcomes : DbSet<Outcome>
         +Tickets : DbSet<Ticket>
         +Bets : DbSet<Bet>
+        +AiMatchInsights : DbSet<AiMatchInsight>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }
+
+' Relacje dla AI Match Insights
+Event "1" -- "0..1" AiMatchInsight : EventId
+AiMatchInsightRepository ..|> IAiMatchInsightRepository
+AiAssistantService ..|> IAiAssistantService
+AiAssistantService --> IAiMatchInsightRepository : uses
+AiAssistantService --> IGeminiClient : uses
+
 
 package "Odds Service" {
     interface IOddsService <<implemented>> {

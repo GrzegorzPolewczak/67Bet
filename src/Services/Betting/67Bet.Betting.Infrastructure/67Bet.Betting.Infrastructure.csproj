@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\67Bet.Betting.Domain\67Bet.Betting.Domain.csproj" />
+    <ProjectReference Include="..\67Bet.Betting.Application\67Bet.Betting.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -12,6 +13,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.3.efcore.9.0.0" />
   </ItemGroup>
 
