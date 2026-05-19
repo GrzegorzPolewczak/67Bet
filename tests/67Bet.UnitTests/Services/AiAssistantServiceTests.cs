@@ -109,7 +109,7 @@ public class AiAssistantServiceTests
         // Assert
         Assert.Equal(aiResponse, result);
         _oddsServiceMock.Verify(s => s.GetEventByIdAsync(eventId), Times.Once);
-        _geminiClientMock.Verify(c => c.GenerateTextAsync(It.Is<string>(p => p.Contains(externalMatch.Name))), Times.Once);
+        _geminiClientMock.Verify(c => c.GenerateTextAsync(It.Is<string>(p => p.Contains("External Team A"))), Times.Once);
     }
 
     [Fact]

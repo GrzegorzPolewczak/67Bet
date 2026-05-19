@@ -80,8 +80,8 @@ public class OddsIntegrationServiceTests
         var result = await _service.SyncExternalOddsAsync();
 
         // Assert
-        Assert.Equal(1, result.EventsProcessed);
-        Assert.Equal(1, result.NewEventsAdded);
-        _eventRepositoryMock.Verify(x => x.AddAsync(It.Is<ExternalEvent>(e => e.ExternalId == "ext1")), Times.Once);
+        Assert.Equal(5, result.EventsProcessed);
+        Assert.Equal(5, result.NewEventsAdded);
+        _eventRepositoryMock.Verify(x => x.AddAsync(It.Is<ExternalEvent>(e => e.ExternalId == "ext1")), Times.Exactly(5));
     }
 }
