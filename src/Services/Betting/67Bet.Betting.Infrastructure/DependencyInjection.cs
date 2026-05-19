@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using _67Bet.Betting.Domain.Repositories;
 using _67Bet.Betting.Application.Interfaces;
+using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Betting.Infrastructure.Persistence;
 using _67Bet.Betting.Infrastructure.Repositories;
 using _67Bet.Betting.Infrastructure.Integrations;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddScoped<IAiMatchInsightRepository, AiMatchInsightRepository>();
 
         services.AddHttpClient<IOddsServiceClient, OddsServiceClient>();
+        services.AddHttpClient<IWalletService, WalletServiceClient>();
 
         services.AddHttpClient<IGeminiClient, GeminiClient>(client =>
         {
