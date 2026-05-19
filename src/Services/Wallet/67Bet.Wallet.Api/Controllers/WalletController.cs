@@ -62,6 +62,15 @@ public class WalletController : ControllerBase
         return NoContent();
     }
 
+    [HttpPost("deposit-freebet")]
+    public async Task<IActionResult> DepositFreebet([FromBody] DepositRequest request)
+    {
+        if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
+
+        await _walletService.DepositFreebetAsync(GetUserId(), request.Amount);
+        return NoContent();
+    }
+
     [HttpPost("withdraw")]
     public async Task<IActionResult> Withdraw([FromBody] WithdrawRequest request)
     {
@@ -90,7 +99,7 @@ public class WalletController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return StatusCode(500, "WystÄ…piĹ‚ nieoczekiwany bĹ‚Ä…d podczas wypĹ‚aty.");
         }

@@ -40,9 +40,32 @@ public class WalletServiceClient : IWalletService
         return 0;
     }
 
+    public async Task<decimal> GetFreebetBalanceAsync(Guid userId)
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync($"Wallet/balance?userId={userId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<BalanceResponse>();
+                return result?.FreebetBalance ?? 0;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get freebet balance for user {UserId}", userId);
+        }
+        return 0;
+    }
+
     public async Task DepositAsync(Guid userId, decimal amount)
     {
         await _httpClient.PostAsJsonAsync("Wallet/deposit", new { UserId = userId, Amount = amount });
+    }
+
+    public async Task DepositFreebetAsync(Guid userId, decimal amount)
+    {
+        await _httpClient.PostAsJsonAsync("Wallet/deposit-freebet", new { UserId = userId, Amount = amount });
     }
 
     public async Task WithdrawAsync(Guid userId, decimal amount)
@@ -91,5 +114,6 @@ public class WalletServiceClient : IWalletService
     private class BalanceResponse
     {
         public decimal Balance { get; set; }
+        public decimal FreebetBalance { get; set; }
     }
 }

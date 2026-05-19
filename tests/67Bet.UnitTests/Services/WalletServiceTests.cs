@@ -114,6 +114,44 @@ public class WalletServiceTests
     }
 
     [Fact]
+    public async Task GetFreebetBalanceAsync_ShouldReturnBalance_WhenWalletExists()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var wallet = new WalletEntity(userId);
+        wallet.DepositFreebet(150);
+        _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
+            .ReturnsAsync(wallet);
+
+        // Act
+        var balance = await _walletService.GetFreebetBalanceAsync(userId);
+
+        // Assert
+        balance.Should().Be(150);
+    }
+
+    [Fact]
+    public async Task DepositFreebetAsync_ShouldIncreaseFreebetBalanceAndCreateTransaction()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var wallet = new WalletEntity(userId);
+        _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
+            .ReturnsAsync(wallet);
+
+        // Act
+        await _walletService.DepositFreebetAsync(userId, 50);
+
+        // Assert
+        wallet.FreebetBalance.Should().Be(50);
+        _walletRepositoryMock.Verify(x => x.UpdateAsync(wallet), Times.Once);
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
+            t.Amount == 50 && 
+            t.Type == TransactionType.FreebetDeposit && 
+            t.Status == TransactionStatus.Completed)), Times.Once);
+    }
+
+    [Fact]
     public async Task ProcessStakeAsync_ShouldReturnTrueAndDecreaseBalance_WhenFundsAreSufficient()
     {
         // Arrange
@@ -129,6 +167,27 @@ public class WalletServiceTests
         // Assert
         result.Should().BeTrue();
         wallet.Balance.Should().Be(70);
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
+            t.Type == TransactionType.Stake)), Times.Once);
+    }
+
+    [Fact]
+    public async Task ProcessStakeAsync_ShouldUseFreebetFirst_WhenFreebetBalanceIsSufficient()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var wallet = new WalletEntity(userId);
+        wallet.DepositFreebet(100);
+        _walletRepositoryMock.Setup(x => x.GetByUserIdAsync(userId))
+            .ReturnsAsync(wallet);
+
+        // Act
+        var result = await _walletService.ProcessStakeAsync(userId, 30);
+
+        // Assert
+        result.Should().BeTrue();
+        wallet.FreebetBalance.Should().Be(70);
+        wallet.Balance.Should().Be(0);
         _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
             t.Type == TransactionType.Stake)), Times.Once);
     }
