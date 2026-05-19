@@ -8,7 +8,7 @@ namespace _67Bet.Wallet.Api.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/wallet")]
 public class WalletController : ControllerBase
 {
     private readonly IWalletService _walletService;
@@ -32,7 +32,7 @@ public class WalletController : ControllerBase
     }
 
     [HttpPost("create-payment-intent")]
-    public async Task<ActionResult<PaymentIntentResponseDto>> CreatePaymentIntent(CreatePaymentIntentRequest request)
+    public async Task<ActionResult<PaymentIntentResponseDto>> CreatePaymentIntent([FromBody] CreatePaymentIntentRequest request)
     {
         if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
 
@@ -54,7 +54,7 @@ public class WalletController : ControllerBase
     }
 
     [HttpPost("deposit")]
-    public async Task<IActionResult> Deposit(DepositRequest request)
+    public async Task<IActionResult> Deposit([FromBody] DepositRequest request)
     {
         if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
 
@@ -63,7 +63,7 @@ public class WalletController : ControllerBase
     }
 
     [HttpPost("withdraw")]
-    public async Task<IActionResult> Withdraw(WithdrawRequest request)
+    public async Task<IActionResult> Withdraw([FromBody] WithdrawRequest request)
     {
         if (request.Amount <= 0) return BadRequest("Kwota musi byÄ‡ dodatnia.");
 
