@@ -30,6 +30,8 @@ public static class DependencyInjection
         {
             client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
         });
+        services.AddScoped<IVirtualRaceRepository, VirtualRaceRepository>();
+        services.AddScoped<IHorseRepository, HorseRepository>();
 
         return services;
     }

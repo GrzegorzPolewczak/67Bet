@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IBettingService, BettingService>();
         services.AddScoped<IAiAssistantService, AiAssistantService>();
-
-        return services;    }
+        services.AddScoped<IVirtualRacingService, VirtualRacingService>();
+        return services;
+    }
 }

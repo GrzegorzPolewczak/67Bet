@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _67Bet.Betting.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using _67Bet.Betting.Infrastructure.Persistence;
 namespace _67Bet.Betting.Infrastructure.Migrations
 {
     [DbContext(typeof(BettingDbContext))]
-    partial class BettingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260518112539_AddVirtualRacing")]
+    partial class AddVirtualRacing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,30 +24,6 @@ namespace _67Bet.Betting.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.AiMatchInsight", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("char(36)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId")
-                        .IsUnique();
-
-                    b.ToTable("AiMatchInsights");
-                });
 
             modelBuilder.Entity("_67Bet.Betting.Domain.Entities.Bet", b =>
                 {
