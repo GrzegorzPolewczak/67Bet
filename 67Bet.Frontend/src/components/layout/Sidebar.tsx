@@ -11,12 +11,14 @@ import {
   Settings,
   Star,
   ShieldCheck,
-  Flag
+  Flag,
+  CircleDot
 } from 'lucide-react';
 
 const sports = [
   { icon: Flame, name: 'Popular', path: '/', color: 'text-orange-500' },
   { icon: Flag, name: 'Virtual Racing', path: '/virtual-racing', color: 'text-purple-500' },
+  { icon: CircleDot, name: 'Plinko', path: '/plinko', color: 'text-cyan-400' },
   { icon: Zap, name: 'Live', path: '/sport/Live', color: 'text-accent-success' },
   { icon: Trophy, name: 'Football', path: '/sport/Football' },
   { icon: Activity, name: 'Basketball', path: '/sport/Basketball' },

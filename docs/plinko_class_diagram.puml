@@ -1,0 +1,40 @@
+@startuml
+class PlinkoRound {
+  +Guid Id
+  +Guid UserId
+  +decimal Stake
+  +PlinkoRiskLevel RiskLevel
+  +int Rows
+  +int LandingSlot
+  +decimal Multiplier
+  +decimal Payout
+  +string Path
+  +DateTime CreatedAtUtc
+}
+
+enum PlinkoRiskLevel {
+  Low
+  Medium
+  High
+}
+
+interface IPlinkoRoundRepository {
+  +AddAsync(PlinkoRound round)
+  +GetRecentForUserAsync(Guid userId, int limit)
+}
+
+class InMemoryPlinkoRoundRepository
+class PlinkoService
+interface IPlinkoService
+interface IPlinkoWalletGateway
+class PlinkoController
+class PlinkoWalletController
+
+PlinkoRound --> PlinkoRiskLevel
+InMemoryPlinkoRoundRepository ..|> IPlinkoRoundRepository
+PlinkoService ..|> IPlinkoService
+PlinkoService --> IPlinkoRoundRepository
+PlinkoService --> IPlinkoWalletGateway
+PlinkoController --> IPlinkoService
+PlinkoWalletController --> "IWalletService"
+@enduml
