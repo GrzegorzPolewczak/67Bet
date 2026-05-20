@@ -113,5 +113,57 @@ namespace _67Bet.UnitTests.Services
             creatorCode.UsageCount.Should().Be(5);
             _walletServiceMock.Verify(s => s.DepositFreebetAsync(creatorId, 50m), Times.Once);
         }
+
+        [Fact]
+        public async Task DeactivatePromoCodeAsync_ShouldDeactivate_WhenExists()
+        {
+            // Arrange
+            var code = "TESTPROMO";
+            var promo = new PromoCode(code, 50m);
+            _promoRepoMock.Setup(r => r.GetByCodeAsync(code)).ReturnsAsync(promo);
+
+            // Act
+            await _referralService.DeactivatePromoCodeAsync(code);
+
+            // Assert
+            promo.IsActive.Should().BeFalse();
+            _promoRepoMock.Verify(r => r.UpdateAsync(promo), Times.Once);
+        }
+
+        [Fact]
+        public async Task ActivatePromoCodeAsync_ShouldActivate_WhenExists()
+        {
+            // Arrange
+            var code = "TESTPROMO";
+            var promo = new PromoCode(code, 50m);
+            promo.Deactivate();
+            _promoRepoMock.Setup(r => r.GetByCodeAsync(code)).ReturnsAsync(promo);
+
+            // Act
+            await _referralService.ActivatePromoCodeAsync(code);
+
+            // Assert
+            promo.IsActive.Should().BeTrue();
+            _promoRepoMock.Verify(r => r.UpdateAsync(promo), Times.Once);
+        }
+
+        [Fact]
+        public async Task GetAllPromoCodesAsync_ShouldReturnAllCodes()
+        {
+            // Arrange
+            var promos = new List<PromoCode>
+            {
+                new PromoCode("PROMO1", 10m),
+                new PromoCode("PROMO2", 20m)
+            };
+            _promoRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(promos);
+
+            // Act
+            var result = await _referralService.GetAllPromoCodesAsync();
+
+            // Assert
+            result.Should().HaveCount(2);
+            result.First().Code.Should().Be("PROMO1");
+        }
     }
 }

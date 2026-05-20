@@ -11,12 +11,15 @@ import {
   Settings,
   Star,
   ShieldCheck,
-  Flag
+  Flag,
+  CircleDot,
+  Gift
 } from 'lucide-react';
 
 const sports = [
   { icon: Flame, name: 'Popular', path: '/', color: 'text-orange-500' },
   { icon: Flag, name: 'Virtual Racing', path: '/virtual-racing', color: 'text-purple-500' },
+  { icon: CircleDot, name: 'Plinko', path: '/plinko', color: 'text-cyan-400' },
   { icon: Zap, name: 'Live', path: '/sport/Live', color: 'text-accent-success' },
   { icon: Trophy, name: 'Football', path: '/sport/Football' },
   { icon: Activity, name: 'Basketball', path: '/sport/Basketball' },
@@ -67,6 +70,20 @@ const Sidebar: React.FC = () => {
               >
                 <History className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
                 Bet History
+              </NavLink>
+            </li>
+            <li>
+              <NavLink 
+                to="/referrals"
+                className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${isActive 
+                    ? 'bg-primary-600/10 text-primary-500' 
+                    : 'text-gray-300 hover:bg-dark-700 hover:text-white'}
+                `}
+              >
+                <Gift className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                Refs & Codes
               </NavLink>
             </li>
             <li>

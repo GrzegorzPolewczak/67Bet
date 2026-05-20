@@ -18,6 +18,7 @@ namespace _67Bet.Wallet.Domain.Entities
         }
 
         public void Deactivate() => IsActive = false;
+        public void Activate() => IsActive = true;
 
         // EF Core
         private PromoCode() { }

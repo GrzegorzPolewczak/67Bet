@@ -5,7 +5,9 @@ import SportPage from './features/betting/SportPage';
 import MatchDetailsView from './features/betting/MatchDetailsView';
 import CustomBetRequest from './features/betting/CustomBetRequest';
 import VirtualRacingPage from './features/betting/VirtualRacingPage';
+import PlinkoPage from './features/betting/PlinkoPage';
 import SettingsPage from './features/user/SettingsPage';
+import ReferralsPage from './features/user/ReferralsPage';
 import BetHistoryPage from './features/user/BetHistoryPage';
 import AdminDashboard from './features/admin/AdminDashboard';
 
@@ -24,7 +26,9 @@ function App() {
         <Route path="match/:matchId" element={<MatchDetailsView />} />
         <Route path="custom-bet" element={<CustomBetRequest />} />
         <Route path="virtual-racing" element={<VirtualRacingPage />} />
+        <Route path="plinko" element={<PlinkoPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="referrals" element={<ReferralsPage />} />
         <Route path="history" element={<BetHistoryPage />} />
         <Route path="deposit" element={<DepositPage />} />
         <Route path="deposit-success" element={<DepositSuccessPage />} />
