@@ -68,6 +68,9 @@ public class OddsIntegrationServiceTests
         };
 
         _apiClientMock.Setup(x => x.GetUpcomingEventsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(new List<ExternalEventDto>());
+
+        _apiClientMock.Setup(x => x.GetUpcomingEventsAsync("upcoming", It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(externalEvents);
         
         _pandaApiClientMock.Setup(x => x.GetUpcomingEsportsMatchesAsync())
