@@ -1,18 +1,22 @@
-import React, { useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { addSelection, removeSelection } from '../betslip/betslipSlice';
-import { fetchEventsAsync } from './bettingSlice';
-import type { RootState, AppDispatch } from '../../app/store';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, ChevronLeft, Loader2, Info } from 'lucide-react';
-import OddButton from './OddButton';
+import React, { useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addSelection, removeSelection } from "../betslip/betslipSlice";
+import { fetchEventsAsync } from "./bettingSlice";
+import type { RootState, AppDispatch } from "../../app/store";
+import { motion, AnimatePresence } from "framer-motion";
+import { Clock, ChevronLeft, Loader2, Info } from "lucide-react";
+import OddButton from "./OddButton";
 
 const SportPage: React.FC = () => {
   const { sportName } = useParams<{ sportName: string }>();
   const dispatch = useDispatch<AppDispatch>();
-  const selections = useSelector((state: RootState) => state.betslip.selections);
-  const { events, loading, error } = useSelector((state: RootState) => state.betting);
+  const selections = useSelector(
+    (state: RootState) => state.betslip.selections,
+  );
+  const { events, loading, error } = useSelector(
+    (state: RootState) => state.betting,
+  );
 
   useEffect(() => {
     if (events.length === 0) {
@@ -22,48 +26,67 @@ const SportPage: React.FC = () => {
 
   // Try to match sportName with League or Event Name to simulate categorization
   // In a real app, 'Sport' would be a direct property on the Event object from the API.
-  const filteredEvents = Array.isArray(events) ? events.filter(e => {
-    if (!e) return false;
-    const safeSportName = sportName?.toLowerCase() || '';
-    const safeLeague = e.league?.toLowerCase() || '';
-    const safeName = e.name?.toLowerCase() || '';
-    const safeSportKey = (e as any).sportKey?.toLowerCase() || '';
+  const filteredEvents = Array.isArray(events)
+    ? events.filter((e) => {
+        if (!e) return false;
+        const safeSportName = sportName?.toLowerCase() || "";
+        const safeLeague = e.league?.toLowerCase() || "";
+        const safeName = e.name?.toLowerCase() || "";
+        const safeSportKey = (e as any).sportKey?.toLowerCase() || "";
 
-    if (safeSportName === 'popular') return true;
-    
-    // Live: Wydarzenia trwające lub zaczynające się za mniej niż 2 godziny
-    if (safeSportName === 'live') {
-      const eventTime = new Date((e as any).rawTime).getTime();
-      const now = Date.now();
-      return eventTime <= now + 2 * 60 * 60 * 1000;
-    }
-    
-    // Exact mapping based on sportKey
-    if (safeSportName === 'football' && safeSportKey.includes('soccer')) return true;
-    if (safeSportName === 'basketball' && safeSportKey.includes('basketball')) return true;
-    if (safeSportName === 'esports' && safeSportKey.includes('esports')) return true;
-    if (safeSportName === 'mma' && safeSportKey.includes('mma')) return true;
+        if (safeSportName === "popular") return true;
 
-    // Fallback for custom search/clicks
-    if (safeLeague.includes(safeSportName) || safeName.includes(safeSportName)) return true;
+        // Live: Wydarzenia trwające lub zaczynające się za mniej niż 2 godziny
+        if (safeSportName === "live") {
+          const eventTime = new Date((e as any).rawTime).getTime();
+          const now = Date.now();
+          return eventTime <= now + 2 * 60 * 60 * 1000;
+        }
 
-    return false;
-  }) : [];
+        // Exact mapping based on sportKey
+        if (safeSportName === "football" && safeSportKey.includes("soccer"))
+          return true;
+        if (
+          safeSportName === "basketball" &&
+          safeSportKey.includes("basketball")
+        )
+          return true;
+        if (safeSportName === "esports" && safeSportKey.includes("esports"))
+          return true;
+        if (safeSportName === "mma" && safeSportKey.includes("mma"))
+          return true;
 
-  const isSelected = (outcomeId: string) => selections.some(s => s.outcomeId === outcomeId);
+        // Fallback for custom search/clicks
+        if (
+          safeLeague.includes(safeSportName) ||
+          safeName.includes(safeSportName)
+        )
+          return true;
+
+        return false;
+      })
+    : [];
+
+  const isSelected = (outcomeId: string) =>
+    selections.some((s) => s.outcomeId === outcomeId);
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-12">
       <div className="flex items-center gap-4 mb-2">
-        <Link to="/" className="text-gray-500 hover:text-white transition-colors">
+        <Link
+          to="/"
+          className="text-gray-500 hover:text-white transition-colors"
+        >
           <ChevronLeft className="w-5 h-5" />
         </Link>
         <h1 className="text-3xl font-black text-white">{sportName}</h1>
       </div>
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-gray-500 font-bold uppercase">{filteredEvents.length} Active Events</span>
-        <button 
+        <span className="text-sm text-gray-500 font-bold uppercase">
+          {filteredEvents.length} Active Events
+        </span>
+        <button
           onClick={() => dispatch(fetchEventsAsync())}
           className="text-xs font-bold text-gray-400 hover:text-white transition-colors"
         >
@@ -86,7 +109,7 @@ const SportPage: React.FC = () => {
         ) : filteredEvents.length > 0 ? (
           <AnimatePresence mode="popLayout">
             {filteredEvents.map((event) => (
-              <motion.div 
+              <motion.div
                 key={event.id}
                 layout
                 initial={{ opacity: 0, y: 10 }}
@@ -100,44 +123,64 @@ const SportPage: React.FC = () => {
                       <div className="w-1 h-1 bg-dark-600 rounded-full" />
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
-                        {event.time || 'Scheduled'}
+                        {event.time || "Scheduled"}
                       </div>
                     </div>
                     <Link to={`/match/${event.id}`}>
-                      <h3 className="text-lg font-bold text-white hover:text-primary-500 cursor-pointer transition-colors">{event.name}</h3>
+                      <h3 className="text-lg font-bold text-white hover:text-primary-500 cursor-pointer transition-colors">
+                        {event.name}
+                      </h3>
                     </Link>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {Array.isArray(event.markets) && event.markets.length > 0 && Array.isArray(event.markets[0]?.outcomes) ? (
-                      event.markets[0].outcomes.map((outcome: any, index: number) => (
-                        <OddButton
-                          key={outcome?.id || index}
-                          name={outcome?.name || '-'}
-                          odd={outcome?.odd || 0}
-                          isSelected={outcome?.id ? isSelected(outcome.id) : false}
-                          onClick={() => {
-                            const market = event.markets[0];
-                            if (market && outcome?.id) {
-                              if (isSelected(outcome.id)) {
-                                dispatch(removeSelection(outcome.id));
-                              } else {
-                                dispatch(addSelection({
-                                  eventId: event.id,
-                                  eventName: event.name || 'Unknown Event',
-                                  marketId: market.id,
-                                  marketName: market.name || 'Unknown Market',
-                                  outcomeId: outcome.id,
-                                  outcomeName: outcome.name === '1' ? (event.name?.split(' vs ')[0] || 'Team 1') : outcome.name === '2' ? (event.name?.split(' vs ')[1] || 'Team 2') : 'Draw',
-                                  odd: outcome.odd || 0
-                                }));
-                              }
+                    {Array.isArray(event.markets) &&
+                    event.markets.length > 0 &&
+                    Array.isArray(event.markets[0]?.outcomes) ? (
+                      event.markets[0].outcomes.map(
+                        (outcome: any, index: number) => (
+                          <OddButton
+                            key={outcome?.id || index}
+                            name={outcome?.name || "-"}
+                            odd={outcome?.odd || 0}
+                            isSelected={
+                              outcome?.id ? isSelected(outcome.id) : false
                             }
-                          }}
-                        />
-                      ))
+                            onClick={() => {
+                              const market = event.markets[0];
+                              if (market && outcome?.id) {
+                                if (isSelected(outcome.id)) {
+                                  dispatch(removeSelection(outcome.id));
+                                } else {
+                                  dispatch(
+                                    addSelection({
+                                      eventId: event.id,
+                                      eventName: event.name || "Unknown Event",
+                                      marketId: market.id,
+                                      marketName:
+                                        market.name || "Unknown Market",
+                                      outcomeId: outcome.id,
+                                      outcomeName:
+                                        outcome.name === "1"
+                                          ? event.name?.split(" vs ")[0] ||
+                                            "Team 1"
+                                          : outcome.name === "2"
+                                            ? event.name?.split(" vs ")[1] ||
+                                              "Team 2"
+                                            : "Draw",
+                                      odd: outcome.odd || 0,
+                                    }),
+                                  );
+                                }
+                              }
+                            }}
+                          />
+                        ),
+                      )
                     ) : (
-                      <span className="text-xs text-gray-500 font-bold border border-dark-600 border-dashed px-4 py-2 rounded-xl">Odds upcoming</span>
+                      <span className="text-xs text-gray-500 font-bold border border-dark-600 border-dashed px-4 py-2 rounded-xl">
+                        Odds upcoming
+                      </span>
                     )}
                   </div>
                 </div>
@@ -150,10 +193,17 @@ const SportPage: React.FC = () => {
               <Info className="w-8 h-8 text-gray-500" />
             </div>
             <div>
-              <p className="text-lg font-bold text-white">No active events for {sportName}</p>
-              <p className="text-sm text-gray-500 mt-1">Check back later or try our AI Custom Bet feature!</p>
+              <p className="text-lg font-bold text-white">
+                No active events for {sportName}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Check back later or try our AI Custom Bet feature!
+              </p>
             </div>
-            <Link to="/custom-bet" className="text-primary-500 font-bold hover:underline text-sm mt-4 inline-block">
+            <Link
+              to="/custom-bet"
+              className="text-primary-500 font-bold hover:underline text-sm mt-4 inline-block"
+            >
               Create Custom Bet
             </Link>
           </div>

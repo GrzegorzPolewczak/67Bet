@@ -1,19 +1,21 @@
-import React, { useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { CheckCircle, ChevronLeft } from 'lucide-react';
-import { useDispatch } from 'react-redux';
-import type { AppDispatch } from '../../app/store';
-import { fetchBalanceAsync } from './walletSlice';
-import toast from 'react-hot-toast';
+import React, { useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { CheckCircle, ChevronLeft } from "lucide-react";
+import { useDispatch } from "react-redux";
+import type { AppDispatch } from "../../app/store";
+import { fetchBalanceAsync } from "./walletSlice";
+import toast from "react-hot-toast";
 
 const DepositSuccessPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const dispatch = useDispatch<AppDispatch>();
-  const paymentIntentClientSecret = searchParams.get('payment_intent_client_secret');
+  const paymentIntentClientSecret = searchParams.get(
+    "payment_intent_client_secret",
+  );
 
   useEffect(() => {
     if (paymentIntentClientSecret) {
-      toast.success('Payment processed! Updating your balance...');
+      toast.success("Payment processed! Updating your balance...");
       // Refresh balance after successful payment
       const timer = setTimeout(() => {
         dispatch(fetchBalanceAsync());
@@ -29,15 +31,17 @@ const DepositSuccessPage: React.FC = () => {
           <CheckCircle className="w-12 h-12 text-accent-success" />
         </div>
       </div>
-      
+
       <div>
         <h1 className="text-4xl font-black text-white">Deposit Successful!</h1>
-        <p className="text-gray-400 mt-2 text-lg">Your funds are being added to your wallet.</p>
+        <p className="text-gray-400 mt-2 text-lg">
+          Your funds are being added to your wallet.
+        </p>
       </div>
 
       <div className="pt-8">
-        <Link 
-          to="/" 
+        <Link
+          to="/"
           className="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-8 py-4 rounded-xl font-black transition-all active:scale-95"
         >
           <ChevronLeft className="w-4 h-4" /> Back to Betting

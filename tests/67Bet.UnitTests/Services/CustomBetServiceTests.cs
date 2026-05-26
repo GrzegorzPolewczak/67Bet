@@ -37,7 +37,7 @@ public class CustomBetServiceTests
         request.Description.Should().Be(description);
         request.AiSuggestedOdds.Should().Be(2.50m);
         request.Status.Should().Be(RequestStatus.Reviewing);
-        
+
         _customBetRepositoryMock.Verify(x => x.AddAsync(request), Times.Once);
     }
 
@@ -48,7 +48,7 @@ public class CustomBetServiceTests
         var userId = Guid.NewGuid();
         var request = new CustomBetRequest(userId, "Test");
         var requestId = request.Id;
-        
+
         _customBetRepositoryMock.Setup(x => x.GetByIdAsync(requestId))
             .ReturnsAsync(request);
 
@@ -59,7 +59,7 @@ public class CustomBetServiceTests
         request.Status.Should().Be(RequestStatus.Accepted);
         request.AdminFinalOdds.Should().Be(3.0m);
         request.AdminNote.Should().Be("Looks good");
-        
+
         _customBetRepositoryMock.Verify(x => x.UpdateAsync(request), Times.Once);
     }
 
@@ -70,7 +70,7 @@ public class CustomBetServiceTests
         var userId = Guid.NewGuid();
         var request = new CustomBetRequest(userId, "Test");
         var requestId = request.Id;
-        
+
         _customBetRepositoryMock.Setup(x => x.GetByIdAsync(requestId))
             .ReturnsAsync(request);
 
@@ -80,7 +80,7 @@ public class CustomBetServiceTests
         // Assert
         request.Status.Should().Be(RequestStatus.Rejected);
         request.AdminNote.Should().Be("Invalid market");
-        
+
         _customBetRepositoryMock.Verify(x => x.UpdateAsync(request), Times.Once);
     }
 }

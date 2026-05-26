@@ -56,9 +56,9 @@ public class SoccerSimulator : BaseMatchSimulator
             int currentScore = int.Parse(match.Score[scoringTeam]);
             match.Score[scoringTeam] = (currentScore + 1).ToString();
             match.CurrentAction = "GOAL!!!";
-            
+
             AddTimelineEvent(match, "Goal", scoringTeam, $"Goal scored by {scoringTeam}!");
-            
+
             // Reset po golu
             match.CurrentZone = "Midfield";
             match.Momentum = 50;
@@ -75,7 +75,7 @@ public class SoccerSimulator : BaseMatchSimulator
         // Przykładowy stream (np. kanał informacyjny sportowy)
         if (string.IsNullOrEmpty(match.StreamUrl))
         {
-            match.StreamUrl = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1"; 
+            match.StreamUrl = "https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1";
         }
     }
 

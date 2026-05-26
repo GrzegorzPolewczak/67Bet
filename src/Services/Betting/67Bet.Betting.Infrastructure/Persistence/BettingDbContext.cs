@@ -17,7 +17,7 @@ public class BettingDbContext : DbContext
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<Bet> Bets => Set<Bet>();
     public DbSet<AiMatchInsight> AiMatchInsights => Set<AiMatchInsight>();
-    
+
     // Virtual Racing
     public DbSet<VirtualRace> VirtualRaces => Set<VirtualRace>();
     public DbSet<Horse> Horses => Set<Horse>();

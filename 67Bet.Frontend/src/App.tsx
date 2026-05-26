@@ -1,23 +1,23 @@
-import { Routes, Route } from 'react-router-dom';
-import MainLayout from './components/layout/MainLayout';
-import Home from './features/betting/Home';
-import SportPage from './features/betting/SportPage';
-import MatchDetailsView from './features/betting/MatchDetailsView';
-import CustomBetRequest from './features/betting/CustomBetRequest';
-import VirtualRacingPage from './features/betting/VirtualRacingPage';
-import PlinkoPage from './features/betting/PlinkoPage';
-import SettingsPage from './features/user/SettingsPage';
-import ReferralsPage from './features/user/ReferralsPage';
-import BetHistoryPage from './features/user/BetHistoryPage';
-import AdminDashboard from './features/admin/AdminDashboard';
+import { Routes, Route } from "react-router-dom";
+import MainLayout from "./components/layout/MainLayout";
+import Home from "./features/betting/Home";
+import SportPage from "./features/betting/SportPage";
+import MatchDetailsView from "./features/betting/MatchDetailsView";
+import CustomBetRequest from "./features/betting/CustomBetRequest";
+import VirtualRacingPage from "./features/betting/VirtualRacingPage";
+import PlinkoPage from "./features/betting/PlinkoPage";
+import SettingsPage from "./features/user/SettingsPage";
+import ReferralsPage from "./features/user/ReferralsPage";
+import BetHistoryPage from "./features/user/BetHistoryPage";
+import AdminDashboard from "./features/admin/AdminDashboard";
 
-import LoginPage from './features/auth/LoginPage';
-import RegisterPage from './features/auth/RegisterPage';
-import DesktopVerification from './features/auth/DesktopVerification';
-import MobileVerification from './features/auth/MobileVerification';
-import DepositPage from './features/wallet/DepositPage';
-import DepositSuccessPage from './features/wallet/DepositSuccessPage';
-import WithdrawPage from './features/wallet/WithdrawPage';
+import LoginPage from "./features/auth/LoginPage";
+import RegisterPage from "./features/auth/RegisterPage";
+import DesktopVerification from "./features/auth/DesktopVerification";
+import MobileVerification from "./features/auth/MobileVerification";
+import DepositPage from "./features/wallet/DepositPage";
+import DepositSuccessPage from "./features/wallet/DepositSuccessPage";
+import WithdrawPage from "./features/wallet/WithdrawPage";
 
 function App() {
   return (

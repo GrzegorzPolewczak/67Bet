@@ -65,7 +65,7 @@ namespace _67Bet.UnitTests.Betting
             var horse2 = new Horse("H2", 5);
             race.AddParticipant(horse1.Id, 2.0m);
             race.AddParticipant(horse2.Id, 3.0m);
-            
+
             _mockRaceRepo.Setup(r => r.GetByIdAsync(race.Id)).ReturnsAsync(race);
 
             // Act

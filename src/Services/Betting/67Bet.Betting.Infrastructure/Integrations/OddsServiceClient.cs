@@ -14,7 +14,7 @@ public class OddsServiceClient : IOddsServiceClient
     {
         _httpClient = httpClient;
         _logger = logger;
-        
+
         var baseUrl = configuration["OddsService:BaseUrl"] ?? "http://localhost:5300/api/";
         _httpClient.BaseAddress = new Uri(baseUrl);
     }
@@ -26,9 +26,9 @@ public class OddsServiceClient : IOddsServiceClient
             // Zakładamy, że Odds API ma punkt końcowy do pobierania pojedynczego wydarzenia
             // W ExternalOddsController widzimy tylko /events (lista wszystkich)
             // Możemy albo pobrać wszystkie i filtrować, albo dodać endpoint w Odds API
-            
+
             _logger.LogInformation("Fetching event {EventId} from Odds Service", eventId);
-            
+
             // Tymczasowo pobieramy wszystkie i szukamy, bo nie widzimy endpointu /events/{id}
             var response = await _httpClient.GetAsync("ExternalOdds/events");
             if (!response.IsSuccessStatusCode) return null;

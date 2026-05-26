@@ -33,7 +33,7 @@ public class AiAssistantService : IAiAssistantService
         // ale baza używa Guid dla EventId. Jeśli to zewnętrzny event, musimy obsłużyć cache inaczej lub 
         // zmienić AiMatchInsight, aby akceptował string jako EventId.
         // Zakładamy na razie, że AiMatchInsight.EventId jest Guidem, więc cache działa tylko dla lokalnych.
-        
+
         if (Guid.TryParse(eventId, out var eventGuid))
         {
             var existingInsight = await _insightRepository.GetByEventIdAsync(eventGuid);

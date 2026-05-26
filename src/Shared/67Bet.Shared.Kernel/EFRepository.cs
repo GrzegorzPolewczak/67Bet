@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace _67Bet.Shared.Kernel;
 
-public class EFRepository<T, TContext> : IRepository<T> 
-    where T : BaseEntity 
+public class EFRepository<T, TContext> : IRepository<T>
+    where T : BaseEntity
     where TContext : DbContext
 {
     protected readonly TContext _context;

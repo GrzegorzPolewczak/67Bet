@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { bettingApi } from '../../api/axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { bettingApi } from "../../api/axios";
 
 interface BetDto {
   outcomeId: string;
@@ -29,20 +29,26 @@ const initialState: HistoryState = {
 };
 
 export const fetchHistoryAsync = createAsyncThunk(
-  'history/fetchHistory',
+  "history/fetchHistory",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await bettingApi.get('/tickets/my');
+      const response = await bettingApi.get("/tickets/my");
       return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to fetch history';
-      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Failed to fetch history";
+      return rejectWithValue(
+        typeof message === "object" ? JSON.stringify(message) : message,
+      );
     }
-  }
+  },
 );
 
 const historySlice = createSlice({
-  name: 'history',
+  name: "history",
   initialState,
   reducers: {},
   extraReducers: (builder) => {

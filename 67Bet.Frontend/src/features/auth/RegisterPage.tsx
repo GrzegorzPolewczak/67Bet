@@ -1,17 +1,25 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, User, UserPlus, ChevronLeft, ShieldCheck, Loader2 } from 'lucide-react';
-import { useDispatch, useSelector } from 'react-redux';
-import { registerAsync } from './authSlice';
-import type { AppDispatch, RootState } from '../../app/store';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Mail,
+  Lock,
+  User,
+  UserPlus,
+  ChevronLeft,
+  ShieldCheck,
+  Loader2,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { registerAsync } from "./authSlice";
+import type { AppDispatch, RootState } from "../../app/store";
 
 const RegisterPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [localError, setLocalError] = useState('');
+  const [localError, setLocalError] = useState("");
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -19,16 +27,18 @@ const RegisterPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocalError('');
+    setLocalError("");
 
     if (!agreeTerms) {
-      setLocalError('You must agree to the terms and conditions.');
+      setLocalError("You must agree to the terms and conditions.");
       return;
     }
 
-    const resultAction = await dispatch(registerAsync({ username, email, password }));
+    const resultAction = await dispatch(
+      registerAsync({ username, email, password }),
+    );
     if (registerAsync.fulfilled.match(resultAction)) {
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -38,13 +48,17 @@ const RegisterPage: React.FC = () => {
       <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-600/10 blur-[120px] rounded-full" />
       <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-900/10 blur-[150px] rounded-full" />
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md z-10"
       >
-        <Link to="/" className="inline-flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-bold mb-8 group">
-          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Betting
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-gray-500 hover:text-white transition-colors text-sm font-bold mb-8 group"
+        >
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />{" "}
+          Back to Betting
         </Link>
 
         <div className="bg-dark-800 border border-dark-700 rounded-3xl p-8 shadow-2xl">
@@ -52,7 +66,9 @@ const RegisterPage: React.FC = () => {
             <h1 className="text-3xl font-black text-white italic tracking-tighter mb-2">
               67<span className="text-primary-500">BET</span>
             </h1>
-            <p className="text-gray-400 text-sm">Create your account and start winning.</p>
+            <p className="text-gray-400 text-sm">
+              Create your account and start winning.
+            </p>
           </div>
 
           {(error || localError) && (
@@ -63,11 +79,13 @@ const RegisterPage: React.FC = () => {
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase px-1">Username</label>
+              <label className="text-xs font-bold text-gray-500 uppercase px-1">
+                Username
+              </label>
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="johndoe67"
@@ -78,11 +96,13 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase px-1">Email Address</label>
+              <label className="text-xs font-bold text-gray-500 uppercase px-1">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
@@ -93,11 +113,13 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-500 uppercase px-1">Password</label>
+              <label className="text-xs font-bold text-gray-500 uppercase px-1">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Min. 8 characters"
@@ -108,19 +130,26 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 px-1 py-2">
-              <input 
-                type="checkbox" 
-                id="terms" 
+              <input
+                type="checkbox"
+                id="terms"
                 checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)}
-                className="w-4 h-4 rounded border-dark-600 bg-dark-900 text-primary-600 focus:ring-primary-500" 
+                className="w-4 h-4 rounded border-dark-600 bg-dark-900 text-primary-600 focus:ring-primary-500"
               />
-              <label htmlFor="terms" className="text-[10px] text-gray-500 leading-tight">
-                I agree to the <span className="text-primary-500 cursor-pointer">Terms & Conditions</span> and confirm I am 18+ years old.
+              <label
+                htmlFor="terms"
+                className="text-[10px] text-gray-500 leading-tight"
+              >
+                I agree to the{" "}
+                <span className="text-primary-500 cursor-pointer">
+                  Terms & Conditions
+                </span>{" "}
+                and confirm I am 18+ years old.
               </label>
             </div>
 
-            <button 
+            <button
               type="submit"
               disabled={loading}
               className="w-full bg-primary-600 hover:bg-primary-700 text-white py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-primary-600/20 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -130,7 +159,7 @@ const RegisterPage: React.FC = () => {
               ) : (
                 <UserPlus className="w-5 h-5" />
               )}
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
@@ -141,8 +170,13 @@ const RegisterPage: React.FC = () => {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">
-              Already have an account?{' '}
-              <Link to="/login" className="text-primary-500 font-bold hover:underline">Sign In</Link>
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="text-primary-500 font-bold hover:underline"
+              >
+                Sign In
+              </Link>
             </p>
           </div>
         </div>

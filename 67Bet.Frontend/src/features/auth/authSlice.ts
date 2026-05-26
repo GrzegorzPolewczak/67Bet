@@ -1,11 +1,15 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import { identityApi } from '../../api/axios';
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import { identityApi } from "../../api/axios";
 
 interface User {
   id: string;
   email: string;
   username: string;
-  role: 'User' | 'Admin';
+  role: "User" | "Admin";
   isKycVerified: boolean;
 }
 
@@ -19,63 +23,72 @@ interface AuthState {
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  token: localStorage.getItem("token"),
+  isAuthenticated: !!localStorage.getItem("token"),
   loading: false,
   error: null,
 };
 
 export const loginAsync = createAsyncThunk(
-  'auth/login',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  "auth/login",
+  async (
+    credentials: { email: string; password: string },
+    { rejectWithValue },
+  ) => {
     try {
-      const response = await identityApi.post('/auth/login', credentials);
+      const response = await identityApi.post("/auth/login", credentials);
       const token = response.data;
-      
+
       // Get user info after successful login
-      const userResponse = await identityApi.get('/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
+      const userResponse = await identityApi.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       return { user: userResponse.data, token };
     } catch (error: any) {
-      const message = error.response?.data?.message || error.response?.data || error.message || 'Login failed';
-      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Login failed";
+      return rejectWithValue(
+        typeof message === "object" ? JSON.stringify(message) : message,
+      );
     }
-  }
+  },
 );
 
 export const registerAsync = createAsyncThunk(
-  'auth/register',
+  "auth/register",
   async (userData: any, { rejectWithValue }) => {
     try {
-      const response = await identityApi.post('/auth/register', userData);
+      const response = await identityApi.post("/auth/register", userData);
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data || 'Registration failed');
+      return rejectWithValue(error.response?.data || "Registration failed");
     }
-  }
+  },
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ user: User; token: string }>
+      action: PayloadAction<{ user: User; token: string }>,
     ) => {
       const { user, token } = action.payload;
       state.user = user;
       state.token = token;
       state.isAuthenticated = true;
-      localStorage.setItem('token', token);
+      localStorage.setItem("token", token);
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     },
     clearError: (state) => {
       state.error = null;
@@ -84,7 +97,7 @@ const authSlice = createSlice({
       if (state.user) {
         state.user.isKycVerified = true;
       }
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -97,7 +110,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
-        localStorage.setItem('token', action.payload.token);
+        localStorage.setItem("token", action.payload.token);
       })
       .addCase(loginAsync.rejected, (state, action) => {
         state.loading = false;
@@ -106,5 +119,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout, clearError, setKycVerified } = authSlice.actions;
+export const { setCredentials, logout, clearError, setKycVerified } =
+  authSlice.actions;
 export default authSlice.reducer;

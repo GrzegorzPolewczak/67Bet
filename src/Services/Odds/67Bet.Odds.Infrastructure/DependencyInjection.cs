@@ -15,12 +15,12 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection");
-        
+
         services.AddDbContext<OddsDbContext>(options =>
             options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 
         services.AddScoped<IExternalEventRepository, ExternalEventRepository>();
-        
+
         services.AddHttpClient<ITheOddsApiClient, TheOddsApiClient>(client =>
         {
             client.BaseAddress = new Uri("https://api.the-odds-api.com/");

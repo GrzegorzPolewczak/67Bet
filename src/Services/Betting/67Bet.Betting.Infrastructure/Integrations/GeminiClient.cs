@@ -26,7 +26,7 @@ public class GeminiClient : IGeminiClient
         try
         {
             var url = $"v1/models/gemini-2.5-flash:generateContent?key={_apiKey}";
-            
+
             var requestBody = new
             {
                 contents = new[]
@@ -39,7 +39,7 @@ public class GeminiClient : IGeminiClient
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<GeminiResponse>();
-            return result?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text 
+            return result?.Candidates?.FirstOrDefault()?.Content?.Parts?.FirstOrDefault()?.Text
                    ?? "Nie udało się wygenerować podpowiedzi.";
         }
         catch (Exception ex)

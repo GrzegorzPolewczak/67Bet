@@ -24,7 +24,7 @@ public class EsportSimulator : BaseMatchSimulator
 
         if (string.IsNullOrEmpty(match.StreamUrl))
         {
-            match.StreamUrl = "https://player.twitch.tv/?channel=gaules&parent=localhost"; 
+            match.StreamUrl = "https://player.twitch.tv/?channel=gaules&parent=localhost";
         }
     }
 
@@ -40,7 +40,7 @@ public class EsportSimulator : BaseMatchSimulator
         if (match.Statistics["BombPlanted"] == 1)
         {
             match.CurrentAction = "BOMB TICKING...";
-            if (chance < 20) 
+            if (chance < 20)
             {
                 match.Statistics["BombPlanted"] = 0;
                 match.CurrentAction = "BOMB DEFUSED";
@@ -78,7 +78,7 @@ public class EsportSimulator : BaseMatchSimulator
         // Symulacja ekonomii ($k)
         match.Statistics["EconomyHome"] = Math.Clamp(match.Statistics["EconomyHome"] + Random.Next(-2, 5), 0, 80);
         match.Statistics["EconomyAway"] = Math.Clamp(match.Statistics["EconomyAway"] + Random.Next(-2, 5), 0, 80);
-        
+
         // Aktualizacja wyniku w Score (Rundy)
         match.Score["Home"] = match.Statistics["RoundsHome"].ToString();
         match.Score["Away"] = match.Statistics["RoundsAway"].ToString();

@@ -66,7 +66,7 @@ public class AiAssistantServiceTests
 
         _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventGuid))
             .ReturnsAsync((AiMatchInsight?)null);
-        
+
         _eventRepoMock.Setup(r => r.GetByIdAsync(eventGuid))
             .ReturnsAsync(match);
 
@@ -93,7 +93,7 @@ public class AiAssistantServiceTests
 
         _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventGuid))
             .ReturnsAsync((AiMatchInsight?)null);
-        
+
         _eventRepoMock.Setup(r => r.GetByIdAsync(eventGuid))
             .ReturnsAsync((Event?)null);
 

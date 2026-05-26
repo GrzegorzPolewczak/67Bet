@@ -29,7 +29,7 @@ public class BasketballSimulator : BaseMatchSimulator
         {
             match.CurrentAction = isHomePossession ? "Home Attack" : "Away Attack";
             match.CurrentZone = isHomePossession ? "AwayBox" : "HomeBox";
-            
+
             if (Random.Next(100) < 40) // SCORE!
             {
                 string team = isHomePossession ? "Home" : "Away";
@@ -38,7 +38,7 @@ public class BasketballSimulator : BaseMatchSimulator
                 int currentScore = int.Parse(match.Score[team]);
                 match.Score[team] = (currentScore + points).ToString();
                 match.CurrentAction = isThree ? "3-POINTER!" : "Layup Score";
-                
+
                 if (isThree) match.Statistics["ThreePointers"]++;
                 AddTimelineEvent(match, "Score", team, $"{points} pts by {team}");
             }
