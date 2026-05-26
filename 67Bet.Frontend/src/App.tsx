@@ -13,6 +13,8 @@ import AdminDashboard from './features/admin/AdminDashboard';
 
 import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
+import DesktopVerification from './features/auth/DesktopVerification';
+import MobileVerification from './features/auth/MobileVerification';
 import DepositPage from './features/wallet/DepositPage';
 import DepositSuccessPage from './features/wallet/DepositSuccessPage';
 import WithdrawPage from './features/wallet/WithdrawPage';
@@ -34,9 +36,11 @@ function App() {
         <Route path="deposit-success" element={<DepositSuccessPage />} />
         <Route path="withdraw" element={<WithdrawPage />} />
         <Route path="admin/dashboard" element={<AdminDashboard />} />
+        <Route path="kyc-verify" element={<DesktopVerification />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/mobile/:sessionId" element={<MobileVerification />} />
     </Routes>
   );
 }

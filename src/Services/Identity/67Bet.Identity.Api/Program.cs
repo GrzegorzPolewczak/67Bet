@@ -2,6 +2,7 @@ using _67Bet.Identity.Application;
 using _67Bet.Identity.Infrastructure;
 using _67Bet.Identity.Api.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -13,13 +14,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure CORS
+var frontendUrl = builder.Configuration["FrontendUrl"] ?? "http://localhost:5173";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins(frontendUrl, "http://localhost:3000") // Add specific origins including dynamic FrontendUrl
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // SignalR requires credentials
     });
 });
 
@@ -80,13 +84,16 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Add SignalR
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Seed Admin User
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<_67Bet.Identity.Infrastructure.Persistence.IdentityDbContext>();
-    context.Database.EnsureCreated();
+    context.Database.Migrate();
     if (!context.Users.Any(u => u.Email == "admin@67bet.com"))
     {
         // For development purposes, we are putting the plain password "admin123" here. 
@@ -116,5 +123,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<_67Bet.Identity.Api.Hubs.VerificationHub>("/hubs/verification");
 
 app.Run();

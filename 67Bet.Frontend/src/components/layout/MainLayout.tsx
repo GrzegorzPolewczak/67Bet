@@ -1,5 +1,5 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import BetSlip from '../../features/betslip/BetSlip';
@@ -8,9 +8,18 @@ import type { RootState } from '../../app/store';
 
 const MainLayout: React.FC = () => {
   const isBetslipOpen = useSelector((state: RootState) => state.betslip.isOpen);
+  const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      {isAuthenticated && user && !user.isKycVerified && (
+        <div className="bg-yellow-500 text-yellow-900 px-4 py-2 text-center font-semibold">
+          Your account is not fully verified yet. You must complete KYC verification to unlock all features.{' '}
+          <Link to="/kyc-verify" className="underline ml-2 hover:text-yellow-800">
+            Verify Now
+          </Link>
+        </div>
+      )}
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

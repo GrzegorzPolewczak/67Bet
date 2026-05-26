@@ -92,13 +92,31 @@ const SettingsPage: React.FC = () => {
               <Shield className="w-5 h-5 text-primary-500" /> Security
             </h2>
             <div className="space-y-4">
-              <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex items-start gap-3">        
-                <div className="w-2 h-2 rounded-full bg-accent-success mt-1.5" />
-                <div>
-                  <p className="font-bold text-sm text-white">Account Verified</p>
-                  <p className="text-xs text-gray-500 mt-1">Your identity has been verified allowing full platform access.</p>
+              {user?.isKycVerified ? (
+                <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex items-start gap-3">        
+                  <div className="w-2 h-2 rounded-full bg-accent-success mt-1.5" />
+                  <div>
+                    <p className="font-bold text-sm text-white">Account Verified</p>
+                    <p className="text-xs text-gray-500 mt-1">Your identity has been verified allowing full platform access.</p>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex flex-col gap-3">        
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-yellow-500 mt-1.5" />
+                    <div>
+                      <p className="font-bold text-sm text-white">Verification Required</p>
+                      <p className="text-xs text-gray-500 mt-1">Please verify your identity to unlock all features.</p>
+                    </div>
+                  </div>
+                  <Link 
+                    to="/kyc-verify" 
+                    className="w-full bg-primary-600/20 text-primary-500 hover:bg-primary-600 hover:text-white transition-colors py-2 rounded-lg font-bold text-xs text-center border border-primary-600/30"
+                  >
+                    Start KYC Verification
+                  </Link>
+                </div>
+              )}
             </div>
           </section>
         </div>

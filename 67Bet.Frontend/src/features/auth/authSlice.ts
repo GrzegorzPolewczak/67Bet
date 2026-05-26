@@ -6,6 +6,7 @@ interface User {
   email: string;
   username: string;
   role: 'User' | 'Admin';
+  isKycVerified: boolean;
 }
 
 interface AuthState {
@@ -78,6 +79,11 @@ const authSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    setKycVerified: (state) => {
+      if (state.user) {
+        state.user.isKycVerified = true;
+      }
     }
   },
   extraReducers: (builder) => {
@@ -100,5 +106,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout, clearError } = authSlice.actions;
+export const { setCredentials, logout, clearError, setKycVerified } = authSlice.actions;
 export default authSlice.reducer;

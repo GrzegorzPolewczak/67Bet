@@ -25,6 +25,7 @@ namespace _67Bet.Identity.Domain.Entities
         public string Email { get; private set; } = null!;
         public string PasswordHash { get; private set; } = null!;
         public Role UserRole { get; private set; }
+        public bool IsKycVerified { get; private set; }
 
         public User(string username, string email, string passwordHash, Role role = Role.User)
         {
@@ -32,6 +33,12 @@ namespace _67Bet.Identity.Domain.Entities
             Email = email;
             PasswordHash = passwordHash;
             UserRole = role;
+            IsKycVerified = false;
+        }
+
+        public void VerifyKyc()
+        {
+            IsKycVerified = true;
         }
 
         public void ChangeRole(Role newRole) => UserRole = newRole;
