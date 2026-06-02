@@ -8,6 +8,7 @@ participant "Betting.Api (Controller)" as API
 participant "AiAssistantService" as Service
 participant "AiMatchInsightRepository" as Repo
 database "MySQL (BettingDB)" as DB
+participant "OddsIntegrationService" as OddsAPI
 participant "Google Gemini API" as Gemini
 
 User -> FE : Kliknięcie "Zapytaj AI o typ"
@@ -24,21 +25,33 @@ DB --> Repo : Result (null or Insight)
 Repo --> Service : AiMatchInsight?
 deactivate Repo
 
-alt Cache Hit (Wskazówka istnieje w bazie)
+alt Cache Hit (Wskazówka istnieje w bazie i jest aktualna)
     Service --> API : Content (z bazy)
-else Cache Miss (Brak wskazówki)
-    Service -> Gemini : GenerateTextAsync(Prompt z nazwami drużyn)
+else Cache Miss (Brak lub nieaktualna wskazówka)
+    Service -> OddsAPI : GetRecentScoresAsync(sportKey, daysFrom)
+    activate OddsAPI
+    OddsAPI --> Service : RecentScores (JSON)
+    deactivate OddsAPI
+
+    Service -> OddsAPI : GetCurrentOddsAsync(eventId)
+    activate OddsAPI
+    OddsAPI --> Service : CurrentOdds (JSON)
+    deactivate OddsAPI
+
+    Service -> Service : Zbudowanie kontekstu (RAG / Context Injection)
+
+    Service -> Gemini : GenerateTextAsync(Prompt z kontekstem: wyniki i kursy)
     activate Gemini
     Gemini --> Service : Wygenerowany tekst (Insight)
     deactivate Gemini
-    
-    Service -> Repo : AddAsync(New AiMatchInsight)
+
+    Service -> Repo : AddOrUpdateAsync(AiMatchInsight)
     activate Repo
-    Repo -> DB : INSERT INTO AiMatchInsights (...)
+    Repo -> DB : INSERT / UPDATE INTO AiMatchInsights (...)
     DB --> Repo : Success
     Repo --> Service : Success
     deactivate Repo
-    
+
     Service --> API : Wygenerowany tekst
 end
 
@@ -47,5 +60,5 @@ deactivate Service
 API --> FE : JSON { insight: "..." }
 deactivate API
 
-FE -> User : Wyświetlenie analizy AI
+FE -> User : Wyświetlenie analizy AI opartej o fakty
 @enduml

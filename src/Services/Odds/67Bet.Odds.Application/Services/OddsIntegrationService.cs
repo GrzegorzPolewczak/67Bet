@@ -35,6 +35,7 @@ public class OddsIntegrationService : IOddsIntegrationService
         var sportsToSync = new[] { "upcoming", "basketball_nba", "mma_mixed_martial_arts", "soccer_epl", "soccer_spain_la_liga" };
 
         var allExternalEvents = new List<ExternalEventDto>();
+        var scoresBySport = new Dictionary<string, string>();
 
         // 1. Pobieranie z The Odds API
         foreach (var sport in sportsToSync)
@@ -43,6 +44,16 @@ public class OddsIntegrationService : IOddsIntegrationService
             {
                 var events = await _apiClient.GetUpcomingEventsAsync(sport);
                 allExternalEvents.AddRange(events);
+
+                // Opcja 2: Pobieranie wyników podczas cyklicznej synchronizacji
+                if (sport != "upcoming")
+                {
+                    var scores = await _apiClient.GetScoresRawAsync(sport);
+                    if (!string.IsNullOrEmpty(scores))
+                    {
+                        scoresBySport[sport] = scores;
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -70,13 +81,17 @@ public class OddsIntegrationService : IOddsIntegrationService
             try
             {
                 var existingEvent = await _eventRepository.GetByExternalIdAsync(extEvent.Id);
+                
+                string? recentScores = scoresBySport.TryGetValue(extEvent.SportKey, out var s) ? s : null;
+
                 if (existingEvent == null)
                 {
                     var newEvent = new ExternalEvent(
                         extEvent.Id,
                         extEvent.SportKey,
                         $"{extEvent.HomeTeam} vs {extEvent.AwayTeam}",
-                        extEvent.CommenceTime);
+                        extEvent.CommenceTime,
+                        recentScores);
 
                     var primaryBookmaker = extEvent.Bookmakers.FirstOrDefault();
                     if (primaryBookmaker != null)
@@ -97,7 +112,7 @@ public class OddsIntegrationService : IOddsIntegrationService
                 }
                 else
                 {
-                    existingEvent.UpdateInfo($"{extEvent.HomeTeam} vs {extEvent.AwayTeam}", extEvent.CommenceTime);
+                    existingEvent.UpdateInfo($"{extEvent.HomeTeam} vs {extEvent.AwayTeam}", extEvent.CommenceTime, recentScores);
                     
                     var primaryBookmaker = extEvent.Bookmakers.FirstOrDefault();
                     if (primaryBookmaker != null)
@@ -166,6 +181,7 @@ public class OddsIntegrationService : IOddsIntegrationService
             CommenceTime = e.StartTime,
             HomeTeam = e.Name.Split(" vs ").FirstOrDefault() ?? e.Name,
             AwayTeam = e.Name.Split(" vs ").LastOrDefault() ?? string.Empty,
+            RecentScores = e.RecentScores,
             Bookmakers = new List<BookmakerDto>
             {
                 new BookmakerDto

@@ -37,4 +37,19 @@ public class TheOddsApiClient : ITheOddsApiClient
             return new List<ExternalEventDto>();
         }
     }
+
+    public async Task<string> GetScoresRawAsync(string sport, int daysFrom = 3)
+    {
+        try
+        {
+            var url = $"v4/sports/{sport}/scores/?apiKey={_apiKey}&daysFrom={daysFrom}";
+            var response = await _httpClient.GetStringAsync(url);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching scores from The Odds API for sport {Sport}", sport);
+            return string.Empty;
+        }
+    }
 }

@@ -6,6 +6,7 @@ public class AiMatchInsight : BaseEntity, IAggregateRoot
 {
     public Guid EventId { get; private set; }
     public string Content { get; private set; } = string.Empty;
+    public DateTime GeneratedAt { get; private set; }
 
     // EF Core
     private AiMatchInsight() { }
@@ -16,5 +17,12 @@ public class AiMatchInsight : BaseEntity, IAggregateRoot
         CreatedAt = DateTime.UtcNow;
         EventId = eventId;
         Content = content;
+        GeneratedAt = DateTime.UtcNow;
+    }
+
+    public void UpdateInsight(string newContent)
+    {
+        Content = newContent;
+        GeneratedAt = DateTime.UtcNow;
     }
 }

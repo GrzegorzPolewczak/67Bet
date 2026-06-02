@@ -17,4 +17,20 @@ public class AiMatchInsightRepository : EFRepository<AiMatchInsight, BettingDbCo
         return await _dbSet
             .FirstOrDefaultAsync(x => x.EventId == eventId);
     }
+
+    public async Task AddOrUpdateAsync(AiMatchInsight insight)
+    {
+        var existing = await _dbSet.FirstOrDefaultAsync(x => x.EventId == insight.EventId);
+        
+        if (existing == null)
+        {
+            await _dbSet.AddAsync(insight);
+        }
+        else
+        {
+            _context.Entry(existing).CurrentValues.SetValues(insight);
+        }
+        
+        await _context.SaveChangesAsync();
+    }
 }

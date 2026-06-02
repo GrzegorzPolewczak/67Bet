@@ -67,8 +67,14 @@ public class OddsIntegrationServiceTests
             }
         };
 
-        _apiClientMock.Setup(x => x.GetUpcomingEventsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .ReturnsAsync(externalEvents);
+        // Serwis ma zaszyte 5 sportów w tablicy sportsToSync, więc wywoła to 5 razy. 
+        // Konfigurujemy mock tak, żeby zwrócił listę dla jednego konkretnego, a dla reszty puste, żeby sprawdzić tylko 1.
+        _apiClientMock.SetupSequence(x => x.GetUpcomingEventsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(externalEvents)
+            .ReturnsAsync(new List<ExternalEventDto>())
+            .ReturnsAsync(new List<ExternalEventDto>())
+            .ReturnsAsync(new List<ExternalEventDto>())
+            .ReturnsAsync(new List<ExternalEventDto>());
         
         _pandaApiClientMock.Setup(x => x.GetUpcomingEsportsMatchesAsync())
             .ReturnsAsync(new List<ExternalEventDto>());

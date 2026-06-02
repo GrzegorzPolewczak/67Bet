@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _67Bet.Betting.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using _67Bet.Betting.Infrastructure.Persistence;
 namespace _67Bet.Betting.Infrastructure.Migrations
 {
     [DbContext(typeof(BettingDbContext))]
-    partial class BettingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602201848_AddGeneratedAtToAiMatchInsight")]
+    partial class AddGeneratedAtToAiMatchInsight
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,9 +43,6 @@ namespace _67Bet.Betting.Infrastructure.Migrations
 
                     b.Property<DateTime>("GeneratedAt")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UsedContext")
-                        .HasColumnType("longtext");
 
                     b.HasKey("Id");
 

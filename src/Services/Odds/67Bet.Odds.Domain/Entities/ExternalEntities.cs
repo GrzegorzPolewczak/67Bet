@@ -9,15 +9,17 @@ public class ExternalEvent : BaseEntity, IAggregateRoot
     public string SportKey { get; private set; }
     public string Name { get; private set; }
     public DateTime StartTime { get; private set; }
+    public string? RecentScores { get; private set; }
     private readonly List<ExternalMarket> _markets = new();
     public IReadOnlyCollection<ExternalMarket> Markets => _markets.AsReadOnly();
 
-    public ExternalEvent(string externalId, string sportKey, string name, DateTime startTime)
+    public ExternalEvent(string externalId, string sportKey, string name, DateTime startTime, string? recentScores = null)
     {
         ExternalId = externalId;
         SportKey = sportKey;
         Name = name;
         StartTime = startTime;
+        RecentScores = recentScores;
     }
 
     public void AddMarket(ExternalMarket market)
@@ -28,10 +30,14 @@ public class ExternalEvent : BaseEntity, IAggregateRoot
         }
     }
 
-    public void UpdateInfo(string name, DateTime startTime)
+    public void UpdateInfo(string name, DateTime startTime, string? recentScores = null)
     {
         Name = name;
         StartTime = startTime;
+        if (recentScores != null)
+        {
+            RecentScores = recentScores;
+        }
     }
 }
 

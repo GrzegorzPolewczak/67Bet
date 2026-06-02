@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _67Bet.Odds.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using _67Bet.Odds.Infrastructure.Persistence;
 namespace _67Bet.Odds.Infrastructure.Migrations
 {
     [DbContext(typeof(OddsDbContext))]
-    partial class OddsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602203041_AddRecentScoresToExternalEvent")]
+    partial class AddRecentScoresToExternalEvent
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

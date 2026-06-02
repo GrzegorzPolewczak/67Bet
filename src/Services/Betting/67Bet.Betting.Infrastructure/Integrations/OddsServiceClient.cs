@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using _67Bet.Betting.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,9 @@ public class OddsServiceClient : IOddsServiceClient
             return new ExternalMatchDto
             {
                 Name = $"{match.HomeTeam} vs {match.AwayTeam}",
-                SportKey = match.SportTitle ?? match.SportKey ?? "Sport"
+                SportKey = match.SportTitle ?? match.SportKey ?? "Sport",
+                RecentScores = match.RecentScores,
+                CurrentOdds = match.Bookmakers != null ? JsonSerializer.Serialize(match.Bookmakers) : null
             };
         }
         catch (Exception ex)
@@ -58,5 +61,7 @@ public class OddsServiceClient : IOddsServiceClient
         public string? AwayTeam { get; set; }
         public string? SportKey { get; set; }
         public string? SportTitle { get; set; }
+        public string? RecentScores { get; set; }
+        public object? Bookmakers { get; set; }
     }
 }
