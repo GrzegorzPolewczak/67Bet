@@ -51,6 +51,10 @@ public static class BettingMappingExtensions
     {
         return new BetDto(
             bet.OutcomeId,
+            bet.OutcomeName,
+            bet.MarketName,
+            bet.EventName,
+            bet.StartTime,
             bet.FixedPrice,
             bet.Status.ToString()
         );

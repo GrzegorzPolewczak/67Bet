@@ -51,57 +51,44 @@ public class BettingService : IBettingService
             throw new InvalidOperationException("Niewystarczające środki na koncie użytkownika.");
 
         var ticket = new Ticket(userId, stake);
+        var activeEvents = await _eventRepository.GetActiveEventsAsync();
+        var activeVirtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
 
         foreach (var outcomeId in outcomeIds)
         {
-            var events = await _eventRepository.GetActiveEventsAsync();
-            Outcome? foundOutcome = null;
-            
-            foreach (var @event in events)
+            bool found = false;
+
+            // Search in regular events
+            foreach (var @event in activeEvents)
             {
-                var markets = await _marketRepository.GetByEventIdAsync(@event.Id);
-                foreach (var market in markets)
+                var market = @event.Markets.FirstOrDefault(m => m.Outcomes.Any(o => o.Id == outcomeId));
+                if (market != null && market.IsActive)
                 {
-                    if (!market.IsActive) continue;
-                    
-                    var outcome = market.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
-                    if (outcome != null)
-                    {
-                        foundOutcome = outcome;
-                        break;
-                    }
+                    var outcome = market.Outcomes.First(o => o.Id == outcomeId);
+                    ticket.AddBet(outcome.Id, outcome.Name, market.Name, @event.Name, @event.StartTime, outcome.CurrentPrice);
+                    found = true;
+                    break;
                 }
-                if (foundOutcome != null) break;
             }
 
-            if (foundOutcome != null)
-            {
-                ticket.AddBet(foundOutcome.Id, foundOutcome.CurrentPrice);
-            }
-            else
-            {
-                var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
-                VirtualRaceParticipant? foundVirtualParticipant = null;
-                
-                foreach (var race in virtualRaces)
-                {
-                    var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
-                    if (participant != null)
-                    {
-                        foundVirtualParticipant = participant;
-                        break;
-                    }
-                }
+            if (found) continue;
 
-                if (foundVirtualParticipant != null)
+            // Search in virtual races
+            foreach (var race in activeVirtualRaces)
+            {
+                var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
+                if (participant != null)
                 {
-                    ticket.AddBet(foundVirtualParticipant.Id, foundVirtualParticipant.Odds);
+                    ticket.AddBet(participant.Id, participant.Horse.Name, "Winner", race.Name, race.StartTime, participant.Odds);
+                    found = true;
+                    break;
                 }
-                else
-                {
-                    await _walletService.ProcessPayoutAsync(userId, stake);
-                    throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
-                }
+            }
+
+            if (!found)
+            {
+                await _walletService.ProcessPayoutAsync(userId, stake);
+                throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
             }
         }
 
@@ -151,11 +138,16 @@ public class BettingService : IBettingService
             {
                 var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
                 
-                if (outcomeStatus == OutcomeResult.Lost)
+                if (outcomeStatus == OutcomeResult.Won)
                 {
-                    isLost = true;
-                    break;
+                    bet.Settle(BetStatus.Won);
                 }
+                else if (outcomeStatus == OutcomeResult.Lost)
+                {
+                    bet.Settle(BetStatus.Lost);
+                    isLost = true;
+                }
+                
                 if (outcomeStatus == OutcomeResult.Pending)
                 {
                     allSettled = false;
@@ -173,6 +165,11 @@ public class BettingService : IBettingService
                 await _ticketRepository.UpdateAsync(ticket);
                 
                 await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
+            }
+            else
+            {
+                // Partially settled, still update to save bet statuses
+                await _ticketRepository.UpdateAsync(ticket);
             }
         }
     }

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../app/store';
 import { fetchHistoryAsync } from './historySlice';
-import { History, ChevronLeft, Loader2, Info } from 'lucide-react';
+import { History, ChevronLeft, Loader2, Info, Share2, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
@@ -13,6 +13,12 @@ const BetHistoryPage: React.FC = () => {
   useEffect(() => {
     dispatch(fetchHistoryAsync());
   }, [dispatch]);
+
+  const handleShare = (ticketId: string) => {
+    const url = `${window.location.origin}/share-ticket/${ticketId}`;
+    navigator.clipboard.writeText(url);
+    alert('Link to betslip copied to clipboard!');
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
@@ -68,6 +74,13 @@ const BetHistoryPage: React.FC = () => {
                   <span className="text-sm font-mono text-gray-300">{ticket.id.split('-')[0]}...</span>
                 </div>
                 <div className="flex items-center gap-6">
+                  <button 
+                    onClick={() => handleShare(ticket.id)}
+                    className="p-2 hover:bg-dark-700 rounded-lg transition-colors text-gray-400 hover:text-primary-500"
+                    title="Share Ticket"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
                   <div className="text-right">
                     <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Total Odds</span>
                     <span className="text-sm font-black text-white">@{Number(ticket.totalOdds || 0).toFixed(2)}</span>
@@ -94,14 +107,27 @@ const BetHistoryPage: React.FC = () => {
               <div className="space-y-3">
                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Selections ({ticket.bets.length})</h4>
                 {ticket.bets.map((bet, i) => (
-                  <div key={i} className="flex items-center justify-between bg-dark-900 rounded-xl p-3 border border-dark-600">
-                    <div>
-                      <p className="text-xs font-bold text-white">Outcome ID: {bet.outcomeId.split('-')[0]}...</p>
-                      <p className="text-[10px] text-gray-500 uppercase">Status: {bet.status}</p>
+                  <div key={i} className="flex items-center justify-between bg-dark-900 rounded-xl p-4 border border-dark-600">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-black text-primary-500 uppercase tracking-wider">{bet.eventName}</p>
+                      <p className="text-xs font-bold text-white">{bet.marketName}: {bet.outcomeName}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                        <Clock className="w-3 h-3" />
+                        {new Date(bet.startTime).toLocaleString()}
+                      </div>
                     </div>
-                    <span className="text-sm font-black text-white bg-dark-700 px-3 py-1 rounded-lg">
-                      @{Number(bet.fixedPrice).toFixed(2)}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-black text-white bg-dark-700 px-3 py-1 rounded-lg">
+                        @{Number(bet.fixedPrice).toFixed(2)}
+                      </span>
+                      {bet.status === 'Won' ? (
+                        <CheckCircle2 className="w-4 h-4 text-accent-success" />
+                      ) : bet.status === 'Lost' ? (
+                        <XCircle className="w-4 h-4 text-accent-danger" />
+                      ) : (
+                        <Clock className="w-4 h-4 text-gray-500" />
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
