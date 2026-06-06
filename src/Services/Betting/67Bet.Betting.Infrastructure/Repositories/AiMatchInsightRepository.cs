@@ -12,7 +12,7 @@ public class AiMatchInsightRepository : EFRepository<AiMatchInsight, BettingDbCo
     {
     }
 
-    public async Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId)
+    public async Task<AiMatchInsight?> GetByEventIdAsync(string eventId)
     {
         return await _dbSet
             .FirstOrDefaultAsync(x => x.EventId == eventId);

@@ -29,16 +29,13 @@ public class AiAssistantService : IAiAssistantService
 
     public async Task<string> GetMatchInsightAsync(string eventId)
     {
-        // 1. Sprawdź cache w bazie danych (tylko dla lokalnych Guid)
-        if (Guid.TryParse(eventId, out var eventGuid))
+        // 1. Sprawdź cache w bazie danych (dla wszystkich identyfikatorów string)
+        var existingInsight = await _insightRepository.GetByEventIdAsync(eventId);
+        // Sprawdzamy też ważność cache (np. odrzucamy starsze niż 12h)
+        if (existingInsight != null && existingInsight.GeneratedAt > DateTime.UtcNow.AddHours(-12))
         {
-            var existingInsight = await _insightRepository.GetByEventIdAsync(eventGuid);
-            // Sprawdzamy też ważność cache (np. odrzucamy starsze niż 24h, choć na razie bazujemy po prostu na istnieniu)
-            if (existingInsight != null && existingInsight.GeneratedAt > DateTime.UtcNow.AddHours(-12))
-            {
-                _logger.LogInformation("Returning cached AI insight for event {EventId}", eventId);
-                return existingInsight.Content;
-            }
+            _logger.LogInformation("Returning cached AI insight for event {EventId}", eventId);
+            return existingInsight.Content;
         }
 
         // 2. Pobierz podstawowe dane o meczu oraz zsynchronizowane twarde dane
@@ -54,7 +51,6 @@ public class AiAssistantService : IAiAssistantService
             {
                 matchName = localMatch.Name;
                 sportMetadata = localMatch.Metadata; // Lub sport ID z repo
-                // Dla lokalnych wydarzeń na razie nie mamy wpiętych wyników, AI wygeneruje analizę na bazie samego ułożenia.
             }
             else
             {
@@ -89,19 +85,16 @@ public class AiAssistantService : IAiAssistantService
             var generatedText = await _geminiClient.GenerateTextAsync(prompt);
 
             // 5. Zapisz lub zaktualizuj w bazie (Caching)
-            if (Guid.TryParse(eventId, out var g))
+            var insightToSave = await _insightRepository.GetByEventIdAsync(eventId);
+            if (insightToSave == null)
             {
-                var existingInsight = await _insightRepository.GetByEventIdAsync(g);
-                if (existingInsight == null)
-                {
-                    var newInsight = new AiMatchInsight(g, generatedText);
-                    await _insightRepository.AddOrUpdateAsync(newInsight);
-                }
-                else
-                {
-                    existingInsight.UpdateInsight(generatedText);
-                    await _insightRepository.AddOrUpdateAsync(existingInsight);
-                }
+                var newInsight = new AiMatchInsight(eventId, generatedText);
+                await _insightRepository.AddOrUpdateAsync(newInsight);
+            }
+            else
+            {
+                insightToSave.UpdateInsight(generatedText);
+                await _insightRepository.AddOrUpdateAsync(insightToSave);
             }
 
             return generatedText;

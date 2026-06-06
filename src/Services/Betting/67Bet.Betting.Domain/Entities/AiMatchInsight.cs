@@ -4,14 +4,14 @@ namespace _67Bet.Betting.Domain.Entities;
 
 public class AiMatchInsight : BaseEntity, IAggregateRoot
 {
-    public Guid EventId { get; private set; }
+    public string EventId { get; private set; } = string.Empty;
     public string Content { get; private set; } = string.Empty;
     public DateTime GeneratedAt { get; private set; }
 
     // EF Core
     private AiMatchInsight() { }
 
-    public AiMatchInsight(Guid eventId, string content)
+    public AiMatchInsight(string eventId, string content)
     {
         Id = Guid.NewGuid();
         CreatedAt = DateTime.UtcNow;

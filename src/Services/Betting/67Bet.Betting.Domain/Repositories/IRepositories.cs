@@ -32,6 +32,6 @@ public interface ITicketRepository : IRepository<Ticket>
 
 public interface IAiMatchInsightRepository : IRepository<AiMatchInsight>
 {
-    Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId);
+    Task<AiMatchInsight?> GetByEventIdAsync(string eventId);
     Task AddOrUpdateAsync(AiMatchInsight insight);
 }
