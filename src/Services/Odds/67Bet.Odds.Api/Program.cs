@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,7 @@ builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67B
 builder.Services.AddSingleton<_67Bet.Odds.Api.Services.MatchSimulatorFactory>();
 builder.Services.AddHostedService<_67Bet.Odds.Api.Services.LiveTrackerBackgroundService>();
 
-// Configure CORS
+// Configure CORS (Oryginalna podwójna konfiguracja)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -32,7 +33,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -101,6 +101,21 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
+
+// Auto-migrate database on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<_67Bet.Odds.Infrastructure.Persistence.OddsDbContext>();
+        context.Database.Migrate();
+        Console.WriteLine("Odds database migrated successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error migrating odds database: {ex.Message}");
+    }
+}
 
 app.UseMiddleware<ExceptionMiddleware>();
 

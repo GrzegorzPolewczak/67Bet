@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,13 +83,17 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
-// Seed data
+// Migrate Database and Seed data
 using (var scope = app.Services.CreateScope())
 {
     try 
     {
         var context = scope.ServiceProvider.GetRequiredService<_67Bet.Betting.Infrastructure.Persistence.BettingDbContext>();
         
+        // Auto-migrate database on startup
+        context.Database.Migrate();
+        Console.WriteLine("Database migrated successfully.");
+
         // Seed Virtual Racing Horses
         if (!context.Horses.Any())
         {
@@ -108,7 +113,7 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Error seeding data: {ex.Message}");
+        Console.WriteLine($"Error migrating or seeding data: {ex.Message}");
     }
 }
 
