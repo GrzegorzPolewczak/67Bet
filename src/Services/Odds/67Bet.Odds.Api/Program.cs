@@ -137,6 +137,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<_67Bet.Odds.Api.Hubs.LiveTrackerHub>("/liveTrackerHub");
+app.MapHub<_67Bet.Odds.Api.Hubs.LiveTrackerHub>("/api/liveTrackerHub");
 
 app.Run();
