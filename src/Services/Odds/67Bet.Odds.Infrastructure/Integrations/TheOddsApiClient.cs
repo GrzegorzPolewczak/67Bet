@@ -23,7 +23,7 @@ public class TheOddsApiClient : ITheOddsApiClient
         _apiKey = configuration["SportsApi:ApiKey"] ?? throw new InvalidOperationException("Sports API Key is missing in configuration.");
     }
 
-    public async Task<IEnumerable<ExternalEventDto>> GetUpcomingEventsAsync(string sport = "upcoming", string regions = "eu,us,uk", string markets = "h2h")
+    public async Task<IEnumerable<ExternalEventDto>> GetUpcomingEventsAsync(string sport = "upcoming", string regions = "eu", string markets = "h2h")
     {
         try
         {
