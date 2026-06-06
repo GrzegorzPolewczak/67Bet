@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { ChevronLeft, Loader2, Play, LayoutGrid } from 'lucide-react';
+import { ChevronLeft, Loader2, Play, LayoutGrid, Activity } from 'lucide-react';
 import type { RootState, AppDispatch } from '../../app/store';
 import { fetchEventsAsync } from './bettingSlice';
 import { addSelection, removeSelection } from '../betslip/betslipSlice';

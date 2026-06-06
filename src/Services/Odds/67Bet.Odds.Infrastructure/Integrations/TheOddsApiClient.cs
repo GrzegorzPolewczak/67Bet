@@ -23,7 +23,7 @@ public class TheOddsApiClient : ITheOddsApiClient
         _apiKey = configuration["SportsApi:ApiKey"] ?? throw new InvalidOperationException("Sports API Key is missing in configuration.");
     }
 
-    public async Task<IEnumerable<ExternalEventDto>> GetUpcomingEventsAsync(string sport = "upcoming", string regions = "eu,us,uk", string markets = "h2h")
+    public async Task<IEnumerable<ExternalEventDto>> GetUpcomingEventsAsync(string sport = "upcoming", string regions = "eu", string markets = "h2h")
     {
         try
         {
@@ -35,6 +35,21 @@ public class TheOddsApiClient : ITheOddsApiClient
         {
             _logger.LogError(ex, "Error fetching data from The Odds API");
             return new List<ExternalEventDto>();
+        }
+    }
+
+    public async Task<string> GetScoresRawAsync(string sport, int daysFrom = 10)
+    {
+        try
+        {
+            var url = $"v4/sports/{sport}/scores/?apiKey={_apiKey}&daysFrom={daysFrom}";
+            var response = await _httpClient.GetStringAsync(url);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching scores from The Odds API for sport {Sport}", sport);
+            return string.Empty;
         }
     }
 }

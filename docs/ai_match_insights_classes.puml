@@ -1,11 +1,12 @@
 @startuml AI_Match_Insights_Classes
 !theme plain
-title Diagram Klas: AI Match Insights (Gemini Implementation)
+title Diagram Klas: AI Match Insights (Context Injection Implementation)
 
 package "Betting.Domain" {
     class AiMatchInsight {
         +Guid EventId
         +string Content
+        +DateTime GeneratedAt
         +AiMatchInsight(Guid eventId, string content)
     }
 }
@@ -18,25 +19,32 @@ package "Betting.Application" {
     interface IGeminiClient {
         +Task<string> GenerateTextAsync(string prompt)
     }
+    
+    interface IOddsIntegrationService {
+        +Task<string> GetRecentScoresAsync(string sportKey, int daysFrom)
+        +Task<string> GetCurrentOddsAsync(Guid eventId)
+    }
 }
 
 package "Betting.Infrastructure" {
     interface IAiMatchInsightRepository {
         +Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId)
-        +Task AddAsync(AiMatchInsight insight)
+        +Task AddOrUpdateAsync(AiMatchInsight insight)
     }
 
     class AiAssistantService {
         -IAiMatchInsightRepository _repo
         -IEventRepository _eventRepo
+        -IOddsIntegrationService _oddsApi
         -IGeminiClient _geminiClient
         +Task<string> GetMatchInsightAsync(Guid eventId)
+        -string BuildContextPrompt(Event match, string scores, string odds)
     }
 
     class AiMatchInsightRepository {
         -BettingDbContext _context
         +Task<AiMatchInsight?> GetByEventIdAsync(Guid eventId)
-        +Task AddAsync(AiMatchInsight insight)
+        +Task AddOrUpdateAsync(AiMatchInsight insight)
     }
 
     class GeminiClient {
@@ -51,5 +59,6 @@ IGeminiClient <|.. GeminiClient
 
 AiAssistantService --> IAiMatchInsightRepository
 AiAssistantService --> IGeminiClient
+AiAssistantService --> IOddsIntegrationService
 AiMatchInsightRepository --> AiMatchInsight
 @enduml

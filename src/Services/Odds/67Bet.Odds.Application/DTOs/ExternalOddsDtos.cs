@@ -26,6 +26,8 @@ public class ExternalEventDto
 
     public string? StreamUrl { get; set; }
 
+    public string? RecentScores { get; set; }
+
     [JsonPropertyName("bookmakers")]
     public List<BookmakerDto> Bookmakers { get; set; } = new();
 }
