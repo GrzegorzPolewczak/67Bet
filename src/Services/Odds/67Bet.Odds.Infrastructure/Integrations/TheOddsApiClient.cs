@@ -38,7 +38,7 @@ public class TheOddsApiClient : ITheOddsApiClient
         }
     }
 
-    public async Task<string> GetScoresRawAsync(string sport, int daysFrom = 3)
+    public async Task<string> GetScoresRawAsync(string sport, int daysFrom = 10)
     {
         try
         {

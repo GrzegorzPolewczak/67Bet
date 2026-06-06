@@ -7,7 +7,7 @@ namespace _67Bet.Odds.Application.Interfaces;
 public interface ITheOddsApiClient
 {
     Task<IEnumerable<ExternalEventDto>> GetUpcomingEventsAsync(string sport = "soccer_poland_ekstraklasa", string regions = "eu", string markets = "h2h");
-    Task<string> GetScoresRawAsync(string sport, int daysFrom = 3);
+    Task<string> GetScoresRawAsync(string sport, int daysFrom = 10);
 }
 
 public interface IOddsIntegrationService
