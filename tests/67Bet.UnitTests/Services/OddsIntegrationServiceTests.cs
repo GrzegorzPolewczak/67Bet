@@ -75,7 +75,6 @@ _apiClientMock.SetupSequence(x => x.GetUpcomingEventsAsync(It.IsAny<string>(), I
     .ReturnsAsync(new List<ExternalEventDto>())
     .ReturnsAsync(new List<ExternalEventDto>())
     .ReturnsAsync(new List<ExternalEventDto>());
-        
         _pandaApiClientMock.Setup(x => x.GetUpcomingEsportsMatchesAsync())
             .ReturnsAsync(new List<ExternalEventDto>());
 

@@ -112,8 +112,7 @@ public class OddsIntegrationService : IOddsIntegrationService
                 }
                 else
                 {
-                    existingEvent.UpdateInfo($"{extEvent.HomeTeam} vs {extEvent.AwayTeam}", extEvent.CommenceTime, recentScores);
-                    
+existingEvent.UpdateInfo($"{extEvent.HomeTeam} vs {extEvent.AwayTeam}", extEvent.CommenceTime, recentScores);
                     var primaryBookmaker = extEvent.Bookmakers.FirstOrDefault();
                     if (primaryBookmaker != null)
                     {
@@ -156,8 +155,8 @@ public class OddsIntegrationService : IOddsIntegrationService
         if (string.IsNullOrEmpty(sportKey)) return "Unknown";
         var parts = sportKey.Split('_');
         if (parts.Length == 1) return char.ToUpper(sportKey[0]) + sportKey.Substring(1).ToLower();
-        
-        var formattedParts = parts.Skip(1).Select(p => 
+
+        var formattedParts = parts.Skip(1).Select(p =>
         {
             var lower = p.ToLower();
             if (lower == "csgo") return "CS:GO";
@@ -166,7 +165,7 @@ public class OddsIntegrationService : IOddsIntegrationService
             if (lower == "ufc") return "UFC";
             return char.ToUpper(lower[0]) + lower.Substring(1);
         });
-        
+
         return string.Join(" ", formattedParts);
     }
 

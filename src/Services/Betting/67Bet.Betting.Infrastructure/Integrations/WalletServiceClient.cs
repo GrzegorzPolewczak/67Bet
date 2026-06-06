@@ -15,7 +15,7 @@ public class WalletServiceClient : IWalletService
     {
         _httpClient = httpClient;
         _logger = logger;
-        
+
         var baseUrl = configuration["WalletService:BaseUrl"] ?? "http://localhost:5400/api/";
         _httpClient.BaseAddress = new Uri(baseUrl);
     }

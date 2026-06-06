@@ -16,7 +16,7 @@ public class WalletService : IWalletService
     private readonly IWalletRepository _walletRepository;
     private readonly ITransactionRepository _transactionRepository;
 
-    public WalletService(IWalletRepository walletRepository, ITransactionRepository transactionRepository)      
+    public WalletService(IWalletRepository walletRepository, ITransactionRepository transactionRepository)
     {
         _walletRepository = walletRepository;
         _transactionRepository = transactionRepository;

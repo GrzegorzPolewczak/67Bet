@@ -80,7 +80,7 @@ public class BettingServiceTests
             .ReturnsAsync(new List<Market> { market });
 
         // Act
-        var ticket = await _bettingService.PlaceTicketAsync(userId, stake, new List<Guid> { outcome.Id });  
+        var ticket = await _bettingService.PlaceTicketAsync(userId, stake, new List<Guid> { outcome.Id });
 
         // Assert
         ticket.Should().NotBeNull();
@@ -115,7 +115,7 @@ public class BettingServiceTests
         _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId)).ReturnsAsync(@event);
         _marketRepositoryMock.Setup(x => x.GetByEventIdAsync(eventId)).ReturnsAsync(new List<Market> { market });
         _ticketRepositoryMock.Setup(x => x.GetActiveTicketsAsync()).ReturnsAsync(new List<Ticket> { ticket });
-        _eventRepositoryMock.Setup(x => x.GetActiveEventsAsync()).ReturnsAsync(new List<Event> { @event }); 
+        _eventRepositoryMock.Setup(x => x.GetActiveEventsAsync()).ReturnsAsync(new List<Event> { @event });
 
         // Act
         await _bettingService.SettleEventAsync(eventId, new List<Guid> { outcome.Id });
@@ -133,10 +133,10 @@ public class BettingServiceTests
         var userId = Guid.NewGuid();
         var stake = 100m;
         var ticket = new Ticket(userId, stake, isFreebet: true);
-        
+
         // Act
         ticket.AddBet(Guid.NewGuid(), 2.0m); // Odds 2.0
-        
+
         // Assert
         // Standard win: 100 * 2.0 = 200
         // Freebet win: 200 * 0.7 = 140

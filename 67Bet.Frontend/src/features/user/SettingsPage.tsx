@@ -8,20 +8,25 @@ import toast from "react-hot-toast";
 const SettingsPage: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [notifications, setNotifications] = useState(true);
-  
+
   const handleSave = () => {
     toast.success("Settings saved successfully!");
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      <Link to="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold"
+      >
         <ChevronLeft className="w-4 h-4" /> Back to Betting
       </Link>
 
       <div>
         <h1 className="text-3xl font-black text-white">Profile Settings</h1>
-        <p className="text-gray-400 text-sm">Manage your account details and preferences.</p>
+        <p className="text-gray-400 text-sm">
+          Manage your account details and preferences.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -33,7 +38,9 @@ const SettingsPage: React.FC = () => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase px-1">Username</label>
+                <label className="text-xs font-bold text-gray-500 uppercase px-1">
+                  Username
+                </label>
                 <input
                   type="text"
                   value={user?.username || ""}
@@ -42,7 +49,9 @@ const SettingsPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase px-1">Email Address</label>
+                <label className="text-xs font-bold text-gray-500 uppercase px-1">
+                  Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-4 h-4" />
                   <input
@@ -64,8 +73,12 @@ const SettingsPage: React.FC = () => {
             <div className="space-y-4">
               <label className="flex items-center justify-between cursor-pointer group">
                 <div>
-                  <p className="font-bold text-gray-300 group-hover:text-white transition-colors">Bet Updates</p>
-                  <p className="text-xs text-gray-500">Get notified when your bet is settled.</p>
+                  <p className="font-bold text-gray-300 group-hover:text-white transition-colors">
+                    Bet Updates
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Get notified when your bet is settled.
+                  </p>
                 </div>
                 <input
                   type="checkbox"
@@ -93,24 +106,33 @@ const SettingsPage: React.FC = () => {
             </h2>
             <div className="space-y-4">
               {user?.isKycVerified ? (
-                <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex items-start gap-3">        
+                <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex items-start gap-3">
                   <div className="w-2 h-2 rounded-full bg-accent-success mt-1.5" />
                   <div>
-                    <p className="font-bold text-sm text-white">Account Verified</p>
-                    <p className="text-xs text-gray-500 mt-1">Your identity has been verified allowing full platform access.</p>
+                    <p className="font-bold text-sm text-white">
+                      Account Verified
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Your identity has been verified allowing full platform
+                      access.
+                    </p>
                   </div>
                 </div>
               ) : (
-                <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex flex-col gap-3">        
+                <div className="bg-dark-900 p-4 rounded-xl border border-dark-600 flex flex-col gap-3">
                   <div className="flex items-start gap-3">
                     <div className="w-2 h-2 rounded-full bg-yellow-500 mt-1.5" />
                     <div>
-                      <p className="font-bold text-sm text-white">Verification Required</p>
-                      <p className="text-xs text-gray-500 mt-1">Please verify your identity to unlock all features.</p>
+                      <p className="font-bold text-sm text-white">
+                        Verification Required
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Please verify your identity to unlock all features.
+                      </p>
                     </div>
                   </div>
-                  <Link 
-                    to="/kyc-verify" 
+                  <Link
+                    to="/kyc-verify"
                     className="w-full bg-primary-600/20 text-primary-500 hover:bg-primary-600 hover:text-white transition-colors py-2 rounded-lg font-bold text-xs text-center border border-primary-600/30"
                   >
                     Start KYC Verification

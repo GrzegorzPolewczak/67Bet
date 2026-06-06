@@ -84,7 +84,7 @@ namespace _67Bet.Wallet.Infrastructure.Repositories
         }
     }
 
-    public class TransactionRepository : EFRepository<Transaction, WalletDbContext>, ITransactionRepository     
+    public class TransactionRepository : EFRepository<Transaction, WalletDbContext>, ITransactionRepository
     {
         public TransactionRepository(WalletDbContext context) : base(context) { }
 
@@ -97,7 +97,7 @@ namespace _67Bet.Wallet.Infrastructure.Repositories
         }
     }
 
-    public class ReferralCodeRepository : EFRepository<ReferralCode, WalletDbContext>, IReferralCodeRepository   
+    public class ReferralCodeRepository : EFRepository<ReferralCode, WalletDbContext>, IReferralCodeRepository
     {
         public ReferralCodeRepository(WalletDbContext context) : base(context) { }
 

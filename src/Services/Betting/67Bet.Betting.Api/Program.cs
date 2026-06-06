@@ -50,7 +50,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "67Bet Betting API", Version = "v1" });
-    
+
     // Add JWT support to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -86,13 +86,12 @@ var app = builder.Build();
 // Migrate Database and Seed data
 using (var scope = app.Services.CreateScope())
 {
-    try 
+    try
     {
         var context = scope.ServiceProvider.GetRequiredService<_67Bet.Betting.Infrastructure.Persistence.BettingDbContext>();
-        
-        // Auto-migrate database on startup
-        context.Database.Migrate();
-        Console.WriteLine("Database migrated successfully.");
+// Auto-migrate database on startup
+context.Database.Migrate();
+Console.WriteLine("Database migrated successfully.");
 
         // Seed Virtual Racing Horses
         if (!context.Horses.Any())
@@ -121,7 +120,8 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
-app.UseSwaggerUI(c => {
+app.UseSwaggerUI(c =>
+{
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "67Bet Betting API v1");
     c.RoutePrefix = string.Empty;
 });

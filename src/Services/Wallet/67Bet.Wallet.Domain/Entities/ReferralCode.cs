@@ -13,7 +13,7 @@ namespace _67Bet.Wallet.Domain.Entities
         {
             if (string.IsNullOrWhiteSpace(code)) throw new ArgumentException("Code cannot be empty.");
             if (code.Length > 10) throw new ArgumentException("Code cannot exceed 10 characters.");
-            
+
             UserId = userId;
             Code = code.ToUpper();
             UsageCount = 0;

@@ -71,9 +71,9 @@ public class WalletServiceTests
         // Assert
         wallet.Balance.Should().Be(50);
         _walletRepositoryMock.Verify(x => x.UpdateAsync(wallet), Times.Once);
-        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
-            t.Amount == 50 && 
-            t.Type == TransactionType.Deposit && 
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t =>
+            t.Amount == 50 &&
+            t.Type == TransactionType.Deposit &&
             t.Status == TransactionStatus.Completed)), Times.Once);
     }
 
@@ -93,9 +93,9 @@ public class WalletServiceTests
         // Assert
         wallet.Balance.Should().Be(60);
         _walletRepositoryMock.Verify(x => x.UpdateAsync(wallet), Times.Once);
-        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
-            t.Amount == 40 && 
-            t.Type == TransactionType.Withdrawal && 
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t =>
+            t.Amount == 40 &&
+            t.Type == TransactionType.Withdrawal &&
             t.Status == TransactionStatus.Completed)), Times.Once);
     }
 
@@ -145,9 +145,9 @@ public class WalletServiceTests
         // Assert
         wallet.FreebetBalance.Should().Be(50);
         _walletRepositoryMock.Verify(x => x.UpdateAsync(wallet), Times.Once);
-        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
-            t.Amount == 50 && 
-            t.Type == TransactionType.FreebetDeposit && 
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t =>
+            t.Amount == 50 &&
+            t.Type == TransactionType.FreebetDeposit &&
             t.Status == TransactionStatus.Completed)), Times.Once);
     }
 
@@ -167,7 +167,7 @@ public class WalletServiceTests
         // Assert
         result.Should().BeTrue();
         wallet.Balance.Should().Be(70);
-        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t =>
             t.Type == TransactionType.Stake)), Times.Once);
     }
 
@@ -188,7 +188,7 @@ public class WalletServiceTests
         result.Should().BeTrue();
         wallet.FreebetBalance.Should().Be(70);
         wallet.Balance.Should().Be(0);
-        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t =>
             t.Type == TransactionType.Stake)), Times.Once);
     }
 
@@ -226,9 +226,9 @@ public class WalletServiceTests
         // Assert
         wallet.Balance.Should().Be(75);
         _walletRepositoryMock.Verify(x => x.UpdateAsync(wallet), Times.Once);
-        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t => 
-            t.Amount == 75 && 
-            t.Type == TransactionType.Payout && 
+        _transactionRepositoryMock.Verify(x => x.AddAsync(It.Is<Transaction>(t =>
+            t.Amount == 75 &&
+            t.Type == TransactionType.Payout &&
             t.Status == TransactionStatus.Completed)), Times.Once);
     }
 }

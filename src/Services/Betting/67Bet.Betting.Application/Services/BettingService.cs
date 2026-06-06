@@ -56,14 +56,14 @@ public class BettingService : IBettingService
         {
             var events = await _eventRepository.GetActiveEventsAsync();
             Outcome? foundOutcome = null;
-            
+
             foreach (var @event in events)
             {
                 var markets = await _marketRepository.GetByEventIdAsync(@event.Id);
                 foreach (var market in markets)
                 {
                     if (!market.IsActive) continue;
-                    
+
                     var outcome = market.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
                     if (outcome != null)
                     {
@@ -82,7 +82,7 @@ public class BettingService : IBettingService
             {
                 var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
                 VirtualRaceParticipant? foundVirtualParticipant = null;
-                
+
                 foreach (var race in virtualRaces)
                 {
                     var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
@@ -126,15 +126,15 @@ public class BettingService : IBettingService
                 outcome.SetResult(isWinner);
             }
         }
-        
+
         var tickets = await _ticketRepository.GetActiveTicketsAsync();
-        
+
         foreach (var ticket in tickets)
         {
             bool ticketHasThisEvent = false;
             foreach (var bet in ticket.Bets)
             {
-                if (winningOutcomeIds.Contains(bet.OutcomeId) || 
+                if (winningOutcomeIds.Contains(bet.OutcomeId) ||
                     markets.Any(m => m.Outcomes.Any(o => o.Id == bet.OutcomeId)))
                 {
                     ticketHasThisEvent = true;
@@ -150,7 +150,7 @@ public class BettingService : IBettingService
             foreach (var bet in ticket.Bets)
             {
                 var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
-                
+
                 if (outcomeStatus == OutcomeResult.Lost)
                 {
                     isLost = true;
@@ -171,7 +171,7 @@ public class BettingService : IBettingService
             {
                 ticket.Settle(TicketStatus.Won);
                 await _ticketRepository.UpdateAsync(ticket);
-                
+
                 await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
             }
         }

@@ -1,5 +1,9 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
-import { bettingApi } from '../../api/axios';
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import { bettingApi } from "../../api/axios";
 
 export interface BetSelection {
   eventId: string;
@@ -28,32 +32,38 @@ const initialState: BetslipState = {
 };
 
 export const placeBetAsync = createAsyncThunk(
-  'betslip/placeBet',
+  "betslip/placeBet",
   async (_, { getState, rejectWithValue }) => {
     const state = getState() as any;
     const { selections, stake } = state.betslip;
 
     if (selections.length === 0 || stake <= 0) {
-      return rejectWithValue('Invalid bet');
+      return rejectWithValue("Invalid bet");
     }
 
     const outcomeIds = selections.map((s: BetSelection) => s.outcomeId);
 
     try {
-      const response = await bettingApi.post('/tickets', {
+      const response = await bettingApi.post("/tickets", {
         stake,
         outcomeIds,
       });
       return response.data;
     } catch (error: any) {
-      const message = error.response?.data?.message || error.response?.data || error.message || 'Failed to place bet';
-      return rejectWithValue(typeof message === 'object' ? JSON.stringify(message) : message);
+      const message =
+        error.response?.data?.message ||
+        error.response?.data ||
+        error.message ||
+        "Failed to place bet";
+      return rejectWithValue(
+        typeof message === "object" ? JSON.stringify(message) : message,
+      );
     }
-  }
+  },
 );
 
 const betslipSlice = createSlice({
-  name: 'betslip',
+  name: "betslip",
   initialState,
   reducers: {
     toggleBetslip: (state) => {
@@ -61,11 +71,11 @@ const betslipSlice = createSlice({
     },
     addSelection: (state, action: PayloadAction<BetSelection>) => {
       const exists = state.selections.find(
-        (s) => s.eventId === action.payload.eventId
+        (s) => s.eventId === action.payload.eventId,
       );
       if (exists) {
         state.selections = state.selections.map((s) =>
-          s.eventId === action.payload.eventId ? action.payload : s
+          s.eventId === action.payload.eventId ? action.payload : s,
         );
       } else {
         state.selections.push(action.payload);
@@ -74,7 +84,7 @@ const betslipSlice = createSlice({
     },
     removeSelection: (state, action: PayloadAction<string>) => {
       state.selections = state.selections.filter(
-        (s) => s.outcomeId !== action.payload
+        (s) => s.outcomeId !== action.payload,
       );
     },
     clearBetslip: (state) => {

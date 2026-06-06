@@ -45,7 +45,7 @@ public class LiveTrackerBackgroundService : BackgroundService
                     {
                         // POBIERAMY WYŁĄCZNIE PRAWDZIWE DANE
                         var realState = await GetStateFromApis(evt, scope, liveProvider);
-                        
+
                         if (realState != null)
                         {
                             // Szukanie streamu (to zostawiamy jako bonus)
@@ -76,7 +76,7 @@ public class LiveTrackerBackgroundService : BackgroundService
             var pandaClient = scope.ServiceProvider.GetRequiredService<IPandaScoreApiClient>();
             return await pandaClient.GetLiveMatchDetailsAsync(evt.ExternalId);
         }
-        
+
         return await liveProvider.GetLiveMatchStateAsync(evt.ExternalId, evt.SportKey, evt.Name, "");
     }
 

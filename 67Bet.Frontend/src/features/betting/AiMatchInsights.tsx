@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Sparkles, Loader2, Info } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { bettingApi } from '../../api/axios';
+import React, { useState } from "react";
+import { Sparkles, Loader2, Info } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { bettingApi } from "../../api/axios";
 
 interface AiMatchInsightsProps {
   eventId: string;
@@ -16,11 +16,13 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await bettingApi.get(`/AiAssistant/event/${eventId}/insight`);
+      const response = await bettingApi.get(
+        `/AiAssistant/event/${eventId}/insight`,
+      );
       setInsight(response.data.insight);
     } catch (err) {
-      console.error('Error fetching AI insight:', err);
-      setError('Nie udało się pobrać analizy AI. Spróbuj ponownie później.');
+      console.error("Error fetching AI insight:", err);
+      setError("Nie udało się pobrać analizy AI. Spróbuj ponownie później.");
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +55,9 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
             className="flex items-center gap-3 text-gray-400 py-4"
           >
             <Loader2 className="w-5 h-5 animate-spin text-primary-500" />
-            <span className="text-xs font-medium italic">Gemini analizuje dane meczowe...</span>
+            <span className="text-xs font-medium italic">
+              Gemini analizuje dane meczowe...
+            </span>
           </motion.div>
         ) : insight ? (
           <motion.div
@@ -67,7 +71,9 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
             </p>
             <div className="mt-3 flex items-center gap-1.5 opacity-50">
               <Info className="w-3 h-3 text-primary-400" />
-              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">Powered by Gemini 1.5 Flash</span>
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                Powered by Gemini 1.5 Flash
+              </span>
             </div>
           </motion.div>
         ) : error ? (
@@ -80,11 +86,9 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
             {error}
           </motion.div>
         ) : (
-          <motion.div
-            key="empty"
-            className="text-xs text-gray-500 italic py-2"
-          >
-            Kliknij przycisk powyżej, aby wygenerować inteligentną analizę tego spotkania.
+          <motion.div key="empty" className="text-xs text-gray-500 italic py-2">
+            Kliknij przycisk powyżej, aby wygenerować inteligentną analizę tego
+            spotkania.
           </motion.div>
         )}
       </AnimatePresence>

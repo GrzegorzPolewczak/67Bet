@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
 
         var user = await _identityService.GetUserByEmailAsync(request.Email);
         var token = GenerateJwtToken(user!);
-        
+
         return Ok(token);
     }
 
@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
 
         var userId = Guid.Parse(userIdClaim.Value);
         var user = await _identityService.GetUserByIdAsync(userId);
-        
+
         if (user == null) return NotFound("Użytkownik nie znaleziony.");
 
         return Ok(user.ToDto());

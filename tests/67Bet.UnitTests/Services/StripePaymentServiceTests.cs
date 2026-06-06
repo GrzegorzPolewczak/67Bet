@@ -27,7 +27,7 @@ public class StripePaymentServiceTests
         _walletServiceMock = new Mock<IWalletService>();
 
         _configurationMock.Setup(x => x["Stripe:SecretKey"]).Returns("sk_test_123");
-        
+
         _service = new StripePaymentService(
             _configurationMock.Object,
             _loggerMock.Object,
