@@ -6,6 +6,7 @@ import MatchDetailsView from "./features/betting/MatchDetailsView";
 import CustomBetRequest from "./features/betting/CustomBetRequest";
 import VirtualRacingPage from "./features/betting/VirtualRacingPage";
 import PlinkoPage from "./features/betting/PlinkoPage";
+import RoulettePage from "./features/betting/RoulettePage";
 import SettingsPage from "./features/user/SettingsPage";
 import ReferralsPage from "./features/user/ReferralsPage";
 import BetHistoryPage from "./features/user/BetHistoryPage";
@@ -30,6 +31,7 @@ function App() {
         <Route path="custom-bet" element={<CustomBetRequest />} />
         <Route path="virtual-racing" element={<VirtualRacingPage />} />
         <Route path="plinko" element={<PlinkoPage />} />
+        <Route path="roulette" element={<RoulettePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="referrals" element={<ReferralsPage />} />
         <Route

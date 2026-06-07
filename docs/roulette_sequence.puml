@@ -1,0 +1,33 @@
+@startuml
+actor User
+participant "RoulettePage" as Frontend
+participant "RouletteController" as Controller
+participant "RouletteService" as Service
+participant "InMemoryRouletteRoundRepository" as Repository
+participant "RouletteWalletController" as WalletController
+participant "WalletService" as WalletService
+
+User -> Frontend: wybiera zaklady i stawki
+Frontend -> Controller: POST /api/Roulette/play
+Controller -> Service: PlayAsync(userId, request, token)
+Service -> Service: ValidateStakeAsync (responsible gambling)
+Service -> WalletController: POST /api/RouletteWallet/process-stake
+WalletController -> WalletService: ProcessStakeAsync(userId, totalStake)
+WalletService --> WalletController: true
+WalletController --> Service: 204 No Content
+Service -> Service: losuje wynik 0-36 (kryptograficznie)
+Service -> Service: tworzy RouletteRound i rozlicza zaklady
+Service -> Repository: AddAsync(round)
+Service --> Controller: RouletteRoundDto
+Controller --> Frontend: wynik obrotu i wynik kazdego zakladu
+
+Frontend -> Controller: POST /api/Roulette/{id}/settle
+Controller -> Service: SettleRoundAsync(userId, roundId, token)
+Service -> WalletController: POST /api/RouletteWallet/process-payout
+WalletController -> WalletService: ProcessPayoutAsync(userId, totalPayout)
+WalletController --> Service: 204 No Content
+Service -> Repository: UpdateAsync(round)
+Service --> Controller: RouletteRoundDto (isPayoutSettled=true)
+Controller --> Frontend: potwierdzenie rozliczenia
+Frontend --> User: pokazuje wynik i aktualizuje saldo
+@enduml
