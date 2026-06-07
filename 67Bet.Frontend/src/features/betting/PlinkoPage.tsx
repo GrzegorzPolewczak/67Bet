@@ -131,6 +131,13 @@ const getSlotClassName = (
   return `min-w-0 rounded-xl py-3 text-center text-[10px] md:text-sm font-black border-2 transition-all ${colorClass} ${hitClass}`;
 };
 
+const getApiErrorMessage = (err: any, fallback: string) =>
+  err.response?.data?.error ||
+  err.response?.data?.message ||
+  err.response?.data ||
+  err.message ||
+  fallback;
+
 const createBallAnimation = (round: PlinkoRound) => {
   let slot = 0;
   const top: Array<string | number> = [20];
@@ -364,9 +371,15 @@ const PlinkoPage: React.FC = () => {
     }
   };
 
-  const chargeDisplayedWalletForBatch = () => {
+  const chargeDisplayedWalletForBatch = (purchasedBallCount = ballCount) => {
     if (isDemoMode) {
-      setBalance((current) => toMoney(current - totalCost));
+      setBalance((current) =>
+        toMoney(
+          current -
+            stake * purchasedBallCount -
+            calculateBoardFee(stake, purchasedBallCount, rows),
+        ),
+      );
       return;
     }
 
@@ -376,7 +389,7 @@ const PlinkoPage: React.FC = () => {
       let nextFreebet = currentFreebet;
       let cashCharge = 0;
 
-      for (let i = 0; i < ballCount; i += 1) {
+      for (let i = 0; i < purchasedBallCount; i += 1) {
         if (nextFreebet >= costPerBall) {
           nextFreebet = toMoney(nextFreebet - costPerBall);
         } else {
@@ -433,37 +446,60 @@ const PlinkoPage: React.FC = () => {
         return;
       }
 
-      const rounds = await Promise.all(
-        Array.from({ length: ballCount }, () =>
-          bettingApi.post("/plinko/play", {
+      const responses = [];
+      let failedPurchase: any = null;
+
+      for (let i = 0; i < ballCount; i += 1) {
+        try {
+          const response = await bettingApi.post("/plinko/play", {
             stake,
             riskLevel: riskApiValue[riskLevel],
             rows,
             boardFee: boardFeePerBall,
-          }),
-        ),
+          });
+          responses.push(response);
+        } catch (err: any) {
+          failedPurchase = err;
+          break;
+        }
+      }
+
+      if (responses.length === 0 && failedPurchase) {
+        throw failedPurchase;
+      }
+
+      const purchasedBallCount = responses.length;
+      const purchasedTotalStake = toMoney(stake * purchasedBallCount);
+      const purchasedBoardFee = calculateBoardFee(
+        stake,
+        purchasedBallCount,
+        rows,
       );
 
       setActiveBatch({
         id: batchId,
-        balls: ballCount,
+        balls: purchasedBallCount,
         completed: 0,
-        totalStake,
-        boardFee,
+        totalStake: purchasedTotalStake,
+        boardFee: purchasedBoardFee,
         totalPayout: 0,
       });
       setPendingRounds((current) => [
         ...current,
-        ...rounds.map((response) => mapRound(response.data, batchId)),
+        ...responses.map((response) => mapRound(response.data, batchId)),
       ]);
-      chargeDisplayedWalletForBatch();
+      chargeDisplayedWalletForBatch(purchasedBallCount);
+
+      if (failedPurchase) {
+        setError(
+          `Bought ${purchasedBallCount} of ${ballCount} balls. ${getApiErrorMessage(
+            failedPurchase,
+            "The next ball was blocked.",
+          )}`,
+        );
+      }
     } catch (err: any) {
-      setError(
-        err.response?.data?.error ||
-          err.response?.data ||
-          err.message ||
-          "Could not buy Plinko balls.",
-      );
+      setError(getApiErrorMessage(err, "Could not buy Plinko balls."));
     } finally {
       setIsBuying(false);
     }
