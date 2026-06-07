@@ -149,7 +149,7 @@ public class BettingService : IBettingService
 
             return new ResolvedBet(
                 participant.Id,
-                participant.Horse.Name,
+                participant.Horse?.Name ?? "Unknown Horse",
                 "Winner",
                 race.Name,
                 race.StartTime,
@@ -167,114 +167,173 @@ public class BettingService : IBettingService
         @event.UpdateStatus(EventStatus.Finished);
         await _eventRepository.UpdateAsync(@event);
 
-        var markets = await _marketRepository.GetByEventIdAsync(eventId);
+        var markets = (await _marketRepository.GetByEventIdAsync(eventId)).ToList();
+        var eventOutcomeIds = markets
+            .SelectMany(m => m.Outcomes)
+            .Select(o => o.Id)
+            .ToHashSet();
+
         foreach (var market in markets)
         {
             foreach (var outcome in market.Outcomes)
             {
-                bool isWinner = winningOutcomeIds.Contains(outcome.Id);
+                var isWinner = winningOutcomeIds.Contains(outcome.Id);
                 outcome.SetResult(isWinner);
             }
+
+            await _marketRepository.UpdateAsync(market);
         }
 
         var tickets = await _ticketRepository.GetActiveTicketsAsync();
 
         foreach (var ticket in tickets)
         {
-            bool ticketHasThisEvent = false;
-            foreach (var bet in ticket.Bets)
-            {
-                if (winningOutcomeIds.Contains(bet.OutcomeId) ||
-                    markets.Any(m => m.Outcomes.Any(o => o.Id == bet.OutcomeId)))
-                {
-                    ticketHasThisEvent = true;
-                    break;
-                }
-            }
-
+            var ticketHasThisEvent = ticket.Bets.Any(b => eventOutcomeIds.Contains(b.OutcomeId));
             if (!ticketHasThisEvent) continue;
 
-            bool isLost = false;
-            bool allSettled = true;
-
             foreach (var bet in ticket.Bets)
             {
-                var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
+                var resolution = await GetOutcomeResolutionAsync(bet.OutcomeId);
 
-                if (outcomeStatus == OutcomeResult.Won)
+                if (resolution.Result == OutcomeResult.Won)
                 {
-                    bet.Settle(BetStatus.Won);
+                    bet.Settle(BetStatus.Won, resolution.WinningOutcomeName);
                 }
-                else if (outcomeStatus == OutcomeResult.Lost)
+                else if (resolution.Result == OutcomeResult.Lost)
                 {
-                    bet.Settle(BetStatus.Lost);
-                    isLost = true;
-                }
-
-                if (outcomeStatus == OutcomeResult.Pending)
-                {
-                    allSettled = false;
+                    bet.Settle(BetStatus.Lost, resolution.WinningOutcomeName);
                 }
             }
 
-            if (isLost)
-            {
-                ticket.Settle(TicketStatus.Lost);
-                await _ticketRepository.UpdateAsync(ticket);
-            }
-            else if (allSettled)
-            {
-                ticket.Settle(TicketStatus.Won);
-                await _ticketRepository.UpdateAsync(ticket);
-
-                await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
-                await _responsibleGamblingService.RecordActivityAsync(
-                    ticket.UserId,
-                    new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Payout, ticket.PotentialWinning));
-
-                // Award XP for winning a bet
-                await _gamificationService.AwardXpForWinAsync(ticket.UserId, ticket.Stake, ticket.TotalOdds);
-            }
-            else
-            {
-                // Partially settled, still update to save bet statuses
-                await _ticketRepository.UpdateAsync(ticket);
-            }
+            await ApplyTicketSettlementAsync(ticket);
         }
     }
 
-    private async Task<OutcomeResult> GetOutcomeStatusAsync(Guid outcomeId)
+    public async Task SettleVirtualRaceAsync(Guid raceId)
     {
-        // Ta metoda powinna sprawdzać status konkretnego wyniku w bazie
-        // Dla uproszczenia w tej wersji zwracamy status z encji Outcome
-        var markets = await _marketRepository.GetAllAsync(); // To jest mało wydajne, ale w tej skali akceptowalne
-        foreach (var m in markets)
+        var race = await _virtualRaceRepository.GetByIdAsync(raceId);
+        if (race == null)
+            throw new InvalidOperationException("Virtual race does not exist.");
+
+        if (!race.IsFinished || race.WinningHorseId == null)
+            throw new InvalidOperationException("Virtual race is not finished yet.");
+
+        var participantIds = race.Participants.Select(p => p.Id).ToHashSet();
+        var winningParticipant = race.Participants.FirstOrDefault(p => p.HorseId == race.WinningHorseId.Value);
+
+        if (winningParticipant == null)
+            throw new InvalidOperationException("Winning participant was not found.");
+
+        var winningOutcomeName = winningParticipant.Horse?.Name ?? "Unknown Horse";
+        var tickets = await _ticketRepository.GetActiveTicketsAsync();
+
+        foreach (var ticket in tickets)
         {
-            var outcome = m.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
-            if (outcome != null)
+            var raceBets = ticket.Bets
+                .Where(b => participantIds.Contains(b.OutcomeId))
+                .ToList();
+
+            if (!raceBets.Any())
+                continue;
+
+            foreach (var bet in raceBets)
             {
-                if (outcome.IsWinner == true) return OutcomeResult.Won;
-                if (outcome.IsWinner == false) return OutcomeResult.Lost;
-                return OutcomeResult.Pending;
+                var status = bet.OutcomeId == winningParticipant.Id
+                    ? BetStatus.Won
+                    : BetStatus.Lost;
+
+                bet.Settle(status, winningOutcomeName);
             }
+
+            await ApplyTicketSettlementAsync(ticket);
+        }
+    }
+
+
+    public async Task SettleFinishedVirtualRacesAsync()
+    {
+        var finishedRaces = await _virtualRaceRepository.GetFinishedRacesAsync();
+
+        foreach (var race in finishedRaces)
+        {
+            await SettleVirtualRaceAsync(race.Id);
+        }
+    }
+
+    private async Task ApplyTicketSettlementAsync(Ticket ticket)
+    {
+        if (ticket.Bets.Any(b => b.Status == BetStatus.Lost))
+        {
+            ticket.Settle(TicketStatus.Lost);
+            await _ticketRepository.UpdateAsync(ticket);
+            return;
         }
 
-        // Sprawdź wirtualne wyścigi
-        var races = await _virtualRaceRepository.GetActiveRacesAsync();
-        foreach (var race in races)
+        if (ticket.Bets.All(b => b.Status == BetStatus.Won))
         {
-            var p = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
-            if (p != null)
-            {
-                if (race.IsFinished)
-                {
-                    return race.WinningHorseId == p.HorseId ? OutcomeResult.Won : OutcomeResult.Lost;
-                }
-                return OutcomeResult.Pending;
-            }
+            ticket.Settle(TicketStatus.Won);
+            await _ticketRepository.UpdateAsync(ticket);
+
+            await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
+            await _responsibleGamblingService.RecordActivityAsync(
+                ticket.UserId,
+                new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Payout, ticket.PotentialWinning));
+
+            // Award XP for winning a bet
+            await _gamificationService.AwardXpForWinAsync(ticket.UserId, ticket.Stake, ticket.TotalOdds);
+            return;
         }
 
-        return OutcomeResult.Pending;
+        // Some selections are already settled, but the ticket still contains pending selections.
+        await _ticketRepository.UpdateAsync(ticket);
+    }
+
+    private async Task<OutcomeResolution> GetOutcomeResolutionAsync(Guid outcomeId)
+    {
+        var markets = await _marketRepository.GetAllAsync();
+        foreach (var market in markets)
+        {
+            var outcome = market.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
+            if (outcome == null)
+                continue;
+
+            var winningOutcomeName = string.Join(
+                ", ",
+                market.Outcomes
+                    .Where(o => o.IsWinner == true)
+                    .Select(o => o.Name));
+
+            if (string.IsNullOrWhiteSpace(winningOutcomeName))
+                winningOutcomeName = null;
+
+            if (outcome.IsWinner == true)
+                return new OutcomeResolution(OutcomeResult.Won, winningOutcomeName ?? outcome.Name);
+
+            if (outcome.IsWinner == false)
+                return new OutcomeResolution(OutcomeResult.Lost, winningOutcomeName);
+
+            return new OutcomeResolution(OutcomeResult.Pending, null);
+        }
+
+        var race = await _virtualRaceRepository.GetByParticipantIdAsync(outcomeId);
+        if (race != null)
+        {
+            var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
+            if (participant == null)
+                return new OutcomeResolution(OutcomeResult.Pending, null);
+
+            if (!race.IsFinished || race.WinningHorseId == null)
+                return new OutcomeResolution(OutcomeResult.Pending, null);
+
+            var winningParticipant = race.Participants.FirstOrDefault(p => p.HorseId == race.WinningHorseId.Value);
+            var winningOutcomeName = winningParticipant?.Horse?.Name ?? "Unknown Horse";
+
+            return race.WinningHorseId.Value == participant.HorseId
+                ? new OutcomeResolution(OutcomeResult.Won, winningOutcomeName)
+                : new OutcomeResolution(OutcomeResult.Lost, winningOutcomeName);
+        }
+
+        return new OutcomeResolution(OutcomeResult.Pending, null);
     }
 
     public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId)
@@ -294,6 +353,8 @@ public class BettingService : IBettingService
         string EventName,
         DateTime StartTime,
         decimal FixedPrice);
+
+    private sealed record OutcomeResolution(OutcomeResult Result, string? WinningOutcomeName);
 }
 
 public enum OutcomeResult { Pending, Won, Lost }

@@ -22,6 +22,8 @@ interface BetDto {
   startTime: string;
   fixedPrice: number;
   status: string;
+  resultStatus?: string;
+  winningOutcomeName?: string | null;
 }
 
 interface TicketDto {
@@ -32,6 +34,31 @@ interface TicketDto {
   status: string;
   bets: BetDto[];
 }
+
+const getStatusLabel = (status?: string) => {
+  switch ((status || "").toLowerCase()) {
+    case "won":
+      return "WIN";
+    case "lost":
+      return "LOST";
+    case "cancelled":
+      return "CANCELLED";
+    default:
+      return "W TRAKCIE";
+  }
+};
+
+const getStatusClasses = (status?: string) => {
+  switch ((status || "").toLowerCase()) {
+    case "won":
+      return "bg-accent-success/20 text-accent-success";
+    case "lost":
+    case "cancelled":
+      return "bg-accent-danger/20 text-accent-danger";
+    default:
+      return "bg-primary-500/20 text-primary-500";
+  }
+};
 
 const SharedTicketPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -57,9 +84,9 @@ const SharedTicketPage: React.FC = () => {
     if (id) fetchTicket();
   }, [id]);
 
-  const canCopy = ticket?.bets.every(
-    (bet) => new Date(bet.startTime) > new Date(),
-  );
+  const canCopy =
+    ticket?.status === "Pending" &&
+    ticket?.bets.every((bet) => new Date(bet.startTime) > new Date());
 
   const handleCopyToBetslip = () => {
     if (!ticket) return;
@@ -121,15 +148,9 @@ const SharedTicketPage: React.FC = () => {
               <Share2 className="w-8 h-8 text-primary-500" /> Shared Ticket
             </h1>
             <div
-              className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${
-                ticket.status === "Pending"
-                  ? "bg-primary-500/20 text-primary-500"
-                  : ticket.status === "Won"
-                    ? "bg-accent-success/20 text-accent-success"
-                    : "bg-accent-danger/20 text-accent-danger"
-              }`}
+              className={`px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest ${getStatusClasses(ticket.status)}`}
             >
-              {ticket.status}
+              {getStatusLabel(ticket.status)}
             </div>
           </div>
 
@@ -166,7 +187,9 @@ const SharedTicketPage: React.FC = () => {
             Selections ({ticket.bets.length})
           </h2>
           {ticket.bets.map((bet, index) => {
-            const hasStarted = new Date(bet.startTime) <= new Date();
+            const resultStatus = bet.resultStatus || bet.status;
+            const isFinished = resultStatus === "Won" || resultStatus === "Lost";
+
             return (
               <motion.div
                 key={index}
@@ -180,8 +203,13 @@ const SharedTicketPage: React.FC = () => {
                     {bet.eventName}
                   </p>
                   <p className="text-sm font-bold text-white">
-                    {bet.marketName}: {bet.outcomeName}
+                    Obstawiono: {bet.marketName}: {bet.outcomeName}
                   </p>
+                  {isFinished && bet.winningOutcomeName && (
+                    <p className="text-[11px] font-bold text-gray-300">
+                      Wynik wydarzenia: wygrał {bet.winningOutcomeName}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 text-[10px] text-gray-500">
                     <Clock className="w-3 h-3" />
                     {new Date(bet.startTime).toLocaleString()}
@@ -191,19 +219,17 @@ const SharedTicketPage: React.FC = () => {
                   <span className="text-lg font-black text-white group-hover:text-primary-500 transition-colors">
                     @{bet.fixedPrice.toFixed(2)}
                   </span>
-                  {hasStarted ? (
-                    bet.status === "Won" ? (
-                      <CheckCircle2 className="w-6 h-6 text-accent-success" />
-                    ) : bet.status === "Lost" ? (
-                      <XCircle className="w-6 h-6 text-accent-danger" />
-                    ) : (
-                      <Clock className="w-6 h-6 text-gray-500" />
-                    )
+                  <span
+                    className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${getStatusClasses(resultStatus)}`}
+                  >
+                    {getStatusLabel(resultStatus)}
+                  </span>
+                  {resultStatus === "Won" ? (
+                    <CheckCircle2 className="w-6 h-6 text-accent-success" />
+                  ) : resultStatus === "Lost" ? (
+                    <XCircle className="w-6 h-6 text-accent-danger" />
                   ) : (
-                    <div
-                      className="w-6 h-6 rounded-full border-2 border-dashed border-gray-700"
-                      title="Not started"
-                    />
+                    <Clock className="w-6 h-6 text-gray-500" />
                   )}
                 </div>
               </motion.div>

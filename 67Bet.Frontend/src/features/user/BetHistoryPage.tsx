@@ -15,6 +15,31 @@ import {
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
+const getStatusLabel = (status?: string) => {
+  switch ((status || "").toLowerCase()) {
+    case "won":
+      return "WIN";
+    case "lost":
+      return "LOST";
+    case "cancelled":
+      return "CANCELLED";
+    default:
+      return "W TRAKCIE";
+  }
+};
+
+const getStatusClasses = (status?: string) => {
+  switch ((status || "").toLowerCase()) {
+    case "won":
+      return "bg-accent-success/20 text-accent-success";
+    case "lost":
+    case "cancelled":
+      return "bg-accent-danger/20 text-accent-danger";
+    default:
+      return "bg-primary-500/20 text-primary-500";
+  }
+};
+
 const BetHistoryPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { tickets, loading, error } = useSelector(
@@ -129,15 +154,9 @@ const BetHistoryPage: React.FC = () => {
                   </div>
                   <div className="text-right">
                     <span
-                      className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${
-                        ticket.status === "Open"
-                          ? "bg-primary-600/20 text-primary-500"
-                          : ticket.status === "Won"
-                            ? "bg-accent-success/20 text-accent-success"
-                            : "bg-accent-danger/20 text-accent-danger"
-                      }`}
+                      className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${getStatusClasses(ticket.status)}`}
                     >
-                      {ticket.status}
+                      {getStatusLabel(ticket.status)}
                     </span>
                   </div>
                 </div>
@@ -147,37 +166,52 @@ const BetHistoryPage: React.FC = () => {
                 <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
                   Selections ({ticket.bets.length})
                 </h4>
-                {ticket.bets.map((bet, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between bg-dark-900 rounded-xl p-4 border border-dark-600"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-black text-primary-500 uppercase tracking-wider">
-                        {bet.eventName}
-                      </p>
-                      <p className="text-xs font-bold text-white">
-                        {bet.marketName}: {bet.outcomeName}
-                      </p>
-                      <div className="flex items-center gap-2 text-[10px] text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        {new Date(bet.startTime).toLocaleString()}
+                {ticket.bets.map((bet, i) => {
+                  const resultStatus = bet.resultStatus || bet.status;
+                  const isFinished = resultStatus === "Won" || resultStatus === "Lost";
+
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between bg-dark-900 rounded-xl p-4 border border-dark-600"
+                    >
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-black text-primary-500 uppercase tracking-wider">
+                          {bet.eventName}
+                        </p>
+                        <p className="text-xs font-bold text-white">
+                          Obstawiono: {bet.marketName}: {bet.outcomeName}
+                        </p>
+                        {isFinished && bet.winningOutcomeName && (
+                          <p className="text-[11px] font-bold text-gray-300">
+                            Wynik: wygrał {bet.winningOutcomeName}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-2 text-[10px] text-gray-500">
+                          <Clock className="w-3 h-3" />
+                          {new Date(bet.startTime).toLocaleString()}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-black text-white bg-dark-700 px-3 py-1 rounded-lg">
+                          @{Number(bet.fixedPrice).toFixed(2)}
+                        </span>
+                        <span
+                          className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${getStatusClasses(resultStatus)}`}
+                        >
+                          {getStatusLabel(resultStatus)}
+                        </span>
+                        {resultStatus === "Won" ? (
+                          <CheckCircle2 className="w-4 h-4 text-accent-success" />
+                        ) : resultStatus === "Lost" ? (
+                          <XCircle className="w-4 h-4 text-accent-danger" />
+                        ) : (
+                          <Clock className="w-4 h-4 text-gray-500" />
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-black text-white bg-dark-700 px-3 py-1 rounded-lg">
-                        @{Number(bet.fixedPrice).toFixed(2)}
-                      </span>
-                      {bet.status === "Won" ? (
-                        <CheckCircle2 className="w-4 h-4 text-accent-success" />
-                      ) : bet.status === "Lost" ? (
-                        <XCircle className="w-4 h-4 text-accent-danger" />
-                      ) : (
-                        <Clock className="w-4 h-4 text-gray-500" />
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           ))}

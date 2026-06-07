@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using _67Bet.Betting.Domain.Entities;
@@ -14,6 +14,8 @@ public interface IBettingService
     Task<IEnumerable<Event>> GetActiveEventsAsync();
     Task<Ticket> PlaceTicketAsync(Guid userId, decimal stake, IEnumerable<Guid> outcomeIds);
     Task SettleEventAsync(Guid eventId, List<Guid> winningOutcomeIds);
+    Task SettleVirtualRaceAsync(Guid raceId);
+    Task SettleFinishedVirtualRacesAsync();
     Task<Ticket?> GetTicketByIdAsync(Guid ticketId);
     Task<IEnumerable<Ticket>> GetUserTicketsAsync(Guid userId);
 }
