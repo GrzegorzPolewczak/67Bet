@@ -55,7 +55,7 @@ public class AiAssistantServiceTests
     }
 
     [Fact]
-    public async Task GetMatchInsightAsync_ShouldCallGeminiAndSaveToDb_WhenNotCached()
+    public async Task GetMatchInsightAsync_ShouldCallGeminiAndSaveToDbAndLog_WhenNotCached()
     {
         // Arrange
         var eventGuid = Guid.NewGuid();
@@ -80,6 +80,58 @@ public class AiAssistantServiceTests
         Assert.Equal(aiResponse, result);
         _geminiClientMock.Verify(c => c.GenerateTextAsync(It.IsAny<string>()), Times.Once);
         _insightRepoMock.Verify(r => r.AddOrUpdateAsync(It.Is<AiMatchInsight>(i => i.Content == aiResponse && i.EventId == eventId)), Times.Once);
+        _insightRepoMock.Verify(r => r.AddLogAsync(It.Is<AiGenerationLog>(l => l.EventId == eventId && l.Status == "Success")), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAllInsightsAsync_ShouldReturnAllInsights()
+    {
+        // Arrange
+        var insights = new List<AiMatchInsight>
+        {
+            new AiMatchInsight("event1", "content1"),
+            new AiMatchInsight("event2", "content2")
+        };
+        _insightRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(insights);
+
+        // Act
+        var result = await _service.GetAllInsightsAsync();
+
+        // Assert
+        Assert.Equal(2, result.Count());
+        _insightRepoMock.Verify(r => r.GetAllAsync(), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegenerateInsightAsync_ShouldForceCallGemini()
+    {
+        // Arrange
+        var eventId = "event123";
+        var externalMatch = new ExternalMatchDto { Name = "Team A vs Team B", SportKey = "Soccer" };
+        _oddsServiceMock.Setup(s => s.GetEventByIdAsync(eventId)).ReturnsAsync(externalMatch);
+        _geminiClientMock.Setup(c => c.GenerateTextAsync(It.IsAny<string>())).ReturnsAsync("New Analysis");
+
+        // Act
+        var result = await _service.RegenerateInsightAsync(eventId);
+
+        // Assert
+        Assert.Equal("New Analysis", result);
+        _geminiClientMock.Verify(c => c.GenerateTextAsync(It.IsAny<string>()), Times.Once);
+        _insightRepoMock.Verify(r => r.AddOrUpdateAsync(It.IsAny<AiMatchInsight>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteInsightAsync_ShouldCallRepositoryDelete()
+    {
+        // Arrange
+        var eventId = "event123";
+
+        // Act
+        var result = await _service.DeleteInsightAsync(eventId);
+
+        // Assert
+        Assert.True(result);
+        _insightRepoMock.Verify(r => r.DeleteAsync(eventId), Times.Once);
     }
 
     [Fact]

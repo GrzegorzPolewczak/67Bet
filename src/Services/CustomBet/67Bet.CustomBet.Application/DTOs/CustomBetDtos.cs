@@ -8,6 +8,9 @@ public record CustomBetRequestDto(
     string Description,
     string Status,
     decimal AiSuggestedOdds,
+    string? AiAnalysisNote,
+    string? AiRiskLevel,
+    string? AiCategory,
     decimal? AdminFinalOdds,
     string? AdminNote,
     DateTime CreatedAt

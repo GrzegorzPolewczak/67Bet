@@ -8,6 +8,10 @@ import {
   fetchPromoCodesAsync,
   createPromoCodeAsync,
   togglePromoCodeStatusAsync,
+  fetchAiInsightsAsync,
+  regenerateAiInsightAsync,
+  deleteAiInsightAsync,
+  fetchAiRecommendationAsync,
 } from "./adminSlice";
 import {
   ShieldCheck,
@@ -22,16 +26,20 @@ import {
   Plus,
   Power,
   PowerOff,
+  Sparkles,
+  Trash2,
+  RotateCw,
+  AlertCircle,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
 const AdminDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { pendingRequests, promoCodes, stats, loading } = useSelector(
-    (state: RootState) => state.admin,
-  );
+  const { pendingRequests, promoCodes, aiInsights, stats, loading } =
+    useSelector((state: RootState) => state.admin);
   const [oddsInput, setOddsInput] = useState<Record<string, string>>({});
+  const [activeTab, setActiveTab] = useState<"bets" | "promo" | "ai">("bets");
 
   // Promo code form state
   const [newPromoCode, setNewPromoCode] = useState("");
@@ -40,6 +48,7 @@ const AdminDashboard: React.FC = () => {
   useEffect(() => {
     dispatch(fetchPendingRequestsAsync());
     dispatch(fetchPromoCodesAsync());
+    dispatch(fetchAiInsightsAsync());
   }, [dispatch]);
 
   const handleAccept = (id: string) => {
@@ -57,6 +66,35 @@ const AdminDashboard: React.FC = () => {
       rejectRequestAsync({ id, reason: "Does not meet platform guidelines" }),
     );
     toast.error("Custom bet rejected.");
+  };
+
+  const handleGetAiRecommendation = (id: string) => {
+    toast.promise(dispatch(fetchAiRecommendationAsync(id)).unwrap(), {
+      loading: "Consulting AI expert...",
+      success: (data) => {
+        setOddsInput((prev) => ({
+          ...prev,
+          [id]: data.aiSuggestedOdds.toString(),
+        }));
+        return "AI analysis completed!";
+      },
+      error: "AI was unable to price this bet.",
+    });
+  };
+
+  const handleRegenerateInsight = (eventId: string) => {
+    toast.promise(dispatch(regenerateAiInsightAsync(eventId)).unwrap(), {
+      loading: "Regenerating analysis...",
+      success: "Insight updated successfully!",
+      error: "Failed to regenerate insight.",
+    });
+  };
+
+  const handleDeleteInsight = (eventId: string) => {
+    if (confirm("Are you sure you want to delete this AI insight?")) {
+      dispatch(deleteAiInsightAsync(eventId));
+      toast.success("Insight deleted.");
+    }
   };
 
   const handleCreatePromo = async (e: React.FormEvent) => {
@@ -111,258 +149,390 @@ const AdminDashboard: React.FC = () => {
         <Zap className="absolute right-0 top-1/2 -translate-y-1/2 w-48 h-48 text-primary-500/10 blur-xl" />
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-dark-800/80 backdrop-blur-md border border-dark-600 rounded-3xl p-6 flex items-center gap-5 shadow-lg shadow-dark-900/50">
-          <div className="w-14 h-14 bg-primary-600/20 rounded-2xl flex items-center justify-center">
-            <Users className="w-7 h-7 text-primary-500" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-              Total Users
-            </p>
-            <p className="text-3xl font-black text-white">
-              {stats.totalUsers.toLocaleString()}
-            </p>
-          </div>
-        </div>
-        <div className="bg-dark-800/80 backdrop-blur-md border border-dark-600 rounded-3xl p-6 flex items-center gap-5 shadow-lg shadow-dark-900/50">
-          <div className="w-14 h-14 bg-accent-success/20 rounded-2xl flex items-center justify-center">
-            <Activity className="w-7 h-7 text-accent-success" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-              Active Bets
-            </p>
-            <p className="text-3xl font-black text-white">
-              {stats.activeBets.toLocaleString()}
-            </p>
-          </div>
-        </div>
-        <div className="bg-dark-800/80 backdrop-blur-md border border-dark-600 rounded-3xl p-6 flex items-center gap-5 shadow-lg shadow-dark-900/50">
-          <div className="w-14 h-14 bg-yellow-500/20 rounded-2xl flex items-center justify-center">
-            <DollarSign className="w-7 h-7 text-yellow-500" />
-          </div>
-          <div>
-            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">
-              Revenue (24h)
-            </p>
-            <p className="text-3xl font-black text-white">
-              $
-              {stats.revenue.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-              })}
-            </p>
-          </div>
-        </div>
+      {/* Tabs */}
+      <div className="flex gap-2 p-1 bg-dark-800 border border-dark-700 rounded-2xl w-fit">
+        <button
+          onClick={() => setActiveTab("bets")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "bets" ? "bg-primary-600 text-white shadow-lg shadow-primary-900/40" : "text-gray-400 hover:text-white"}`}
+        >
+          Custom Bets
+        </button>
+        <button
+          onClick={() => setActiveTab("promo")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "promo" ? "bg-primary-600 text-white shadow-lg shadow-primary-900/40" : "text-gray-400 hover:text-white"}`}
+        >
+          Promo Codes
+        </button>
+        <button
+          onClick={() => setActiveTab("ai")}
+          className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === "ai" ? "bg-primary-600 text-white shadow-lg shadow-primary-900/40" : "text-gray-400 hover:text-white"}`}
+        >
+          AI Intelligence
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Pending Custom Bets */}
-        <section className="bg-dark-800/50 border border-dark-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-          <div className="p-6 md:px-8 border-b border-dark-600 flex items-center justify-between bg-dark-800">
-            <h2 className="text-xl font-bold text-white flex items-center gap-3">
-              <Clock className="w-5 h-5 text-primary-500" /> Custom Bet Queue
-            </h2>
-            <div className="bg-dark-900 border border-dark-600 px-4 py-1.5 rounded-full flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-              <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">
-                {pendingRequests.length}
-              </span>
-            </div>
-          </div>
-
-          <div className="p-6 md:p-8 flex-1">
-            {pendingRequests.length === 0 ? (
-              <div className="text-center py-16 bg-dark-900/50 rounded-2xl border border-dark-700 border-dashed">
-                <ShieldCheck className="w-12 h-12 text-dark-600 mx-auto mb-4" />
-                <p className="text-base font-bold text-gray-400">
-                  All caught up!
-                </p>
+      <AnimatePresence mode="wait">
+        {activeTab === "bets" && (
+          <motion.div
+            key="bets"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="grid grid-cols-1 gap-10"
+          >
+            {/* Pending Custom Bets */}
+            <section className="bg-dark-800/50 border border-dark-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="p-6 md:px-8 border-b border-dark-600 flex items-center justify-between bg-dark-800">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-primary-500" /> Custom Bet
+                  Queue
+                </h2>
               </div>
-            ) : (
-              <div className="grid gap-4">
-                <AnimatePresence mode="popLayout">
-                  {pendingRequests.map((request) => (
-                    <motion.div
-                      key={request.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.98 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="bg-dark-800 border border-dark-600 rounded-2xl p-5 flex flex-col gap-4 hover:border-primary-500/50 transition-colors shadow-lg"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                          <span className="text-[10px] font-black uppercase tracking-widest bg-primary-600/20 text-primary-400 px-2 py-0.5 rounded-md">
-                            {request.id.split("-")[0]}
-                          </span>
-                          <span className="text-[10px] font-bold text-gray-600">
-                            {new Date(request.createdAt).toLocaleTimeString()}
-                          </span>
-                        </div>
-                        <p className="text-sm text-white font-medium italic leading-relaxed bg-dark-900/50 border border-dark-700 p-3 rounded-xl">
-                          "{request.description}"
-                        </p>
-                      </div>
 
-                      <div className="flex items-center gap-3 bg-dark-900 p-2 rounded-xl border border-dark-700">
-                        <div className="relative flex-1">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-black text-xs">
-                            @
-                          </span>
-                          <input
-                            type="number"
-                            placeholder="Odds"
-                            step="0.01"
-                            value={oddsInput[request.id] || ""}
-                            onChange={(e) =>
-                              setOddsInput((prev) => ({
-                                ...prev,
-                                [request.id]: e.target.value,
-                              }))
-                            }
-                            className="w-full bg-dark-800 border border-dark-600 rounded-lg py-2 pl-7 pr-3 text-sm font-black text-white focus:outline-none focus:border-primary-500"
-                          />
-                        </div>
-                        <button
-                          onClick={() => handleAccept(request.id)}
-                          className="bg-accent-success hover:bg-green-400 text-dark-900 font-black px-4 py-2 rounded-lg text-sm transition-all"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleReject(request.id)}
-                          className="bg-dark-800 border border-dark-600 hover:text-accent-danger p-2 rounded-lg transition-all"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* Promo Codes Management */}
-        <section className="bg-dark-800/50 border border-dark-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-          <div className="p-6 md:px-8 border-b border-dark-600 flex items-center justify-between bg-dark-800">
-            <h2 className="text-xl font-bold text-white flex items-center gap-3">
-              <Ticket className="w-5 h-5 text-primary-500" /> Promo Codes
-            </h2>
-            <div className="bg-dark-900 border border-dark-600 px-4 py-1.5 rounded-full flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-300 uppercase tracking-widest">
-                {promoCodes.length} Codes
-              </span>
-            </div>
-          </div>
-
-          <div className="p-6 md:p-8 space-y-8 flex-1">
-            {/* Create Promo Form */}
-            <form
-              onSubmit={handleCreatePromo}
-              className="bg-dark-900 border border-dark-700 p-5 rounded-2xl space-y-4"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
-                    Code Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. WORLDCUP26"
-                    value={newPromoCode}
-                    onChange={(e) =>
-                      setNewPromoCode(e.target.value.toUpperCase())
-                    }
-                    className="w-full bg-dark-800 border border-dark-600 rounded-xl py-3 px-4 text-sm font-black text-white focus:outline-none focus:border-primary-500 uppercase"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
-                    Freebet Reward ($)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={newPromoReward}
-                    onChange={(e) => setNewPromoReward(e.target.value)}
-                    className="w-full bg-dark-800 border border-dark-600 rounded-xl py-3 px-4 text-sm font-black text-white focus:outline-none focus:border-primary-500"
-                  />
-                </div>
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary-900/20"
-              >
-                <Plus className="w-5 h-5" /> Add Promotional Code
-              </button>
-            </form>
-
-            {/* Promo Codes List */}
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              <AnimatePresence mode="popLayout">
-                {promoCodes.map((promo) => (
-                  <motion.div
-                    key={promo.code}
-                    layout
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
-                      promo.isActive
-                        ? "bg-dark-800 border-dark-600 hover:border-primary-500/30"
-                        : "bg-dark-900/50 border-dark-800 opacity-60"
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                          promo.isActive
-                            ? "bg-primary-600/20 text-primary-500"
-                            : "bg-dark-700 text-gray-600"
-                        }`}
+              <div className="p-6 md:p-8 flex-1">
+                {pendingRequests.length === 0 ? (
+                  <div className="text-center py-16 bg-dark-900/50 rounded-2xl border border-dark-700 border-dashed">
+                    <ShieldCheck className="w-12 h-12 text-dark-600 mx-auto mb-4" />
+                    <p className="text-base font-bold text-gray-400">
+                      All caught up!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid gap-6">
+                    {pendingRequests.map((request) => (
+                      <motion.div
+                        key={request.id}
+                        className="bg-dark-800 border border-dark-600 rounded-2xl p-6 flex flex-col gap-6 hover:border-primary-500/50 transition-colors shadow-lg"
                       >
-                        <Ticket className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-white tracking-wide">
-                          {promo.code}
-                        </p>
-                        <p className="text-[10px] font-bold text-primary-500 uppercase tracking-widest">
-                          ${promo.rewardAmount.toFixed(2)} Bonus
-                        </p>
-                      </div>
-                    </div>
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-black uppercase tracking-widest bg-primary-600/20 text-primary-400 px-2 py-0.5 rounded-md">
+                                {request.id.split("-")[0]}
+                              </span>
+                              <span className="text-[10px] font-bold text-gray-600">
+                                {new Date(
+                                  request.createdAt,
+                                ).toLocaleDateString()}{" "}
+                                {new Date(
+                                  request.createdAt,
+                                ).toLocaleTimeString()}
+                              </span>
+                            </div>
+                            <p className="text-lg text-white font-medium italic leading-relaxed">
+                              "{request.description}"
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleGetAiRecommendation(request.id)}
+                            className="flex items-center gap-2 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 border border-primary-500/30 px-4 py-2 rounded-xl text-xs font-black transition-all"
+                          >
+                            <Sparkles className="w-4 h-4" /> CONSULT AI
+                          </button>
+                        </div>
 
-                    <button
-                      onClick={() =>
-                        handleTogglePromo(promo.code, promo.isActive)
-                      }
-                      className={`p-3 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter ${
+                        {/* AI Recommendation Panel */}
+                        <AnimatePresence>
+                          {(request.aiSuggestedOdds ||
+                            request.status === "Reviewing") && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              className="bg-primary-950/20 border border-primary-500/20 rounded-2xl p-5 overflow-hidden"
+                            >
+                              <div className="flex items-start gap-4">
+                                <div className="p-3 bg-primary-500/10 rounded-xl">
+                                  <Sparkles className="w-5 h-5 text-primary-500" />
+                                </div>
+                                <div className="space-y-4 flex-1">
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div>
+                                      <p className="text-[10px] font-black text-primary-500/60 uppercase tracking-widest mb-1">
+                                        AI Odds
+                                      </p>
+                                      <p className="text-xl font-black text-white">
+                                        @{request.aiSuggestedOdds?.toFixed(2)}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] font-black text-primary-500/60 uppercase tracking-widest mb-1">
+                                        Risk Level
+                                      </p>
+                                      <span
+                                        className={`text-[10px] font-black px-2 py-1 rounded-md uppercase ${request.aiRiskLevel === "High" ? "bg-red-500/20 text-red-400" : request.aiRiskLevel === "Medium" ? "bg-yellow-500/20 text-yellow-400" : "bg-green-500/20 text-green-400"}`}
+                                      >
+                                        {request.aiRiskLevel || "N/A"}
+                                      </span>
+                                    </div>
+                                    <div className="col-span-2">
+                                      <p className="text-[10px] font-black text-primary-500/60 uppercase tracking-widest mb-1">
+                                        Suggested Category
+                                      </p>
+                                      <p className="text-sm font-bold text-gray-300">
+                                        {request.aiCategory || "General"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div className="bg-dark-900/50 p-4 rounded-xl border border-dark-700">
+                                    <p className="text-xs text-gray-400 leading-relaxed">
+                                      <span className="font-black text-primary-500 mr-2">
+                                        AI REASONING:
+                                      </span>
+                                      {request.aiAnalysisNote}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+
+                        <div className="flex items-center gap-3 bg-dark-900 p-2 rounded-xl border border-dark-700">
+                          <div className="relative flex-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-black text-xs">
+                              @
+                            </span>
+                            <input
+                              type="number"
+                              placeholder="Odds"
+                              step="0.01"
+                              value={oddsInput[request.id] || ""}
+                              onChange={(e) =>
+                                setOddsInput((prev) => ({
+                                  ...prev,
+                                  [request.id]: e.target.value,
+                                }))
+                              }
+                              className="w-full bg-dark-800 border border-dark-600 rounded-lg py-2.5 pl-7 pr-3 text-sm font-black text-white focus:outline-none focus:border-primary-500"
+                            />
+                          </div>
+                          <button
+                            onClick={() => handleAccept(request.id)}
+                            className="bg-accent-success hover:bg-green-400 text-dark-900 font-black px-6 py-2.5 rounded-lg text-sm transition-all shadow-lg shadow-green-900/20"
+                          >
+                            Accept & Publish
+                          </button>
+                          <button
+                            onClick={() => handleReject(request.id)}
+                            className="bg-dark-800 border border-dark-600 hover:text-accent-danger p-2.5 rounded-lg transition-all"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+          </motion.div>
+        )}
+
+        {activeTab === "promo" && (
+          <motion.div
+            key="promo"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="grid grid-cols-1 gap-10"
+          >
+            <section className="bg-dark-800/50 border border-dark-600 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <div className="p-6 md:px-8 border-b border-dark-600 flex items-center justify-between bg-dark-800">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Ticket className="w-5 h-5 text-primary-500" /> Promo Codes
+                </h2>
+              </div>
+              <div className="p-6 md:p-8 space-y-8 flex-1">
+                {/* Create Promo Form */}
+                <form
+                  onSubmit={handleCreatePromo}
+                  className="bg-dark-900 border border-dark-700 p-6 rounded-2xl space-y-5"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
+                        Code Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. WORLDCUP26"
+                        value={newPromoCode}
+                        onChange={(e) =>
+                          setNewPromoCode(e.target.value.toUpperCase())
+                        }
+                        className="w-full bg-dark-800 border border-dark-600 rounded-xl py-3 px-4 text-sm font-black text-white focus:outline-none focus:border-primary-500 uppercase"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
+                        Freebet Reward ($)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newPromoReward}
+                        onChange={(e) => setNewPromoReward(e.target.value)}
+                        className="w-full bg-dark-800 border border-dark-600 rounded-xl py-3 px-4 text-sm font-black text-white focus:outline-none focus:border-primary-500"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-primary-600 hover:bg-primary-500 text-white font-black py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary-900/20"
+                  >
+                    <Plus className="w-5 h-5" /> Add Promotional Code
+                  </button>
+                </form>
+
+                {/* Promo Codes List */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {promoCodes.map((promo) => (
+                    <div
+                      key={promo.code}
+                      className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${
                         promo.isActive
-                          ? "bg-accent-danger/10 text-accent-danger hover:bg-accent-danger hover:text-white"
-                          : "bg-accent-success/10 text-accent-success hover:bg-accent-success hover:text-dark-900"
+                          ? "bg-dark-800 border-dark-600"
+                          : "bg-dark-900/50 border-dark-800 opacity-60"
                       }`}
                     >
-                      {promo.isActive ? (
-                        <>
-                          Deactivate <PowerOff className="w-3.5 h-3.5" />
-                        </>
-                      ) : (
-                        <>
-                          Activate <Power className="w-3.5 h-3.5" />
-                        </>
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                            promo.isActive
+                              ? "bg-primary-600/20 text-primary-500"
+                              : "bg-dark-700 text-gray-600"
+                          }`}
+                        >
+                          <Ticket className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <p className="text-base font-black text-white tracking-wide">
+                            {promo.code}
+                          </p>
+                          <p className="text-xs font-bold text-primary-500">
+                            ${promo.rewardAmount.toFixed(2)} Bonus
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() =>
+                          handleTogglePromo(promo.code, promo.isActive)
+                        }
+                        className={`p-3 rounded-xl transition-all ${
+                          promo.isActive
+                            ? "text-accent-danger hover:bg-accent-danger/10"
+                            : "text-accent-success hover:bg-accent-success/10"
+                        }`}
+                      >
+                        {promo.isActive ? (
+                          <PowerOff className="w-5 h-5" />
+                        ) : (
+                          <Power className="w-5 h-5" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </motion.div>
+        )}
+
+        {activeTab === "ai" && (
+          <motion.div
+            key="ai"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <section className="bg-dark-800/50 border border-dark-600 rounded-3xl overflow-hidden shadow-2xl">
+              <div className="p-6 md:px-8 border-b border-dark-600 flex items-center justify-between bg-dark-800">
+                <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-primary-500" /> AI Match
+                  Insights Cache
+                </h2>
+                <div className="text-xs font-bold text-gray-500">
+                  Total: {aiInsights.length} analyzed matches
+                </div>
+              </div>
+
+              <div className="p-6 md:p-8">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-separate border-spacing-y-3">
+                    <thead>
+                      <tr className="text-[10px] font-black text-gray-500 uppercase tracking-widest px-4">
+                        <th className="px-6 py-2">Event ID</th>
+                        <th className="px-6 py-2">Generated At</th>
+                        <th className="px-6 py-2">Preview</th>
+                        <th className="px-6 py-2 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {aiInsights.map((insight) => (
+                        <tr
+                          key={insight.eventId}
+                          className="bg-dark-800 border border-dark-600 rounded-2xl overflow-hidden group hover:border-primary-500/30 transition-all"
+                        >
+                          <td className="px-6 py-4 rounded-l-2xl border-y border-l border-dark-600">
+                            <span className="text-[10px] font-black text-primary-400 bg-primary-500/10 px-2 py-1 rounded-md">
+                              {insight.eventId.substring(0, 8)}...
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 border-y border-dark-600 text-xs text-gray-400 font-medium">
+                            {new Date(insight.generatedAt).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 border-y border-dark-600">
+                            <p className="text-xs text-gray-300 italic line-clamp-1 max-w-xs">
+                              "{insight.content}"
+                            </p>
+                          </td>
+                          <td className="px-6 py-4 rounded-r-2xl border-y border-r border-dark-600 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() =>
+                                  handleRegenerateInsight(insight.eventId)
+                                }
+                                className="p-2 hover:bg-primary-500/10 text-primary-400 rounded-lg transition-all"
+                                title="Regenerate with AI"
+                              >
+                                <RotateCw className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleDeleteInsight(insight.eventId)
+                                }
+                                className="p-2 hover:bg-accent-danger/10 text-accent-danger rounded-lg transition-all"
+                                title="Delete from cache"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {aiInsights.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="text-center py-20 bg-dark-900/30 rounded-2xl border border-dark-700 border-dashed"
+                          >
+                            <AlertCircle className="w-10 h-10 text-dark-600 mx-auto mb-4" />
+                            <p className="text-sm font-bold text-gray-500">
+                              No AI analyses stored in database yet.
+                            </p>
+                          </td>
+                        </tr>
                       )}
-                    </button>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        </section>
-      </div>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

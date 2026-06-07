@@ -60,6 +60,14 @@ public class CustomBetController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin")]
+    [HttpGet("requests/{id}/recommendation")]
+    public async Task<ActionResult<CustomBetRequestDto>> GetAiRecommendation(Guid id)
+    {
+        var result = await _customBetService.GetAiRecommendationAsync(id);
+        return Ok(result.ToDto());
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);

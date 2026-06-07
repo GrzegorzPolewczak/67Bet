@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _67Bet.CustomBet.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using _67Bet.CustomBet.Infrastructure.Persistence;
 namespace _67Bet.CustomBet.Infrastructure.Migrations
 {
     [DbContext(typeof(CustomBetDbContext))]
-    partial class CustomBetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607213756_AddAiFieldsToCustomBet")]
+    partial class AddAiFieldsToCustomBet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

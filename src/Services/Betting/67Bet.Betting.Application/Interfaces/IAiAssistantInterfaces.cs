@@ -5,6 +5,16 @@ namespace _67Bet.Betting.Application.Interfaces;
 public interface IAiAssistantService
 {
     Task<string> GetMatchInsightAsync(string eventId);
+    Task<IEnumerable<AiMatchInsightDto>> GetAllInsightsAsync();
+    Task<string> RegenerateInsightAsync(string eventId);
+    Task<bool> DeleteInsightAsync(string eventId);
+}
+
+public class AiMatchInsightDto
+{
+    public string EventId { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public DateTime GeneratedAt { get; set; }
 }
 
 public interface IGeminiClient

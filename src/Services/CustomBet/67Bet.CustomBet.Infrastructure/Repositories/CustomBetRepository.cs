@@ -28,6 +28,9 @@ namespace _67Bet.CustomBet.Infrastructure.Persistence
                 builder.HasKey(r => r.Id);
                 builder.Property(r => r.Description).IsRequired();
                 builder.Property(r => r.AiSuggestedOdds).HasPrecision(10, 2);
+                builder.Property(r => r.AiAnalysisNote).HasColumnType("longtext");
+                builder.Property(r => r.AiRiskLevel).HasMaxLength(50);
+                builder.Property(r => r.AiCategory).HasMaxLength(100);
                 builder.Property(r => r.AdminFinalOdds).HasPrecision(10, 2);
             });
         }
