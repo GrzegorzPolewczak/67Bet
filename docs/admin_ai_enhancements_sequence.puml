@@ -6,8 +6,6 @@ actor Admin
 participant "Admin Dashboard (React)" as FE
 participant "Betting.Api" as API
 participant "AiAssistantService" as Service
-participant "CustomBet.Api" as CBApi
-participant "CustomBetService" as CBService
 participant "Google Gemini API" as Gemini
 
 == AI Insights Analytics: Regeneracja ==
@@ -24,21 +22,4 @@ deactivate Service
 API --> FE : 200 OK { insight: "..." }
 deactivate API
 FE -> Admin : Odświeżenie widoku analizy
-
-== Custom Bet: Rekomendacja AI ==
-Admin -> FE : Wejście w szczegóły wniosku Custom Bet
-FE -> CBApi : GET /api/CustomBet/{id}/recommendation
-activate CBApi
-CBApi -> CBService : GetAiRecommendationAsync(id)
-activate CBService
-CBService -> Gemini : AnalyzeRequestAsync(Description)
-activate Gemini
-Gemini --> CBService : JSON { odds, risk, reasoning, category }
-deactivate Gemini
-CBService -> CBService : Update Request with AI Data
-CBService --> CBApi : Request z danymi AI
-deactivate CBService
-CBApi --> FE : 200 OK (CustomBetDto z AI)
-deactivate CBApi
-FE -> Admin : Wyświetlenie sugestii AI (kurs, ryzyko)
 @enduml

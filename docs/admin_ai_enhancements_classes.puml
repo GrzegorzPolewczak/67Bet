@@ -19,20 +19,6 @@ package "Betting.Domain" {
     }
 }
 
-package "CustomBet.Domain" {
-    class CustomBetRequest {
-        +Guid Id
-        +string Description
-        +decimal Stake
-        +decimal AiSuggestedOdds
-        +string AiAnalysisNote
-        +string AiRiskLevel
-        +string AiCategory
-        +Accept(decimal finalOdds)
-        +Reject(string reason)
-    }
-}
-
 package "Application Services" {
     interface IAiAssistantService {
         +Task<string> GetMatchInsightAsync(string eventId)
@@ -40,14 +26,8 @@ package "Application Services" {
         +Task<string> RegenerateInsightAsync(string eventId)
         +Task<bool> DeleteInsightAsync(string eventId)
     }
-
-    interface ICustomBetService {
-        +Task<CustomBetRequest> GetAiRecommendationAsync(Guid requestId)
-        +Task AcceptRequestAsync(Guid requestId, decimal finalOdds)
-    }
 }
 
 IAiAssistantService --> AiMatchInsight
 IAiAssistantService --> AiGenerationLog
-ICustomBetService --> CustomBetRequest
 @enduml
