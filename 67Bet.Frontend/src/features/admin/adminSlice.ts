@@ -11,9 +11,6 @@ export interface CustomBetRequest {
   finalOdds?: number;
   adminNote?: string;
   aiSuggestedOdds?: number;
-  aiAnalysisNote?: string;
-  aiRiskLevel?: string;
-  aiCategory?: string;
 }
 
 export interface AiMatchInsight {
@@ -86,20 +83,6 @@ export const deleteAiInsightAsync = createAsyncThunk(
     try {
       await bettingApi.delete(`/AiAssistant/admin/event/${eventId}`);
       return eventId;
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data || error.message);
-    }
-  },
-);
-
-export const fetchAiRecommendationAsync = createAsyncThunk(
-  "admin/fetchAiRecommendation",
-  async (requestId: string, { rejectWithValue }) => {
-    try {
-      const response = await customBetApi.get(
-        `/CustomBet/requests/${requestId}/recommendation`,
-      );
-      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -296,17 +279,6 @@ const adminSlice = createSlice({
       })
       .addCase(togglePromoCodeStatusAsync.fulfilled, (state, action) => {
         const promo = state.promoCodes.find(
-          (p) => p.code === action.payload.code,
-        );
-        if (promo) {
-          promo.isActive = action.payload.isActive;
-        }
-      });
-  },
-});
-
-export default adminSlice.reducer;
-odes.find(
           (p) => p.code === action.payload.code,
         );
         if (promo) {

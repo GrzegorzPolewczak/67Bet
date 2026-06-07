@@ -11,7 +11,6 @@ import {
   fetchAiInsightsAsync,
   regenerateAiInsightAsync,
   deleteAiInsightAsync,
-  fetchAiRecommendationAsync,
 } from "./adminSlice";
 import {
   ShieldCheck,
@@ -66,20 +65,6 @@ const AdminDashboard: React.FC = () => {
       rejectRequestAsync({ id, reason: "Does not meet platform guidelines" }),
     );
     toast.error("Custom bet rejected.");
-  };
-
-  const handleGetAiRecommendation = (id: string) => {
-    toast.promise(dispatch(fetchAiRecommendationAsync(id)).unwrap(), {
-      loading: "Consulting AI expert...",
-      success: (data) => {
-        setOddsInput((prev) => ({
-          ...prev,
-          [id]: data.aiSuggestedOdds.toString(),
-        }));
-        return "AI analysis completed!";
-      },
-      error: "AI was unable to price this bet.",
-    });
   };
 
   const handleRegenerateInsight = (eventId: string) => {
