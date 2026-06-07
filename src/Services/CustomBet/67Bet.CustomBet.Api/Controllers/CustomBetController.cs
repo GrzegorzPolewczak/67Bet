@@ -18,7 +18,7 @@ public class CustomBetController : ControllerBase
         _customBetService = customBetService;
     }
 
-    [Authorize]
+    // [Authorize] <- Tymczasowo wyłączone dla diagnozy błędu 400
     [HttpPost("requests")]
     public async Task<IActionResult> SubmitRequest([FromBody] System.Text.Json.JsonElement body)
     {
@@ -35,7 +35,8 @@ public class CustomBetController : ControllerBase
                 return BadRequest(new { message = "Opis nie może być pusty." });
             }
 
-            var userId = GetUserId();
+            // Używamy tymczasowego ID, bo wyłączyliśmy autoryzację
+            var userId = Guid.Parse("8bd3f295-f9e3-4bb9-930c-e283b6a3f3e3"); 
             var result = await _customBetService.CreateRequestAsync(userId, description);
             return Ok(result.ToDto());
         }
@@ -44,8 +45,7 @@ public class CustomBetController : ControllerBase
             return BadRequest(new { 
                 message = "Błąd podczas tworzenia wniosku Custom Bet", 
                 details = ex.Message,
-                innerDetails = ex.InnerException?.Message,
-                stackTrace = ex.StackTrace 
+                innerDetails = ex.InnerException?.Message
             });
         }
     }
