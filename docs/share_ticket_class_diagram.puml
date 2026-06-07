@@ -1,0 +1,168 @@
+@startuml ShareTicket_ClassDiagram
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+hide empty members
+
+title Udostępnianie kuponów - diagram klas
+
+package "Betting Domain" {
+    enum TicketStatus <<implemented>> {
+        Pending
+        Won
+        Lost
+        Cancelled
+    }
+
+    enum BetStatus <<implemented>> {
+        Pending
+        Won
+        Lost
+    }
+
+    class Ticket <<implemented, AggregateRoot>> {
+        +Id : Guid
+        +CreatedAt : DateTime
+        +UserId : Guid
+        +Stake : decimal
+        +TotalOdds : decimal
+        +PotentialWinning : decimal
+        +Status : TicketStatus
+        +Bets : List<Bet>
+        +AddBet(outcomeId: Guid, outcomeName: string, marketName: string, eventName: string, startTime: DateTime, fixedPrice: decimal) : void
+        +Settle(status: TicketStatus) : void
+    }
+
+    class Bet <<implemented>> {
+        +Id : Guid
+        +TicketId : Guid
+        +OutcomeId : Guid
+        +OutcomeName : string
+        +MarketName : string
+        +EventName : string
+        +StartTime : DateTime
+        +FixedPrice : decimal
+        +Status : BetStatus
+        +WinningOutcomeName : string?
+        +Settle(status: BetStatus, winningOutcomeName: string?) : void
+    }
+}
+
+package "Betting Application" {
+    interface IBettingService <<implemented>> {
+        +GetTicketByIdAsync(ticketId: Guid) : Task<Ticket?>
+        +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+        +PlaceTicketAsync(userId: Guid, stake: decimal, outcomeIds: IEnumerable<Guid>) : Task<Ticket>
+    }
+
+    class BettingService <<implemented>> {
+        -_ticketRepository : ITicketRepository
+        +GetTicketByIdAsync(ticketId: Guid) : Task<Ticket?>
+        +GetUserTicketsAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+    }
+
+    class TicketDto <<implemented>> {
+        +Id : Guid
+        +Stake : decimal
+        +TotalOdds : decimal
+        +PotentialWinning : decimal
+        +Status : string
+        +Bets : List<BetDto>
+    }
+
+    class BetDto <<implemented>> {
+        +OutcomeId : Guid
+        +OutcomeName : string
+        +MarketName : string
+        +EventName : string
+        +StartTime : DateTime
+        +FixedPrice : decimal
+        +Status : string
+        +ResultStatus : string
+        +WinningOutcomeName : string?
+    }
+
+    class BettingMappingExtensions <<implemented>> {
+        +ToDto(ticket: Ticket) : TicketDto
+        +ToDto(bet: Bet) : BetDto
+    }
+}
+
+package "Betting Infrastructure" {
+    interface ITicketRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<Ticket?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+        +GetActiveTicketsAsync() : Task<IEnumerable<Ticket>>
+        +AddAsync(ticket: Ticket) : Task
+        +UpdateAsync(ticket: Ticket) : Task
+    }
+
+    class TicketRepository <<implemented>> {
+        -_context : BettingDbContext
+        +GetByIdAsync(id: Guid) : Task<Ticket?>
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<Ticket>>
+        +GetActiveTicketsAsync() : Task<IEnumerable<Ticket>>
+    }
+
+    class BettingDbContext <<implemented>> {
+        +Tickets : DbSet<Ticket>
+        +Bets : DbSet<Bet>
+    }
+}
+
+package "Betting API" {
+    class TicketsController <<implemented>> {
+        -_bettingService : IBettingService
+        +GetSharedTicket(id: Guid) : Task<ActionResult<TicketDto>>
+        +GetMyTickets() : Task<ActionResult<IEnumerable<TicketDto>>>
+    }
+}
+
+package "Frontend React" {
+    class BetHistoryPage <<implemented>> {
+        +handleShare(ticketId: string) : void
+    }
+
+    class SharedTicketPage <<implemented>> {
+        -ticket : TicketDto?
+        -loading : boolean
+        -error : string?
+        +fetchTicket(id: string) : Promise<void>
+        +handleCopyToBetslip() : void
+    }
+
+    class BetslipSlice <<implemented>> {
+        +addSelection(selection) : void
+    }
+}
+
+Ticket "1" *-- "1..*" Bet : zawiera
+TicketDto "1" *-- "1..*" BetDto : zwraca
+BettingService ..> ITicketRepository : używa
+ITicketRepository <|.. TicketRepository
+TicketRepository ..> BettingDbContext : używa
+TicketsController ..> IBettingService : używa
+IBettingService <|.. BettingService
+BettingMappingExtensions ..> Ticket : mapuje
+BettingMappingExtensions ..> Bet : mapuje
+TicketsController ..> TicketDto : zwraca
+BetHistoryPage ..> SharedTicketPage : generuje link /share-ticket/{id}
+SharedTicketPage ..> TicketsController : GET /api/tickets/share/{id}
+SharedTicketPage ..> BetslipSlice : kopiuje selekcje
+
+note right of TicketsController
+GetSharedTicket ma [AllowAnonymous].
+Publiczny endpoint nie zwraca danych
+profilu właściciela kuponu.
+end note
+
+note bottom of Bet
+Pola OutcomeName, MarketName,
+EventName, FixedPrice i WinningOutcomeName
+są potrzebne do poprawnego publicznego
+wyświetlenia kuponu po rozliczeniu.
+end note
+
+@enduml

@@ -1,0 +1,62 @@
+@startuml ShareTicket_SequenceDiagram
+!theme plain
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+
+title Udostępnianie kuponu - diagram sekwencji
+
+actor "Właściciel kuponu" as Owner
+actor "Odbiorca linku" as Viewer
+participant "BetHistoryPage" as HistoryUI
+participant "Clipboard API" as Clipboard
+participant "SharedTicketPage" as ShareUI
+participant "TicketsController" as Controller
+participant "IBettingService" as Service
+participant "ITicketRepository" as Repo
+database "Betting DB" as DB
+participant "BetslipSlice" as Betslip
+
+== Utworzenie linku z historii ==
+Owner -> HistoryUI: kliknięcie ikony Share przy kuponie
+HistoryUI -> HistoryUI: zbuduj URL /share-ticket/{ticketId}
+HistoryUI -> Clipboard: writeText(url)
+Clipboard --> HistoryUI: link zapisany w schowku
+HistoryUI --> Owner: komunikat o skopiowaniu linku
+
+== Otwarcie linku publicznego ==
+Viewer -> ShareUI: wejście na /share-ticket/{ticketId}
+ShareUI -> Controller: GET /api/tickets/share/{ticketId}
+note right of Controller
+Endpoint ma [AllowAnonymous],
+więc nie wymaga JWT.
+end note
+Controller -> Service: GetTicketByIdAsync(ticketId)
+Service -> Repo: GetByIdAsync(ticketId)
+Repo -> DB: SELECT Ticket + Bets
+DB --> Repo: Ticket z kolekcją Bets
+Repo --> Service: Ticket?
+
+alt kupon nie istnieje
+    Service --> Controller: null
+    Controller --> ShareUI: 404 NotFound
+    ShareUI --> Viewer: komunikat błędu
+else kupon istnieje
+    Service --> Controller: Ticket
+    Controller -> Controller: mapowanie Ticket -> TicketDto
+    Controller --> ShareUI: 200 OK TicketDto
+    ShareUI --> Viewer: publiczny widok kuponu
+end
+
+== Opcjonalne skopiowanie kuponu do betslipa ==
+alt Ticket.Status == Pending i wszystkie StartTime są w przyszłości
+    Viewer -> ShareUI: kliknięcie Copy to my Betslip
+    loop każda selekcja w TicketDto.Bets
+        ShareUI -> Betslip: addSelection(outcomeId, outcomeName, marketName, fixedPrice)
+    end
+    Betslip --> ShareUI: selekcje dodane lokalnie
+    ShareUI --> Viewer: kupon gotowy w betslipie
+else kupon zakończony albo wydarzenia wystartowały
+    ShareUI --> Viewer: kopiowanie niedostępne
+end
+
+@enduml
