@@ -50,13 +50,42 @@ public class BettingService : IBettingService
         if (stake <= 0)
             throw new ArgumentException("Stawka musi być większa od zera.");
 
-        if (outcomeIds == null || !outcomeIds.Any())
+        var requestedOutcomeIds = outcomeIds?.Distinct().ToList() ?? new List<Guid>();
+
+        if (!requestedOutcomeIds.Any())
             throw new ArgumentException("Kupon musi zawierać przynajmniej jeden zakład.");
 
         var validation = await _responsibleGamblingService.ValidateStakeAsync(userId, stake);
         if (!validation.IsAllowed)
             throw new InvalidOperationException(validation.Message ?? "Stake is blocked by responsible gambling limits.");
 
+        var activeEvents = await _eventRepository.GetActiveEventsAsync();
+        var activeVirtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
+
+        var resolvedBets = new List<ResolvedBet>();
+
+        foreach (var outcomeId in requestedOutcomeIds)
+        {
+            var regularBet = ResolveRegularEventBet(activeEvents, outcomeId);
+            if (regularBet != null)
+            {
+                resolvedBets.Add(regularBet);
+                continue;
+            }
+
+            var virtualRaceBet = ResolveVirtualRaceBet(activeVirtualRaces, outcomeId);
+            if (virtualRaceBet != null)
+            {
+                resolvedBets.Add(virtualRaceBet);
+                continue;
+            }
+
+            throw new InvalidOperationException(
+                $"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
+        }
+
+        // Pobieramy środki dopiero po potwierdzeniu, że wszystkie outcomeIds istnieją.
+        // Dzięki temu nie zabieramy środków za kupon, którego backend i tak nie może utworzyć.
         var stakeProcessed = await _walletService.ProcessStakeAsync(userId, stake);
         if (!stakeProcessed)
             throw new InvalidOperationException("Niewystarczające środki na koncie użytkownika.");
@@ -66,45 +95,16 @@ public class BettingService : IBettingService
             new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Stake, stake));
 
         var ticket = new Ticket(userId, stake);
-        var activeEvents = await _eventRepository.GetActiveEventsAsync();
-        var activeVirtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
 
-        foreach (var outcomeId in outcomeIds)
+        foreach (var bet in resolvedBets)
         {
-            bool found = false;
-
-            // Search in regular events
-            foreach (var @event in activeEvents)
-            {
-                var market = @event.Markets.FirstOrDefault(m => m.Outcomes.Any(o => o.Id == outcomeId));
-                if (market != null && market.IsActive)
-                {
-                    var outcome = market.Outcomes.First(o => o.Id == outcomeId);
-                    ticket.AddBet(outcome.Id, outcome.Name, market.Name, @event.Name, @event.StartTime, outcome.CurrentPrice);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) continue;
-
-            // Search in virtual races
-            foreach (var race in activeVirtualRaces)
-            {
-                var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
-                if (participant != null)
-                {
-                    ticket.AddBet(participant.Id, participant.Horse.Name, "Winner", race.Name, race.StartTime, participant.Odds);
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found)
-            {
-                await _walletService.ProcessPayoutAsync(userId, stake);
-                throw new InvalidOperationException($"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
-            }
+            ticket.AddBet(
+                bet.OutcomeId,
+                bet.OutcomeName,
+                bet.MarketName,
+                bet.EventName,
+                bet.StartTime,
+                bet.FixedPrice);
         }
 
         await _ticketRepository.AddAsync(ticket);
@@ -113,6 +113,50 @@ public class BettingService : IBettingService
         await _gamificationService.AwardXpForBetAsync(userId, stake);
 
         return ticket;
+    }
+
+    private static ResolvedBet? ResolveRegularEventBet(IEnumerable<Event> activeEvents, Guid outcomeId)
+    {
+        foreach (var @event in activeEvents)
+        {
+            var market = @event.Markets.FirstOrDefault(m =>
+                m.IsActive && m.Outcomes.Any(o => o.Id == outcomeId));
+
+            if (market == null)
+                continue;
+
+            var outcome = market.Outcomes.First(o => o.Id == outcomeId);
+
+            return new ResolvedBet(
+                outcome.Id,
+                outcome.Name,
+                market.Name,
+                @event.Name,
+                @event.StartTime,
+                outcome.CurrentPrice);
+        }
+
+        return null;
+    }
+
+    private static ResolvedBet? ResolveVirtualRaceBet(IEnumerable<VirtualRace> activeVirtualRaces, Guid outcomeId)
+    {
+        foreach (var race in activeVirtualRaces)
+        {
+            var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
+            if (participant == null)
+                continue;
+
+            return new ResolvedBet(
+                participant.Id,
+                participant.Horse.Name,
+                "Winner",
+                race.Name,
+                race.StartTime,
+                participant.Odds);
+        }
+
+        return null;
     }
 
     public async Task SettleEventAsync(Guid eventId, List<Guid> winningOutcomeIds)
@@ -242,6 +286,14 @@ public class BettingService : IBettingService
     {
         return await _ticketRepository.GetByUserIdAsync(userId);
     }
+
+    private sealed record ResolvedBet(
+        Guid OutcomeId,
+        string OutcomeName,
+        string MarketName,
+        string EventName,
+        DateTime StartTime,
+        decimal FixedPrice);
 }
 
 public enum OutcomeResult { Pending, Won, Lost }
