@@ -168,7 +168,8 @@ const BetHistoryPage: React.FC = () => {
                 </h4>
                 {ticket.bets.map((bet, i) => {
                   const resultStatus = bet.resultStatus || bet.status;
-                  const isFinished = resultStatus === "Won" || resultStatus === "Lost";
+                  const isFinished =
+                    resultStatus === "Won" || resultStatus === "Lost";
 
                   return (
                     <div
