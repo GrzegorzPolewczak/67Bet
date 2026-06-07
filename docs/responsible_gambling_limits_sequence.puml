@@ -1,0 +1,36 @@
+@startuml
+actor User
+participant "ResponsibleGamblingPage" as Frontend
+participant "ResponsibleGamblingController" as Controller
+participant "ResponsibleGamblingService" as Service
+database "LimitRepository" as Limits
+database "SelfExclusionRepository" as Exclusions
+database "ActivityRepository" as Activities
+
+User -> Frontend: Sets daily stake limit
+Frontend -> Controller: POST /me/limits
+Controller -> Service: SetLimitAsync(userId, request)
+Service -> Limits: GetByUserAndTypeAsync(userId, type)
+alt New limit
+  Service -> Limits: AddAsync(limit)
+else Existing lower limit
+  Service -> Limits: UpdateAsync(immediate amount)
+else Existing higher limit
+  Service -> Limits: UpdateAsync(pending amount + activation time)
+end
+Service --> Controller: ResponsibleGamblingLimitDto
+Controller --> Frontend: 200 OK
+
+User -> Frontend: Checks stake
+Frontend -> Controller: POST /me/validate-stake
+Controller -> Service: ValidateStakeAsync(userId, amount)
+Service -> Exclusions: GetActiveForUserAsync(userId, now)
+alt Self-exclusion active
+  Service --> Controller: Denied SELF_EXCLUSION_ACTIVE
+else No self-exclusion
+  Service -> Limits: GetByUserIdAsync(userId)
+  Service -> Activities: GetForUserSinceAsync(userId, now - 7 days)
+  Service --> Controller: Allowed or denied by limit
+end
+Controller --> Frontend: Validation result
+@enduml

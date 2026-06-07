@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Entities.VirtualRacing;
 using _67Bet.Betting.Domain.Entities.Gamification;
+using _67Bet.Betting.Domain.Entities.ResponsibleGambling;
 
 namespace _67Bet.Betting.Infrastructure.Persistence;
 
@@ -28,6 +29,11 @@ public class BettingDbContext : DbContext
     public DbSet<UserGamification> UserGamifications => Set<UserGamification>();
     public DbSet<Achievement> Achievements => Set<Achievement>();
     public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
+
+    // Responsible Gambling
+    public DbSet<ResponsibleGamblingLimit> ResponsibleGamblingLimits => Set<ResponsibleGamblingLimit>();
+    public DbSet<SelfExclusion> SelfExclusions => Set<SelfExclusion>();
+    public DbSet<ResponsibleGamblingActivity> ResponsibleGamblingActivities => Set<ResponsibleGamblingActivity>();
 
     public BettingDbContext(DbContextOptions<BettingDbContext> options) : base(options) { }
 
@@ -131,6 +137,29 @@ public class BettingDbContext : DbContext
             builder.HasKey(ua => ua.Id);
             builder.HasIndex(ua => new { ua.UserId, ua.AchievementId }).IsUnique();
             builder.Property(ua => ua.CurrentProgress).HasColumnType("decimal(18,2)");
+        });
+
+        // Responsible Gambling Configurations
+        modelBuilder.Entity<ResponsibleGamblingLimit>(builder =>
+        {
+            builder.HasKey(limit => limit.Id);
+            builder.HasIndex(limit => new { limit.UserId, limit.Type }).IsUnique();
+            builder.Property(limit => limit.Amount).HasColumnType("decimal(18,2)");
+            builder.Property(limit => limit.PendingAmount).HasColumnType("decimal(18,2)");
+        });
+
+        modelBuilder.Entity<SelfExclusion>(builder =>
+        {
+            builder.HasKey(exclusion => exclusion.Id);
+            builder.HasIndex(exclusion => exclusion.UserId);
+            builder.Property(exclusion => exclusion.Reason).IsRequired().HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<ResponsibleGamblingActivity>(builder =>
+        {
+            builder.HasKey(activity => activity.Id);
+            builder.HasIndex(activity => new { activity.UserId, activity.OccurredAtUtc });
+            builder.Property(activity => activity.Amount).HasColumnType("decimal(18,2)");
         });
     }
 }

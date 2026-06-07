@@ -1,0 +1,70 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class ResponsibleGamblingLimit {
+  +Guid Id
+  +Guid UserId
+  +ResponsibleLimitType Type
+  +ResponsibleLimitPeriod Period
+  +decimal Amount
+  +decimal? PendingAmount
+  +DateTime? PendingActivationUtc
+  +DateTime UpdatedAtUtc
+  +RequestAmountChange(amount, nowUtc, delay)
+  +ApplyPendingChange(nowUtc)
+}
+
+class SelfExclusion {
+  +Guid Id
+  +Guid UserId
+  +DateTime StartsAtUtc
+  +DateTime EndsAtUtc
+  +string Reason
+  +IsActiveAt(nowUtc)
+}
+
+class ResponsibleGamblingActivity {
+  +Guid Id
+  +Guid UserId
+  +ResponsibleGamblingActivityType Type
+  +decimal Amount
+  +DateTime OccurredAtUtc
+}
+
+interface IResponsibleGamblingLimitRepository {
+  +GetByUserAndTypeAsync(userId, type)
+  +GetByUserIdAsync(userId)
+}
+
+interface ISelfExclusionRepository {
+  +GetActiveForUserAsync(userId, nowUtc)
+  +GetRecentForUserAsync(userId, limit)
+}
+
+interface IResponsibleGamblingActivityRepository {
+  +GetForUserSinceAsync(userId, sinceUtc)
+}
+
+interface IResponsibleGamblingService {
+  +GetDashboardAsync(userId)
+  +SetLimitAsync(userId, request)
+  +StartSelfExclusionAsync(userId, request)
+  +ValidateStakeAsync(userId, amount)
+  +ValidateDepositAsync(userId, amount)
+  +RecordActivityAsync(userId, request)
+}
+
+class ResponsibleGamblingService
+class ResponsibleGamblingController
+class BettingDbContext
+
+ResponsibleGamblingService ..|> IResponsibleGamblingService
+ResponsibleGamblingService --> IResponsibleGamblingLimitRepository
+ResponsibleGamblingService --> ISelfExclusionRepository
+ResponsibleGamblingService --> IResponsibleGamblingActivityRepository
+ResponsibleGamblingController --> IResponsibleGamblingService
+BettingDbContext --> ResponsibleGamblingLimit
+BettingDbContext --> SelfExclusion
+BettingDbContext --> ResponsibleGamblingActivity
+
+@enduml

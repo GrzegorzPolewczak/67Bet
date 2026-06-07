@@ -11,6 +11,7 @@ import {
   Settings,
   Star,
   ShieldCheck,
+  ShieldAlert,
   Flag,
   CircleDot,
   Gift,
@@ -122,6 +123,22 @@ const Sidebar: React.FC = () => {
               >
                 <Settings className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
                 Settings
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/responsible-gambling"
+                className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${
+                    isActive
+                      ? "bg-primary-600/10 text-primary-500"
+                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
+                  }
+                `}
+              >
+                <ShieldAlert className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                Play Limits
               </NavLink>
             </li>
 
