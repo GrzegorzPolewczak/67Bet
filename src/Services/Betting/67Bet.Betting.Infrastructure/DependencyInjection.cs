@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddDbContext<BettingDbContext>(options =>
             options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 
+        services.AddScoped<ISportRepository, SportRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IMarketRepository, MarketRepository>();
         services.AddScoped<ITicketRepository, TicketRepository>();
