@@ -19,11 +19,6 @@ public static class DependencyInjection
 
         services.AddScoped<ICustomBetRepository, CustomBetRepository>();
 
-        services.AddHttpClient<_67Bet.CustomBet.Application.Interfaces.IGeminiClient, Integrations.GeminiClient>(client =>
-        {
-            client.BaseAddress = new Uri("https://generativelanguage.googleapis.com/");
-        });
-
         return services;
     }
 }

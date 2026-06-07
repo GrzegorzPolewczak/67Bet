@@ -16,10 +16,4 @@ public interface ICustomBetService
     Task<IEnumerable<CustomBetRequest>> GetPendingRequestsAsync();
     Task AcceptRequestAsync(Guid requestId, decimal finalOdds, string? adminNote = null);
     Task RejectRequestAsync(Guid requestId, string reason);
-    Task<CustomBetRequest> GetAiRecommendationAsync(Guid requestId);
-}
-
-public interface IGeminiClient
-{
-    Task<string> GenerateTextAsync(string prompt);
 }

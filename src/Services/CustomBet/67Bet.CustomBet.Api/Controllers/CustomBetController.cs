@@ -18,36 +18,13 @@ public class CustomBetController : ControllerBase
         _customBetService = customBetService;
     }
 
-    // [Authorize] <- Tymczasowo wyłączone dla diagnozy błędu 400
+    [Authorize]
     [HttpPost("requests")]
-    public async Task<IActionResult> SubmitRequest([FromBody] System.Text.Json.JsonElement body)
+    public async Task<ActionResult<CustomBetRequestDto>> SubmitRequest(CreateCustomBetRequest request)
     {
-        try
-        {
-            if (!body.TryGetProperty("description", out var descriptionProp))
-            {
-                return BadRequest(new { message = "Pole 'description' jest wymagane w JSON." });
-            }
-
-            var description = descriptionProp.GetString();
-            if (string.IsNullOrEmpty(description))
-            {
-                return BadRequest(new { message = "Opis nie może być pusty." });
-            }
-
-            // Używamy tymczasowego ID, bo wyłączyliśmy autoryzację
-            var userId = Guid.Parse("8bd3f295-f9e3-4bb9-930c-e283b6a3f3e3"); 
-            var result = await _customBetService.CreateRequestAsync(userId, description);
-            return Ok(result.ToDto());
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { 
-                message = "Błąd podczas tworzenia wniosku Custom Bet", 
-                details = ex.Message,
-                innerDetails = ex.InnerException?.Message
-            });
-        }
+        var userId = GetUserId();
+        var result = await _customBetService.CreateRequestAsync(userId, request.Description);
+        return Ok(result.ToDto());
     }
 
     [Authorize]
@@ -81,14 +58,6 @@ public class CustomBetController : ControllerBase
     {
         await _customBetService.RejectRequestAsync(id, request.Reason);
         return NoContent();
-    }
-
-    [Authorize(Roles = "Admin")]
-    [HttpGet("requests/{id}/recommendation")]
-    public async Task<ActionResult<CustomBetRequestDto>> GetAiRecommendation(Guid id)
-    {
-        var result = await _customBetService.GetAiRecommendationAsync(id);
-        return Ok(result.ToDto());
     }
 
     private Guid GetUserId()

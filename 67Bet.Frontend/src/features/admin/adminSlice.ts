@@ -288,14 +288,6 @@ const adminSlice = createSlice({
           (i) => i.eventId !== action.payload,
         );
       })
-      .addCase(fetchAiRecommendationAsync.fulfilled, (state, action) => {
-        const index = state.pendingRequests.findIndex(
-          (r) => r.id === action.payload.id,
-        );
-        if (index !== -1) {
-          state.pendingRequests[index] = action.payload;
-        }
-      })
       .addCase(fetchPromoCodesAsync.fulfilled, (state, action) => {
         state.promoCodes = action.payload;
       })
@@ -304,6 +296,17 @@ const adminSlice = createSlice({
       })
       .addCase(togglePromoCodeStatusAsync.fulfilled, (state, action) => {
         const promo = state.promoCodes.find(
+          (p) => p.code === action.payload.code,
+        );
+        if (promo) {
+          promo.isActive = action.payload.isActive;
+        }
+      });
+  },
+});
+
+export default adminSlice.reducer;
+odes.find(
           (p) => p.code === action.payload.code,
         );
         if (promo) {

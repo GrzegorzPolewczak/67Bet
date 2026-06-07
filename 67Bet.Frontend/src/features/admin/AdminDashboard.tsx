@@ -223,69 +223,7 @@ const AdminDashboard: React.FC = () => {
                               "{request.description}"
                             </p>
                           </div>
-                          <button
-                            onClick={() => handleGetAiRecommendation(request.id)}
-                            className="flex items-center gap-2 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 border border-primary-500/30 px-4 py-2 rounded-xl text-xs font-black transition-all"
-                          >
-                            <Sparkles className="w-4 h-4" /> CONSULT AI
-                          </button>
                         </div>
-
-                        {/* AI Recommendation Panel */}
-                        <AnimatePresence>
-                          {(request.aiSuggestedOdds ||
-                            request.status === "Reviewing") && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              className="bg-primary-950/20 border border-primary-500/20 rounded-2xl p-5 overflow-hidden"
-                            >
-                              <div className="flex items-start gap-4">
-                                <div className="p-3 bg-primary-500/10 rounded-xl">
-                                  <Sparkles className="w-5 h-5 text-primary-500" />
-                                </div>
-                                <div className="space-y-4 flex-1">
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div>
-                                      <p className="text-[10px] font-black text-primary-500/60 uppercase tracking-widest mb-1">
-                                        AI Odds
-                                      </p>
-                                      <p className="text-xl font-black text-white">
-                                        @{request.aiSuggestedOdds?.toFixed(2)}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-[10px] font-black text-primary-500/60 uppercase tracking-widest mb-1">
-                                        Risk Level
-                                      </p>
-                                      <span
-                                        className={`text-[10px] font-black px-2 py-1 rounded-md uppercase ${request.aiRiskLevel === "High" ? "bg-red-500/20 text-red-400" : request.aiRiskLevel === "Medium" ? "bg-yellow-500/20 text-yellow-400" : "bg-green-500/20 text-green-400"}`}
-                                      >
-                                        {request.aiRiskLevel || "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="col-span-2">
-                                      <p className="text-[10px] font-black text-primary-500/60 uppercase tracking-widest mb-1">
-                                        Suggested Category
-                                      </p>
-                                      <p className="text-sm font-bold text-gray-300">
-                                        {request.aiCategory || "General"}
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="bg-dark-900/50 p-4 rounded-xl border border-dark-700">
-                                    <p className="text-xs text-gray-400 leading-relaxed">
-                                      <span className="font-black text-primary-500 mr-2">
-                                        AI REASONING:
-                                      </span>
-                                      {request.aiAnalysisNote}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
 
                         <div className="flex items-center gap-3 bg-dark-900 p-2 rounded-xl border border-dark-700">
                           <div className="relative flex-1">

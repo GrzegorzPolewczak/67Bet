@@ -13,9 +13,6 @@ public static class CustomBetMappingExtensions
             request.Description,
             request.Status.ToString(),
             request.AiSuggestedOdds,
-            request.AiAnalysisNote,
-            request.AiRiskLevel,
-            request.AiCategory,
             request.AdminFinalOdds,
             request.AdminNote,
             request.CreatedAt

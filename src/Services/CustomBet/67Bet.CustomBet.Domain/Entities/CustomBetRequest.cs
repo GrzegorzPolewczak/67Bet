@@ -27,9 +27,6 @@ namespace _67Bet.CustomBet.Domain.Entities
         public Guid UserId { get; private set; }
         public string Description { get; private set; } = null!;
         public decimal AiSuggestedOdds { get; private set; }
-        public string? AiAnalysisNote { get; private set; }
-        public string? AiRiskLevel { get; private set; }
-        public string? AiCategory { get; private set; }
         public decimal? AdminFinalOdds { get; private set; }
         public RequestStatus Status { get; private set; }
         public string? AdminNote { get; private set; }
@@ -41,12 +38,9 @@ namespace _67Bet.CustomBet.Domain.Entities
             Status = RequestStatus.Pending;
         }
 
-        public void SetAiRecommendation(decimal odds, string note, string risk, string category)
+        public void SetAiSuggestedOdds(decimal odds)
         {
             AiSuggestedOdds = odds;
-            AiAnalysisNote = note;
-            AiRiskLevel = risk;
-            AiCategory = category;
             Status = RequestStatus.Reviewing;
         }
 
