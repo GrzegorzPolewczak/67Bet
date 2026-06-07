@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { bettingApi } from "../../api/axios";
 import { addSelection, removeSelection } from "../betslip/betslipSlice";
@@ -31,6 +31,70 @@ interface VirtualRaceDto {
   participants: VirtualRaceParticipantDto[];
 }
 
+const toStringValue = (value: unknown, fallback = ""): string => {
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (typeof value === "number") return String(value);
+  return fallback;
+};
+
+const toNumberValue = (value: unknown, fallback = 0): number => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeParticipant = (participantRaw: unknown): VirtualRaceParticipantDto => {
+  const participant = participantRaw as Record<string, unknown> | null | undefined;
+
+  return {
+    id: toStringValue(participant?.id ?? participant?.Id),
+    horseId: toStringValue(participant?.horseId ?? participant?.HorseId),
+    horseName: toStringValue(
+      participant?.horseName ?? participant?.HorseName,
+      "Unknown Horse",
+    ),
+    odds: toNumberValue(participant?.odds ?? participant?.Odds),
+  };
+};
+
+const normalizeRace = (raceRaw: unknown): VirtualRaceDto => {
+  const race = raceRaw as Record<string, unknown> | null | undefined;
+  const rawParticipants = race?.participants ?? race?.Participants;
+
+  return {
+    id: toStringValue(race?.id ?? race?.Id),
+    name: toStringValue(race?.name ?? race?.Name, "Virtual Race"),
+    startTime: toStringValue(race?.startTime ?? race?.StartTime),
+    isFinished: Boolean(race?.isFinished ?? race?.IsFinished),
+    winningHorseId:
+      toStringValue(race?.winningHorseId ?? race?.WinningHorseId) || null,
+    participants: Array.isArray(rawParticipants)
+      ? rawParticipants
+          .map(normalizeParticipant)
+          .filter((participant) => participant.id && participant.horseId)
+      : [],
+  };
+};
+
+const formatRaceStartTime = (value: string): string => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "soon";
+
+  return date.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const getErrorMessage = (error: unknown, fallback: string): string => {
+  if (typeof error === "object" && error !== null) {
+    const response = (error as { response?: { data?: { error?: string } } }).response;
+    const message = (error as { message?: string }).message;
+    return response?.data?.error || message || fallback;
+  }
+
+  return fallback;
+};
+
 const VirtualRacingPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const selections = useSelector(
@@ -50,37 +114,37 @@ const VirtualRacingPage: React.FC = () => {
     {},
   );
 
-  useEffect(() => {
-    fetchActiveRaces();
-  }, []);
-
-  const fetchActiveRaces = async () => {
+  const fetchActiveRaces = useCallback(async () => {
     try {
       setLoading(true);
       const response = await bettingApi.get<VirtualRaceDto[]>(
         "/virtualracing/active",
       );
-      setActiveRaces(response.data);
-      setError(null);
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error || err.message || "Error fetching races",
+      const data = Array.isArray(response.data) ? response.data : [];
+      setActiveRaces(
+        data
+          .map(normalizeRace)
+          .filter((race) => race.id && race.participants.length > 0),
       );
+      setError(null);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Error fetching races"));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchActiveRaces();
+  }, [fetchActiveRaces]);
 
   const generateRace = async () => {
     try {
       setIsGenerating(true);
       await bettingApi.post("/virtualracing/generate");
       await fetchActiveRaces();
-    } catch (err: any) {
-      alert(
-        "Error generating race: " +
-          (err.response?.data?.error || err.message || ""),
-      );
+    } catch (err: unknown) {
+      alert("Error generating race: " + getErrorMessage(err, ""));
     } finally {
       setIsGenerating(false);
     }
@@ -117,11 +181,8 @@ const VirtualRacingPage: React.FC = () => {
           setIsSimulating(null);
         }, 5000);
       }, 4000);
-    } catch (err: any) {
-      alert(
-        "Error simulating race: " +
-          (err.response?.data?.error || err.message || ""),
-      );
+    } catch (err: unknown) {
+      alert("Error simulating race: " + getErrorMessage(err, ""));
       setIsSimulating(null);
     }
   };
@@ -129,23 +190,39 @@ const VirtualRacingPage: React.FC = () => {
   const isSelected = (outcomeId: string) =>
     selections.some((s) => s.outcomeId === outcomeId);
 
+  const hasSelectionForRace = (raceId: string) =>
+    selections.some((selection) => selection.eventId === raceId);
+
   const toggleBet = (
     race: VirtualRaceDto,
     participant: VirtualRaceParticipantDto,
   ) => {
-    const pId = participant.id || (participant as any).Id;
-    if (isSelected(pId)) {
-      dispatch(removeSelection(pId));
+    const raceId = toStringValue(race.id);
+    const normalizedParticipant = normalizeParticipant(participant);
+
+    if (
+      !raceId ||
+      !normalizedParticipant.id ||
+      normalizedParticipant.odds <= 0 ||
+      race.isFinished ||
+      runningRaces[raceId] ||
+      finishedRaces[raceId]
+    ) {
+      return;
+    }
+
+    if (isSelected(normalizedParticipant.id)) {
+      dispatch(removeSelection(normalizedParticipant.id));
     } else {
       dispatch(
         addSelection({
-          eventId: race.id || (race as any).Id,
-          eventName: race.name || (race as any).Name,
-          marketId: `virtual-winner-${race.id || (race as any).Id}`,
+          eventId: raceId,
+          eventName: race.name || "Virtual Race",
+          marketId: `virtual-winner-${raceId}`,
           marketName: "Race Winner",
-          outcomeId: pId,
-          outcomeName: participant.horseName || (participant as any).HorseName,
-          odd: participant.odds || (participant as any).Odds,
+          outcomeId: normalizedParticipant.id,
+          outcomeName: normalizedParticipant.horseName,
+          odd: normalizedParticipant.odds,
         }),
       );
     }
@@ -222,16 +299,8 @@ const VirtualRacingPage: React.FC = () => {
         <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-2 gap-8 md:gap-12">
           <AnimatePresence>
             {activeRaces.map((raceRaw) => {
-              const race = {
-                id: raceRaw.id || (raceRaw as any).Id,
-                name: raceRaw.name || (raceRaw as any).Name,
-                startTime: raceRaw.startTime || (raceRaw as any).StartTime,
-                isFinished: raceRaw.isFinished || (raceRaw as any).IsFinished,
-                winningHorseId:
-                  raceRaw.winningHorseId || (raceRaw as any).WinningHorseId,
-                participants:
-                  raceRaw.participants || (raceRaw as any).Participants || [],
-              } as VirtualRaceDto;
+              const race = normalizeRace(raceRaw);
+              const hasPendingSlipSelection = hasSelectionForRace(race.id);
 
               return (
                 <motion.div
@@ -253,10 +322,7 @@ const VirtualRacingPage: React.FC = () => {
                         </h3>
                         <p className="text-sm md:text-base text-gray-400 mt-1">
                           Starts:{" "}
-                          {new Date(race.startTime).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {formatRaceStartTime(race.startTime)}
                         </p>
                       </div>
                     </div>
@@ -298,13 +364,7 @@ const VirtualRacingPage: React.FC = () => {
                         </div>
 
                         {race.participants.map((pRaw, index) => {
-                          const p = {
-                            id: pRaw.id || (pRaw as any).Id,
-                            horseId: pRaw.horseId || (pRaw as any).HorseId,
-                            horseName:
-                              pRaw.horseName || (pRaw as any).HorseName,
-                            odds: pRaw.odds || (pRaw as any).Odds,
-                          } as VirtualRaceParticipantDto;
+                          const p = normalizeParticipant(pRaw);
 
                           const winnerId = runningRaces[race.id].winnerId;
                           const isWinner = winnerId === p.horseId;
@@ -352,13 +412,7 @@ const VirtualRacingPage: React.FC = () => {
                       // WIDOK LISTY KONI (PRZED WYŚCIGIEM I PO ROZSTRZYGNIĘCIU)
                       <div className="space-y-3 md:space-y-4 mb-8">
                         {race.participants.map((pRaw, index) => {
-                          const p = {
-                            id: pRaw.id || (pRaw as any).Id,
-                            horseId: pRaw.horseId || (pRaw as any).HorseId,
-                            horseName:
-                              pRaw.horseName || (pRaw as any).HorseName,
-                            odds: pRaw.odds || (pRaw as any).Odds,
-                          } as VirtualRaceParticipantDto;
+                          const p = normalizeParticipant(pRaw);
 
                           const isWinner = finishedRaces[race.id] === p.horseId;
                           const selected = isSelected(p.id);
@@ -367,7 +421,9 @@ const VirtualRacingPage: React.FC = () => {
                             <div
                               key={p.id}
                               onClick={() =>
-                                !finishedRaces[race.id] && toggleBet(race, p)
+                                !finishedRaces[race.id] &&
+                                !runningRaces[race.id] &&
+                                toggleBet(race, p)
                               }
                               className={`flex items-center justify-between p-4 md:p-6 rounded-2xl transition-all border-2 cursor-pointer
                               ${
@@ -414,7 +470,7 @@ const VirtualRacingPage: React.FC = () => {
                               }
                             `}
                               >
-                                {p.odds.toFixed(2)}
+                                {p.odds > 0 ? p.odds.toFixed(2) : "-"}
                               </div>
                             </div>
                           );
@@ -434,8 +490,15 @@ const VirtualRacingPage: React.FC = () => {
                       </div>
                     ) : (
                       <button
-                        onClick={() => simulateRace(race.id)}
-                        disabled={isSimulating === race.id}
+                        onClick={() =>
+                          !hasPendingSlipSelection && simulateRace(race.id)
+                        }
+                        disabled={isSimulating === race.id || hasPendingSlipSelection}
+                        title={
+                          hasPendingSlipSelection
+                            ? "Najpierw postaw kupon albo usuń wybrany typ z kuponu."
+                            : undefined
+                        }
                         className="w-full relative overflow-hidden group bg-dark-700 hover:bg-dark-600 border-2 border-dark-600 text-white font-black py-5 md:py-6 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                       >
                         <div className="relative z-10 flex items-center justify-center gap-3 text-xl tracking-wide uppercase">
@@ -443,6 +506,11 @@ const VirtualRacingPage: React.FC = () => {
                             <>
                               <RefreshCw className="w-7 h-7 animate-spin text-purple-500" />
                               <span>Starting Engine...</span>
+                            </>
+                          ) : hasPendingSlipSelection ? (
+                            <>
+                              <Medal className="w-7 h-7 text-purple-400" />
+                              <span>Place or clear bet first</span>
                             </>
                           ) : (
                             <>

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addSelection, removeSelection } from "../betslip/betslipSlice";
@@ -17,6 +17,7 @@ const SportPage: React.FC = () => {
   const { events, loading, error } = useSelector(
     (state: RootState) => state.betting,
   );
+  const [now] = useState(() => Date.now());
 
   useEffect(() => {
     if (events.length === 0) {
@@ -32,14 +33,13 @@ const SportPage: React.FC = () => {
         const safeSportName = sportName?.toLowerCase() || "";
         const safeLeague = e.league?.toLowerCase() || "";
         const safeName = e.name?.toLowerCase() || "";
-        const safeSportKey = (e as any).sportKey?.toLowerCase() || "";
+        const safeSportKey = e.sportKey?.toLowerCase() || "";
 
         if (safeSportName === "popular") return true;
 
         // Live: Wydarzenia trwające lub zaczynające się za mniej niż 2 godziny
         if (safeSportName === "live") {
-          const eventTime = new Date((e as any).rawTime).getTime();
-          const now = Date.now();
+          const eventTime = new Date(e.rawTime).getTime();
           return eventTime <= now + 2 * 60 * 60 * 1000;
         }
 
@@ -120,6 +120,11 @@ const SportPage: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 text-xs font-bold text-gray-500 mb-2 uppercase">
                       <span>{event.league}</span>
+                      {event.source === "external" && (
+                        <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-[9px] text-blue-300">
+                          External API
+                        </span>
+                      )}
                       <div className="w-1 h-1 bg-dark-600 rounded-full" />
                       <div className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -138,17 +143,30 @@ const SportPage: React.FC = () => {
                     event.markets.length > 0 &&
                     Array.isArray(event.markets[0]?.outcomes) ? (
                       event.markets[0].outcomes.map(
-                        (outcome: any, index: number) => (
+                        (outcome, index) => (
                           <OddButton
                             key={outcome?.id || index}
                             name={outcome?.name || "-"}
                             odd={outcome?.odd || 0}
                             isSelected={
-                              outcome?.id ? isSelected(outcome.id) : false
+                              outcome?.id && outcome?.isBettable
+                                ? isSelected(outcome.id)
+                                : false
+                            }
+                            disabled={!event.isBettable || !outcome?.isBettable}
+                            title={
+                              event.isBettable && outcome?.isBettable
+                                ? undefined
+                                : "Kurs z zewnętrznego API jest tylko podglądem. Do kuponu można dodawać rynki z Betting API i Virtual Racing."
                             }
                             onClick={() => {
                               const market = event.markets[0];
-                              if (market && outcome?.id) {
+                              if (
+                                market &&
+                                event.isBettable &&
+                                outcome?.id &&
+                                outcome?.isBettable
+                              ) {
                                 if (isSelected(outcome.id)) {
                                   dispatch(removeSelection(outcome.id));
                                 } else {

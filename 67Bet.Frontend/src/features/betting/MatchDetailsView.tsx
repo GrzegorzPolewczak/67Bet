@@ -269,9 +269,14 @@ const MatchDetailsView: React.FC = () => {
               <span className="w-1 h-4 bg-primary-500 rounded-full" />
               Available Markets
             </h2>
+            {!event.isBettable && (
+              <div className="mb-5 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs font-bold text-blue-200">
+                This match comes from the External Odds API. Odds are displayed for preview; only Betting API and Virtual Racing outcomes can be placed on a ticket.
+              </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.isArray(event.markets) && event.markets.length > 0 ? (
-                event.markets.map((market: any, mIndex: number) => (
+                event.markets.map((market, mIndex) => (
                   <div
                     key={market.id || mIndex}
                     className="bg-dark-900 p-5 rounded-2xl border border-dark-700 group hover:border-primary-500/30 transition-all duration-300 shadow-sm hover:shadow-primary-500/5"
@@ -281,16 +286,24 @@ const MatchDetailsView: React.FC = () => {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {Array.isArray(market.outcomes) &&
-                        market.outcomes.map((outcome: any, oIndex: number) => (
+                        market.outcomes.map((outcome, oIndex) => (
                           <OddButton
                             key={outcome.id || oIndex}
                             name={outcome.name || "-"}
                             odd={outcome.odd || 0}
                             isSelected={
-                              outcome.id ? isSelected(outcome.id) : false
+                              outcome.id && outcome.isBettable
+                                ? isSelected(outcome.id)
+                                : false
+                            }
+                            disabled={!event.isBettable || !outcome.isBettable}
+                            title={
+                              event.isBettable && outcome.isBettable
+                                ? undefined
+                                : "Kurs z zewnętrznego API jest tylko podglądem."
                             }
                             onClick={() => {
-                              if (outcome.id) {
+                              if (event.isBettable && outcome.id && outcome.isBettable) {
                                 if (isSelected(outcome.id)) {
                                   dispatch(removeSelection(outcome.id));
                                 } else {
