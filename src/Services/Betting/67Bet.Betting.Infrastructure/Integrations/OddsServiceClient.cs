@@ -50,7 +50,10 @@ public class OddsServiceClient : IOddsServiceClient
                 return Array.Empty<ExternalOddsEventDto>();
 
             var syncedEvents = await retryResponse.Content.ReadFromJsonAsync<List<ExternalOddsEventDto>>();
-            return syncedEvents ?? new List<ExternalOddsEventDto>();
+            if (syncedEvents == null)
+                return Array.Empty<ExternalOddsEventDto>();
+
+            return syncedEvents;
         }
         catch (Exception ex)
         {
