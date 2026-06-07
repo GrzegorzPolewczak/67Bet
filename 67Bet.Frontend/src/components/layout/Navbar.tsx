@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Wallet, Menu, Search, Bell, LogOut, Gift } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
@@ -6,6 +6,7 @@ import type { RootState, AppDispatch } from "../../app/store";
 import { toggleBetslip } from "../../features/betslip/betslipSlice";
 import { logout } from "../../features/auth/authSlice";
 import { fetchBalanceAsync } from "../../features/wallet/walletSlice";
+import { fetchGamificationProgress } from "../../features/gamification/gamificationSlice";
 import { motion } from "framer-motion";
 
 const Navbar: React.FC = () => {
@@ -17,6 +18,7 @@ const Navbar: React.FC = () => {
   const { balance, freebetBalance } = useSelector(
     (state: RootState) => state.wallet,
   );
+  const { progress } = useSelector((state: RootState) => state.gamification);
   const betSelectionsCount = useSelector(
     (state: RootState) => state.betslip.selections.length,
   );
@@ -25,6 +27,7 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchBalanceAsync());
+      dispatch(fetchGamificationProgress());
     }
   }, [isAuthenticated, dispatch]);
 
@@ -178,6 +181,17 @@ const Navbar: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-3 pl-4 border-l border-dark-600">
+              <div className="flex flex-col items-end mr-2">
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                  Level {progress?.currentLevel || 1}
+                </span>
+                <div className="w-20 h-1.5 bg-dark-900 rounded-full mt-0.5 overflow-hidden border border-dark-600">
+                  <div
+                    className="h-full bg-primary-500 transition-all duration-1000"
+                    style={{ width: `${progress?.progressPercentage || 0}%` }}
+                  ></div>
+                </div>
+              </div>
               <Link
                 to="/settings"
                 className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold hover:bg-primary-500 transition-colors cursor-pointer text-white"

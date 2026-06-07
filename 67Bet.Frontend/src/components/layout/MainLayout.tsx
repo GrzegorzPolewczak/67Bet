@@ -5,12 +5,21 @@ import Sidebar from "./Sidebar";
 import BetSlip from "../../features/betslip/BetSlip";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
+import { processDailyLogin } from "../../api/gamification";
 
 const MainLayout: React.FC = () => {
   const isBetslipOpen = useSelector((state: RootState) => state.betslip.isOpen);
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth,
   );
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      processDailyLogin().catch((err) =>
+        console.error("Daily login failed", err),
+      );
+    }
+  }, [isAuthenticated]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">

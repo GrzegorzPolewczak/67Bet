@@ -89,9 +89,9 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<_67Bet.Betting.Infrastructure.Persistence.BettingDbContext>();
-// Auto-migrate database on startup
-context.Database.Migrate();
-Console.WriteLine("Database migrated successfully.");
+        // Auto-migrate database on startup
+        context.Database.Migrate();
+        Console.WriteLine("Database migrated successfully.");
 
         // Seed Virtual Racing Horses
         if (!context.Horses.Any())
@@ -108,6 +108,19 @@ Console.WriteLine("Database migrated successfully.");
             );
             context.SaveChanges();
             Console.WriteLine("Successfully seeded initial virtual horses.");
+        }
+
+        // Seed Achievements
+        if (!context.Achievements.Any())
+        {
+            context.Achievements.AddRange(
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Debiutant Brąz", "Postaw 1 zakład", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 1, "icon-bet-1"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Debiutant Srebro", "Postaw 10 zakładów", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 10, "icon-bet-10"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Snajper", "Wygraj kupon z kursem min. 2.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 2.0m, "icon-odds-2"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Rekordzista", "Łączna suma wygranych 100 zł", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 100, "icon-win-100")
+            );
+            context.SaveChanges();
+            Console.WriteLine("Successfully seeded initial achievements.");
         }
     }
     catch (Exception ex)
