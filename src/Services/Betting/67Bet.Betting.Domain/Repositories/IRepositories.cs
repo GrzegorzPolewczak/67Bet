@@ -12,11 +12,13 @@ namespace _67Bet.Betting.Domain.Repositories;
 
 public interface ISportRepository : IRepository<Sport>
 {
+    Task<Sport?> GetByNameAsync(string name);
 }
 
 public interface IEventRepository : IRepository<Event>
 {
     Task<IEnumerable<Event>> GetActiveEventsAsync();
+    Task<Event?> GetByExternalIdAsync(string externalId);
 }
 
 public interface IMarketRepository : IRepository<Market>

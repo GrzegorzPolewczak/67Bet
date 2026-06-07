@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using _67Bet.Shared.Kernel;
 
 namespace _67Bet.Betting.Domain.Entities;
@@ -23,8 +24,22 @@ public class Market : BaseEntity
 
     public void AddOutcome(string name, decimal odd)
     {
+        AddOrUpdateOutcome(name, odd);
+    }
+
+    public void AddOrUpdateOutcome(string name, decimal odd)
+    {
         var probability = odd > 0 ? 1 / odd : 0;
-        Outcomes.Add(new Outcome(Id, name, probability, odd));
+        var existing = Outcomes.FirstOrDefault(o =>
+            string.Equals(o.Name, name, StringComparison.OrdinalIgnoreCase));
+
+        if (existing == null)
+        {
+            Outcomes.Add(new Outcome(Id, name, probability, odd));
+            return;
+        }
+
+        existing.UpdatePrice(odd, probability);
     }
 
     // EF Core

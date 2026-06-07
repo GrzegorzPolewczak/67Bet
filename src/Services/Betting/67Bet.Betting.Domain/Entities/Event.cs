@@ -44,6 +44,17 @@ public class Event : BaseEntity, IAggregateRoot
         Status = status;
     }
 
+    public void UpdateExternalInfo(string name, string league, DateTime startTime, string metadata)
+    {
+        if (Status == EventStatus.Finished || Status == EventStatus.Cancelled)
+            return;
+
+        Name = name;
+        League = league;
+        StartTime = startTime;
+        Metadata = metadata;
+    }
+
     // EF Core
     private Event() { }
 }

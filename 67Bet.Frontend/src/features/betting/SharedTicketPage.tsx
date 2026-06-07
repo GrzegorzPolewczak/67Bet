@@ -28,6 +28,7 @@ interface BetDto {
 
 interface TicketDto {
   id: string;
+  createdAt?: string;
   stake: number;
   totalOdds: number;
   potentialWinning: number;

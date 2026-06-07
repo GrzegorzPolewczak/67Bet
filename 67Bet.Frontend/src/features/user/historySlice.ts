@@ -15,6 +15,7 @@ interface BetDto {
 
 interface TicketDto {
   id: string;
+  createdAt: string;
   stake: number;
   totalOdds: number;
   potentialWinning: number;
@@ -39,7 +40,13 @@ export const fetchHistoryAsync = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await bettingApi.get("/tickets/my");
-      return response.data;
+      const tickets = Array.isArray(response.data) ? response.data : [];
+
+      return [...tickets].sort((a, b) => {
+        const aTime = new Date(a.createdAt || a.bets?.[0]?.startTime || 0).getTime();
+        const bTime = new Date(b.createdAt || b.bets?.[0]?.startTime || 0).getTime();
+        return bTime - aTime;
+      });
     } catch (error: any) {
       const message =
         error.response?.data?.message ||
