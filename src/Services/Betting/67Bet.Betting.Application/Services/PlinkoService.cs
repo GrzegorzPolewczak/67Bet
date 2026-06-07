@@ -78,34 +78,34 @@ public sealed class PlinkoService : IPlinkoService
     {
         var edge = riskLevel switch
         {
-            PlinkoRiskLevel.Low => 3.2m,
-            PlinkoRiskLevel.Medium => 12.0m,
-            PlinkoRiskLevel.High => 70.0m,
-            _ => 12.0m
+            PlinkoRiskLevel.Low => 2.2m,
+            PlinkoRiskLevel.Medium => 6.0m,
+            PlinkoRiskLevel.High => 28.0m,
+            _ => 6.0m
         };
 
         var center = riskLevel switch
         {
-            PlinkoRiskLevel.Low => 0.72m,
-            PlinkoRiskLevel.Medium => 0.28m,
+            PlinkoRiskLevel.Low => 0.55m,
+            PlinkoRiskLevel.Medium => 0.18m,
             PlinkoRiskLevel.High => 0.0m,
-            _ => 0.28m
+            _ => 0.18m
         };
 
         var houseEdge = riskLevel switch
         {
-            PlinkoRiskLevel.Low => 0.92m,
-            PlinkoRiskLevel.Medium => 0.86m,
-            PlinkoRiskLevel.High => 0.78m,
-            _ => 0.86m
+            PlinkoRiskLevel.Low => 0.78m,
+            PlinkoRiskLevel.Medium => 0.62m,
+            PlinkoRiskLevel.High => 0.50m,
+            _ => 0.62m
         };
 
         var curvePower = riskLevel switch
         {
-            PlinkoRiskLevel.Low => 2.0,
-            PlinkoRiskLevel.Medium => 2.45,
-            PlinkoRiskLevel.High => 3.1,
-            _ => 2.45
+            PlinkoRiskLevel.Low => 2.2,
+            PlinkoRiskLevel.Medium => 2.8,
+            PlinkoRiskLevel.High => 3.6,
+            _ => 2.8
         };
 
         var values = Enumerable.Range(0, rows + 1)

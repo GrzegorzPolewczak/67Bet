@@ -54,12 +54,12 @@ const calculateBoardFee = (stake: number, balls: number, rows: number) => {
 };
 
 const createMultipliers = (riskLevel: RiskLevel, rows: number) => {
-  const edge = riskLevel === "Low" ? 3.2 : riskLevel === "High" ? 70 : 12;
-  const center = riskLevel === "Low" ? 0.72 : riskLevel === "High" ? 0 : 0.28;
+  const edge = riskLevel === "Low" ? 2.2 : riskLevel === "High" ? 28 : 6;
+  const center = riskLevel === "Low" ? 0.55 : riskLevel === "High" ? 0 : 0.18;
   const houseEdge =
-    riskLevel === "Low" ? 0.92 : riskLevel === "High" ? 0.78 : 0.86;
+    riskLevel === "Low" ? 0.78 : riskLevel === "High" ? 0.5 : 0.62;
   const curvePower =
-    riskLevel === "Low" ? 2 : riskLevel === "High" ? 3.1 : 2.45;
+    riskLevel === "Low" ? 2.2 : riskLevel === "High" ? 3.6 : 2.8;
 
   return Array.from({ length: rows + 1 }, (_, slot) => {
     const distanceFromCenter = Math.abs(slot - rows / 2) / (rows / 2);

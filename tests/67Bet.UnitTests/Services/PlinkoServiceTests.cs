@@ -22,6 +22,20 @@ public class PlinkoServiceTests
     }
 
     [Fact]
+    public void GetBoard_UsesReducedTopMultipliers()
+    {
+        var service = CreateService();
+
+        var lowRisk = service.GetBoard(PlinkoRiskLevel.Low, 16);
+        var mediumRisk = service.GetBoard(PlinkoRiskLevel.Medium, 16);
+        var highRisk = service.GetBoard(PlinkoRiskLevel.High, 16);
+
+        lowRisk.Multipliers.Max().Should().BeLessThanOrEqualTo(1.72m);
+        mediumRisk.Multipliers.Max().Should().BeLessThanOrEqualTo(3.72m);
+        highRisk.Multipliers.Max().Should().BeLessThanOrEqualTo(14.00m);
+    }
+
+    [Fact]
     public async Task PlayAsync_WhenStakeAccepted_CreatesRoundWithValidPayout()
     {
         var repository = new FakePlinkoRoundRepository();
