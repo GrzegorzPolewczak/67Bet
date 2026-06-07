@@ -43,8 +43,12 @@ export const fetchHistoryAsync = createAsyncThunk(
       const tickets = Array.isArray(response.data) ? response.data : [];
 
       return [...tickets].sort((a, b) => {
-        const aTime = new Date(a.createdAt || a.bets?.[0]?.startTime || 0).getTime();
-        const bTime = new Date(b.createdAt || b.bets?.[0]?.startTime || 0).getTime();
+        const aTime = new Date(
+          a.createdAt || a.bets?.[0]?.startTime || 0,
+        ).getTime();
+        const bTime = new Date(
+          b.createdAt || b.bets?.[0]?.startTime || 0,
+        ).getTime();
         return bTime - aTime;
       });
     } catch (error: any) {

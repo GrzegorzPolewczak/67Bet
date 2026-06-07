@@ -175,7 +175,10 @@ const mapInternalEvent = (eventRaw: unknown): Event => {
     sportKey: toSafeString(event.sportKey, "internal"),
     rawTime,
     time: formatDateTime(rawTime),
-    source: toSafeString(event.source, "internal") === "external" ? "external" : "internal",
+    source:
+      toSafeString(event.source, "internal") === "external"
+        ? "external"
+        : "internal",
     isBettable: true,
     markets: asArray(event.markets).map((marketRaw) => {
       const market = asObject(marketRaw);
