@@ -81,7 +81,7 @@ public class OddsIntegrationService : IOddsIntegrationService
             try
             {
                 var existingEvent = await _eventRepository.GetByExternalIdAsync(extEvent.Id);
-                
+
                 string? recentScores = scoresBySport.TryGetValue(extEvent.SportKey, out var s) ? s : null;
 
                 if (existingEvent == null)
@@ -112,7 +112,7 @@ public class OddsIntegrationService : IOddsIntegrationService
                 }
                 else
                 {
-existingEvent.UpdateInfo($"{extEvent.HomeTeam} vs {extEvent.AwayTeam}", extEvent.CommenceTime, recentScores);
+                    existingEvent.UpdateInfo($"{extEvent.HomeTeam} vs {extEvent.AwayTeam}", extEvent.CommenceTime, recentScores);
                     var primaryBookmaker = extEvent.Bookmakers.FirstOrDefault();
                     if (primaryBookmaker != null)
                     {

@@ -30,14 +30,14 @@ public class GamificationService : IGamificationService
     {
         var gamification = await GetOrCreateUserGamificationAsync(userId);
         long xpToAdd = (long)stake; // 1 XP per 1 unit of stake
-        
+
         bool leveledUp = gamification.AddExperience(xpToAdd);
         await _gamificationRepo.UpdateAsync(gamification);
 
         await UpdateAchievementProgressAsync(userId, AchievementType.TotalBets, 1);
 
         _logger.LogInformation("Awarded {XP} XP to user {UserId} for placing a bet. Level Up: {LeveledUp}", xpToAdd, userId, leveledUp);
-        
+
         // TODO: Trigger SignalR notification
     }
 
@@ -46,7 +46,7 @@ public class GamificationService : IGamificationService
         var gamification = await GetOrCreateUserGamificationAsync(userId);
         // Formula: XP = Stawka * (Kurs - 1) * 0.5
         long xpToAdd = (long)(stake * (odds - 1) * 0.5m);
-        
+
         if (xpToAdd > 0)
         {
             bool leveledUp = gamification.AddExperience(xpToAdd);
@@ -75,7 +75,7 @@ public class GamificationService : IGamificationService
         var g = await GetOrCreateUserGamificationAsync(userId);
         long currentLevelXp = g.CalculateXpForLevel(g.CurrentLevel);
         long nextLevelXp = g.CalculateXpForLevel(g.CurrentLevel + 1);
-        
+
         double progress = 0;
         if (nextLevelXp > currentLevelXp)
         {
@@ -95,7 +95,7 @@ public class GamificationService : IGamificationService
     {
         var allAchievements = await _achievementRepo.GetAllAsync();
         var userAchievements = await _userAchievementRepo.GetByUserIdAsync(userId);
-        
+
         var result = new List<UserAchievementDto>();
         foreach (var a in allAchievements)
         {

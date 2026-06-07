@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, AppDispatch } from "../../app/store";
-import { User, Mail, Shield, Bell, Save, ChevronLeft, Trophy, Star, CheckCircle2 } from "lucide-react";
+import {
+  User,
+  Mail,
+  Shield,
+  Bell,
+  Save,
+  ChevronLeft,
+  Trophy,
+  Star,
+  CheckCircle2,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { fetchAchievements } from "../../features/gamification/gamificationSlice";
@@ -9,7 +19,9 @@ import { fetchAchievements } from "../../features/gamification/gamificationSlice
 const SettingsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { achievements } = useSelector((state: RootState) => state.gamification);
+  const { achievements } = useSelector(
+    (state: RootState) => state.gamification,
+  );
   const [notifications, setNotifications] = useState(true);
 
   React.useEffect(() => {
@@ -144,7 +156,7 @@ const SettingsPage: React.FC = () => {
                                     100,
                                     (Number(achievement.currentProgress) /
                                       Number(achievement.threshold)) *
-                                      100
+                                      100,
                                   )}%`,
                                 }}
                               ></div>

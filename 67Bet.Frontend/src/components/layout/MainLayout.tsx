@@ -15,7 +15,9 @@ const MainLayout: React.FC = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      processDailyLogin().catch(err => console.error("Daily login failed", err));
+      processDailyLogin().catch((err) =>
+        console.error("Daily login failed", err),
+      );
     }
   }, [isAuthenticated]);
 

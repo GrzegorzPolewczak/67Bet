@@ -89,9 +89,9 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = scope.ServiceProvider.GetRequiredService<_67Bet.Betting.Infrastructure.Persistence.BettingDbContext>();
-// Auto-migrate database on startup
-context.Database.Migrate();
-Console.WriteLine("Database migrated successfully.");
+        // Auto-migrate database on startup
+        context.Database.Migrate();
+        Console.WriteLine("Database migrated successfully.");
 
         // Seed Virtual Racing Horses
         if (!context.Horses.Any())

@@ -25,7 +25,7 @@ public class UserAchievement : BaseEntity
         if (IsUnlocked) return false;
 
         CurrentProgress = amount;
-        
+
         if (CurrentProgress >= threshold)
         {
             IsUnlocked = true;

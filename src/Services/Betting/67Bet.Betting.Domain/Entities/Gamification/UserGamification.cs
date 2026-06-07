@@ -21,7 +21,7 @@ public class UserGamification : BaseEntity
     public bool AddExperience(long amount)
     {
         if (amount <= 0) return false;
-        
+
         ExperiencePoints += amount;
         return CheckLevelUp();
     }
@@ -30,7 +30,7 @@ public class UserGamification : BaseEntity
     {
         int nextLevel = CurrentLevel + 1;
         long requiredXp = CalculateXpForLevel(nextLevel);
-        
+
         bool leveledUp = false;
         while (ExperiencePoints >= requiredXp)
         {
@@ -39,7 +39,7 @@ public class UserGamification : BaseEntity
             nextLevel++;
             requiredXp = CalculateXpForLevel(nextLevel);
         }
-        
+
         return leveledUp;
     }
 

@@ -29,14 +29,14 @@ public class AiAssistantService : IAiAssistantService
 
     public async Task<string> GetMatchInsightAsync(string eventId)
     {
-// 1. Sprawdź cache w bazie danych (dla wszystkich identyfikatorów string)
-var existingInsight = await _insightRepository.GetByEventIdAsync(eventId);
-// Sprawdzamy też ważność cache (np. odrzucamy starsze niż 12h)
-if (existingInsight != null && existingInsight.GeneratedAt > DateTime.UtcNow.AddHours(-12))
-{
-    _logger.LogInformation("Returning cached AI insight for event {EventId}", eventId);
-    return existingInsight.Content;
-}
+        // 1. Sprawdź cache w bazie danych (dla wszystkich identyfikatorów string)
+        var existingInsight = await _insightRepository.GetByEventIdAsync(eventId);
+        // Sprawdzamy też ważność cache (np. odrzucamy starsze niż 12h)
+        if (existingInsight != null && existingInsight.GeneratedAt > DateTime.UtcNow.AddHours(-12))
+        {
+            _logger.LogInformation("Returning cached AI insight for event {EventId}", eventId);
+            return existingInsight.Content;
+        }
 
         // 2. Pobierz podstawowe dane o meczu oraz zsynchronizowane twarde dane
         string matchName;
@@ -57,7 +57,7 @@ if (existingInsight != null && existingInsight.GeneratedAt > DateTime.UtcNow.Add
                 var externalMatch = await _oddsServiceClient.GetEventByIdAsync(eventId);
                 if (externalMatch == null)
                     throw new KeyNotFoundException($"Event with ID {eventId} not found locally or in Odds Service.");
-                
+
                 matchName = externalMatch.Name;
                 sportMetadata = externalMatch.SportKey;
                 recentScores = externalMatch.RecentScores ?? string.Empty;
@@ -69,7 +69,7 @@ if (existingInsight != null && existingInsight.GeneratedAt > DateTime.UtcNow.Add
             var externalMatch = await _oddsServiceClient.GetEventByIdAsync(eventId);
             if (externalMatch == null)
                 throw new KeyNotFoundException($"External event with ID {eventId} not found in Odds Service.");
-            
+
             matchName = externalMatch.Name;
             sportMetadata = externalMatch.SportKey;
             recentScores = externalMatch.RecentScores ?? string.Empty;

@@ -77,7 +77,7 @@ public class GamificationServiceTests
         // Arrange
         var userId = Guid.NewGuid();
         var gamification = new UserGamification(userId);
-        
+
         _gamificationRepoMock.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(gamification);
         _achievementRepoMock.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Achievement>());
 

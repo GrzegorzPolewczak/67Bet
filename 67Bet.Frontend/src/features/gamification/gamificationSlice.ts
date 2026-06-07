@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getMyProgress, getMyAchievements } from '../../api/gamification';
-import type { UserProgress, Achievement } from '../../api/gamification';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { getMyProgress, getMyAchievements } from "../../api/gamification";
+import type { UserProgress, Achievement } from "../../api/gamification";
 
 interface GamificationState {
   progress: UserProgress | null;
@@ -17,21 +17,21 @@ const initialState: GamificationState = {
 };
 
 export const fetchGamificationProgress = createAsyncThunk(
-  'gamification/fetchProgress',
+  "gamification/fetchProgress",
   async () => {
     return await getMyProgress();
-  }
+  },
 );
 
 export const fetchAchievements = createAsyncThunk(
-  'gamification/fetchAchievements',
+  "gamification/fetchAchievements",
   async () => {
     return await getMyAchievements();
-  }
+  },
 );
 
 const gamificationSlice = createSlice({
-  name: 'gamification',
+  name: "gamification",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
@@ -45,7 +45,7 @@ const gamificationSlice = createSlice({
       })
       .addCase(fetchGamificationProgress.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message || 'Failed to fetch progress';
+        state.error = action.error.message || "Failed to fetch progress";
       })
       .addCase(fetchAchievements.fulfilled, (state, action) => {
         state.achievements = action.payload;

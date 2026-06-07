@@ -1,4 +1,4 @@
-import api from './axios';
+import api from "./axios";
 
 export type UserProgress = {
   userId: string;
@@ -6,7 +6,7 @@ export type UserProgress = {
   currentLevel: number;
   nextLevelXp: number;
   progressPercentage: number;
-}
+};
 
 export type Achievement = {
   achievementId: string;
@@ -17,18 +17,22 @@ export type Achievement = {
   isUnlocked: boolean;
   unlockedAt?: string;
   iconUrl: string;
-}
+};
 
 export const getMyProgress = async (): Promise<UserProgress> => {
-  const response = await api.betting.get<UserProgress>('/gamification/me/progress');
+  const response = await api.betting.get<UserProgress>(
+    "/gamification/me/progress",
+  );
   return response.data;
 };
 
 export const getMyAchievements = async (): Promise<Achievement[]> => {
-  const response = await api.betting.get<Achievement[]>('/gamification/me/achievements');
+  const response = await api.betting.get<Achievement[]>(
+    "/gamification/me/achievements",
+  );
   return response.data;
 };
 
 export const processDailyLogin = async (): Promise<void> => {
-  await api.betting.post('/gamification/me/daily-login');
+  await api.betting.post("/gamification/me/daily-login");
 };

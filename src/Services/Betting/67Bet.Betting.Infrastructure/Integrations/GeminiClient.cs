@@ -25,7 +25,7 @@ public class GeminiClient : IGeminiClient
     {
         try
         {
-var url = $"v1/models/gemini-3.1-flash-lite:generateContent?key={_apiKey}";
+            var url = $"v1/models/gemini-3.1-flash-lite:generateContent?key={_apiKey}";
             var requestBody = new
             {
                 contents = new[]

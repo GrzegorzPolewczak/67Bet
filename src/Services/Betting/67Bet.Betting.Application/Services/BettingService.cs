@@ -109,7 +109,7 @@ public class BettingService : IBettingService
         }
 
         await _ticketRepository.AddAsync(ticket);
-        
+
         // Award XP for placing a bet
         await _gamificationService.AwardXpForBetAsync(userId, stake);
 
@@ -192,7 +192,7 @@ public class BettingService : IBettingService
         // Ta metoda powinna sprawdzać status konkretnego wyniku w bazie
         // Dla uproszczenia w tej wersji zwracamy status z encji Outcome
         var markets = await _marketRepository.GetAllAsync(); // To jest mało wydajne, ale w tej skali akceptowalne
-        foreach(var m in markets)
+        foreach (var m in markets)
         {
             var outcome = m.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
             if (outcome != null)
@@ -205,7 +205,7 @@ public class BettingService : IBettingService
 
         // Sprawdź wirtualne wyścigi
         var races = await _virtualRaceRepository.GetActiveRacesAsync();
-        foreach(var race in races)
+        foreach (var race in races)
         {
             var p = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
             if (p != null)
