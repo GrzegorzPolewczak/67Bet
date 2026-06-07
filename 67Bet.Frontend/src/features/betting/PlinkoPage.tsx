@@ -319,6 +319,25 @@ const PlinkoPage: React.FC = () => {
     createdAt: new Date(round.createdAtUtc || round.CreatedAtUtc || new Date()),
   });
 
+  const settleRoundPayout = async (round: PlinkoRound) => {
+    if (isDemoMode) {
+      setBalance((current) => toMoney(current + round.payout));
+      return;
+    }
+
+    try {
+      await bettingApi.post(`/plinko/${round.id}/settle`);
+      setBalance((current) => toMoney(current + round.payout));
+    } catch (err: any) {
+      setError(
+        err.response?.data?.error ||
+          err.response?.data ||
+          err.message ||
+          "Could not settle Plinko payout.",
+      );
+    }
+  };
+
   const restoreQueuedRounds = (storageKey: string) => {
     try {
       const storedValue = localStorage.getItem(storageKey);
@@ -473,7 +492,7 @@ const PlinkoPage: React.FC = () => {
         };
       });
       setHistory((current) => [round, ...current].slice(0, 8));
-      setBalance((current) => toMoney(current + round.payout));
+      void settleRoundPayout(round);
     }, delayMs + dropDurationMs);
   };
 

@@ -17,6 +17,7 @@ public sealed class PlinkoRound
     public int LandingSlot { get; private set; }
     public decimal Multiplier { get; private set; }
     public decimal Payout { get; private set; }
+    public bool IsPayoutSettled { get; private set; }
     public string Path { get; private set; } = string.Empty;
     public DateTime CreatedAtUtc { get; private set; } = DateTime.UtcNow;
 
@@ -41,5 +42,10 @@ public sealed class PlinkoRound
         Multiplier = multiplier;
         Path = path;
         Payout = Math.Round(Stake * Multiplier, 2);
+    }
+
+    public void MarkPayoutSettled()
+    {
+        IsPayoutSettled = true;
     }
 }

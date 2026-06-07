@@ -7,5 +7,6 @@ public interface IPlinkoService
 {
     PlinkoBoardDto GetBoard(PlinkoRiskLevel riskLevel, int rows);
     Task<PlinkoRoundDto> PlayAsync(Guid userId, PlinkoPlayRequest request, string? bearerToken);
+    Task<PlinkoRoundDto> SettleRoundAsync(Guid userId, Guid roundId, string? bearerToken);
     Task<IReadOnlyCollection<PlinkoRoundDto>> GetHistoryAsync(Guid userId, int limit);
 }

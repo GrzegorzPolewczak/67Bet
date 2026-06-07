@@ -12,6 +12,7 @@ public sealed record PlinkoRoundDto(
     int LandingSlot,
     decimal Multiplier,
     decimal Payout,
+    bool IsPayoutSettled,
     string Path,
     DateTime CreatedAtUtc);
 

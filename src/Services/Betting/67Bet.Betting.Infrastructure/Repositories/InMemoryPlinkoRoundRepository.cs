@@ -14,6 +14,18 @@ public sealed class InMemoryPlinkoRoundRepository : IPlinkoRoundRepository
         return Task.CompletedTask;
     }
 
+    public Task<PlinkoRound?> GetByIdAsync(Guid roundId)
+    {
+        Rounds.TryGetValue(roundId, out var round);
+        return Task.FromResult(round);
+    }
+
+    public Task UpdateAsync(PlinkoRound round)
+    {
+        Rounds[round.Id] = round;
+        return Task.CompletedTask;
+    }
+
     public Task<IReadOnlyCollection<PlinkoRound>> GetRecentForUserAsync(Guid userId, int limit)
     {
         var rounds = Rounds.Values

@@ -50,7 +50,8 @@ public class PlinkoServiceTests
         result.Payout.Should().Be(Math.Round(result.Stake * result.Multiplier, 2));
         repository.Rounds.Should().ContainSingle();
         wallet.ProcessedStake.Should().Be(25m);
-        wallet.ProcessedPayout.Should().Be(result.Payout);
+        wallet.ProcessedPayout.Should().Be(0m);
+        result.IsPayoutSettled.Should().BeFalse();
     }
 
     [Fact]
@@ -64,7 +65,26 @@ public class PlinkoServiceTests
 
         wallet.ProcessedStake.Should().Be(30m);
         result.Payout.Should().Be(Math.Round(result.Stake * result.Multiplier, 2));
-        wallet.ProcessedPayout.Should().Be(result.Payout);
+        wallet.ProcessedPayout.Should().Be(0m);
+        result.IsPayoutSettled.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SettleRoundAsync_WhenRoundExists_ProcessesPayoutOnce()
+    {
+        var userId = Guid.NewGuid();
+        var repository = new FakePlinkoRoundRepository();
+        var wallet = new FakePlinkoWalletGateway(true);
+        var service = new PlinkoService(repository, wallet);
+        var round = await service.PlayAsync(userId, new PlinkoPlayRequest(25m, PlinkoRiskLevel.Low, 10), "token");
+
+        var settled = await service.SettleRoundAsync(userId, round.Id, "token");
+        var settledAgain = await service.SettleRoundAsync(userId, round.Id, "token");
+
+        settled.IsPayoutSettled.Should().BeTrue();
+        settledAgain.IsPayoutSettled.Should().BeTrue();
+        wallet.ProcessedPayout.Should().Be(round.Payout);
+        wallet.PayoutCallCount.Should().Be(1);
     }
 
     [Fact]
@@ -110,6 +130,16 @@ public class PlinkoServiceTests
             return Task.CompletedTask;
         }
 
+        public Task<PlinkoRound?> GetByIdAsync(Guid roundId)
+        {
+            return Task.FromResult(Rounds.SingleOrDefault(round => round.Id == roundId));
+        }
+
+        public Task UpdateAsync(PlinkoRound round)
+        {
+            return Task.CompletedTask;
+        }
+
         public Task<IReadOnlyCollection<PlinkoRound>> GetRecentForUserAsync(Guid userId, int limit)
         {
             var result = Rounds
@@ -128,6 +158,7 @@ public class PlinkoServiceTests
 
         public decimal ProcessedStake { get; private set; }
         public decimal ProcessedPayout { get; private set; }
+        public int PayoutCallCount { get; private set; }
 
         public FakePlinkoWalletGateway(bool stakeAccepted)
         {
@@ -143,6 +174,7 @@ public class PlinkoServiceTests
         public Task ProcessPayoutAsync(Guid userId, decimal amount, string? bearerToken)
         {
             ProcessedPayout = amount;
+            PayoutCallCount += 1;
             return Task.CompletedTask;
         }
     }

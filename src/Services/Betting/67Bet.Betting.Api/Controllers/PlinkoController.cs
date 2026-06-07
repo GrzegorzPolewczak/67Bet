@@ -42,6 +42,13 @@ public sealed class PlinkoController : ControllerBase
         return Ok(result);
     }
 
+    [HttpPost("{roundId:guid}/settle")]
+    public async Task<ActionResult<PlinkoRoundDto>> Settle(Guid roundId)
+    {
+        var result = await _plinkoService.SettleRoundAsync(GetUserId(), roundId, GetBearerToken());
+        return Ok(result);
+    }
+
     [HttpGet("history")]
     public async Task<ActionResult<IReadOnlyCollection<PlinkoRoundDto>>> GetHistory([FromQuery] int limit = 10)
     {
