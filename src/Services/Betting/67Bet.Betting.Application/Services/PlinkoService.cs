@@ -43,12 +43,29 @@ public sealed class PlinkoService : IPlinkoService
         var multiplier = GetMultipliers(request.RiskLevel, request.Rows)[landingSlot];
         var round = new PlinkoRound(userId, request.Stake, request.RiskLevel, request.Rows, landingSlot, multiplier, new string(pathMoves));
 
-        if (round.Payout > 0)
+        await _roundRepository.AddAsync(round);
+        return ToDto(round);
+    }
+
+    public async Task<PlinkoRoundDto> SettleRoundAsync(Guid userId, Guid roundId, string? bearerToken)
+    {
+        var round = await _roundRepository.GetByIdAsync(roundId);
+        if (round == null || round.UserId != userId)
         {
-            await _walletGateway.ProcessPayoutAsync(userId, round.Payout, bearerToken);
+            throw new InvalidOperationException("Plinko round was not found.");
         }
 
-        await _roundRepository.AddAsync(round);
+        if (!round.IsPayoutSettled)
+        {
+            if (round.Payout > 0)
+            {
+                await _walletGateway.ProcessPayoutAsync(userId, round.Payout, bearerToken);
+            }
+
+            round.MarkPayoutSettled();
+            await _roundRepository.UpdateAsync(round);
+        }
+
         return ToDto(round);
     }
 
@@ -139,6 +156,7 @@ public sealed class PlinkoService : IPlinkoService
             round.LandingSlot,
             round.Multiplier,
             round.Payout,
+            round.IsPayoutSettled,
             round.Path,
             round.CreatedAtUtc);
     }
