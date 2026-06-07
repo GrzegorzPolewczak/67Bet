@@ -20,11 +20,34 @@ public class CustomBetController : ControllerBase
 
     [Authorize]
     [HttpPost("requests")]
-    public async Task<ActionResult<CustomBetRequestDto>> SubmitRequest([FromBody] CreateCustomBetRequest request)
+    public async Task<IActionResult> SubmitRequest([FromBody] System.Text.Json.JsonElement body)
     {
-        var userId = GetUserId();
-        var result = await _customBetService.CreateRequestAsync(userId, request.Description);
-        return Ok(result.ToDto());
+        try
+        {
+            if (!body.TryGetProperty("description", out var descriptionProp))
+            {
+                return BadRequest(new { message = "Pole 'description' jest wymagane w JSON." });
+            }
+
+            var description = descriptionProp.GetString();
+            if (string.IsNullOrEmpty(description))
+            {
+                return BadRequest(new { message = "Opis nie może być pusty." });
+            }
+
+            var userId = GetUserId();
+            var result = await _customBetService.CreateRequestAsync(userId, description);
+            return Ok(result.ToDto());
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { 
+                message = "Błąd podczas tworzenia wniosku Custom Bet", 
+                details = ex.Message,
+                innerDetails = ex.InnerException?.Message,
+                stackTrace = ex.StackTrace 
+            });
+        }
     }
 
     [Authorize]
