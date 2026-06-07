@@ -50,6 +50,7 @@ public class PlinkoServiceTests
         result.Payout.Should().Be(Math.Round(result.Stake * result.Multiplier, 2));
         repository.Rounds.Should().ContainSingle();
         wallet.ProcessedStake.Should().Be(25m);
+        wallet.ProcessedPayout.Should().Be(result.Payout);
     }
 
     [Fact]
@@ -63,6 +64,7 @@ public class PlinkoServiceTests
 
         wallet.ProcessedStake.Should().Be(30m);
         result.Payout.Should().Be(Math.Round(result.Stake * result.Multiplier, 2));
+        wallet.ProcessedPayout.Should().Be(result.Payout);
     }
 
     [Fact]
@@ -125,6 +127,7 @@ public class PlinkoServiceTests
         private readonly bool _stakeAccepted;
 
         public decimal ProcessedStake { get; private set; }
+        public decimal ProcessedPayout { get; private set; }
 
         public FakePlinkoWalletGateway(bool stakeAccepted)
         {
@@ -139,6 +142,7 @@ public class PlinkoServiceTests
 
         public Task ProcessPayoutAsync(Guid userId, decimal amount, string? bearerToken)
         {
+            ProcessedPayout = amount;
             return Task.CompletedTask;
         }
     }
