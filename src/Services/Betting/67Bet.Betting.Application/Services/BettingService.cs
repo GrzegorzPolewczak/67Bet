@@ -63,7 +63,7 @@ public class BettingService : IBettingService
 
             // Search in regular events
             foreach (var @event in activeEvents)
-            var events = await _eventRepository.GetActiveEventsAsync();
+                var events = await _eventRepository.GetActiveEventsAsync();
             Outcome? foundOutcome = null;
 
             foreach (var @event in events)
@@ -93,7 +93,7 @@ public class BettingService : IBettingService
             {
                 var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
                 if (participant != null)
-                var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
+                    var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
                 VirtualRaceParticipant? foundVirtualParticipant = null;
 
                 foreach (var race in virtualRaces)
@@ -160,7 +160,7 @@ public class BettingService : IBettingService
             foreach (var bet in ticket.Bets)
             {
                 var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
-                
+
                 if (outcomeStatus == OutcomeResult.Lost)
                 {
                     bet.Settle(BetStatus.Won);
@@ -170,7 +170,7 @@ public class BettingService : IBettingService
                     bet.Settle(BetStatus.Lost);
                     isLost = true;
                 }
-                
+
                 if (outcomeStatus == OutcomeResult.Pending)
                 {
                     allSettled = false;

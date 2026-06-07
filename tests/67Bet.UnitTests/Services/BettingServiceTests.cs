@@ -145,7 +145,7 @@ public class BettingServiceTests
 
         // Act
         ticket.AddBet(Guid.NewGuid(), "Outcome", "Market", "Event", DateTime.Now, 2.0m); // Odds 2.0
-        
+
         // Assert
         // Standard win: 100 * 2.0 = 200
         // Freebet win: 200 * 0.7 = 140
