@@ -224,7 +224,9 @@ const AdminDashboard: React.FC = () => {
                             </p>
                           </div>
                           <button
-                            onClick={() => handleGetAiRecommendation(request.id)}
+                            onClick={() =>
+                              handleGetAiRecommendation(request.id)
+                            }
                             className="flex items-center gap-2 bg-primary-600/10 hover:bg-primary-600/20 text-primary-400 border border-primary-500/30 px-4 py-2 rounded-xl text-xs font-black transition-all"
                           >
                             <Sparkles className="w-4 h-4" /> CONSULT AI
