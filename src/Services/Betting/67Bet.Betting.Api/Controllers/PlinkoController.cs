@@ -16,13 +16,16 @@ namespace _67Bet.Betting.Api.Controllers;
 [Route("api/[controller]")]
 public sealed class PlinkoController : ControllerBase
 {
+    private const string LocalWalletBaseUrl = "http://localhost:5200/api/";
+    private const string ProductionWalletBaseUrl = "https://67bet-wallet-api-h9f5epe3heb2dwe0.swedencentral-01.azurewebsites.net/api/";
+
     private static readonly InMemoryPlinkoRoundRepository RoundRepository = new();
 
     private readonly IPlinkoService _plinkoService;
 
     public PlinkoController()
     {
-        var walletBaseUrl = Environment.GetEnvironmentVariable("PLINKO_WALLET_API_URL") ?? "http://localhost:5200/api/";
+        var walletBaseUrl = Environment.GetEnvironmentVariable("PLINKO_WALLET_API_URL") ?? GetDefaultWalletBaseUrl();
         _plinkoService = new PlinkoService(RoundRepository, new HttpPlinkoWalletGateway(walletBaseUrl));
     }
 
@@ -59,6 +62,14 @@ public sealed class PlinkoController : ControllerBase
         return header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
             ? header["Bearer ".Length..]
             : null;
+    }
+
+    private static string GetDefaultWalletBaseUrl()
+    {
+        var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        return string.Equals(environmentName, "Production", StringComparison.OrdinalIgnoreCase)
+            ? ProductionWalletBaseUrl
+            : LocalWalletBaseUrl;
     }
 
     private sealed class HttpPlinkoWalletGateway : IPlinkoWalletGateway
