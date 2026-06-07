@@ -211,7 +211,9 @@ const PlinkoPage: React.FC = () => {
       const response = await walletApi.get("/wallet/balance");
       setBalance(Number(response.data.balance || response.data.Balance || 0));
       setFreebetBalance(
-        Number(response.data.freebetBalance || response.data.FreebetBalance || 0),
+        Number(
+          response.data.freebetBalance || response.data.FreebetBalance || 0,
+        ),
       );
     } catch (err: any) {
       setError(
