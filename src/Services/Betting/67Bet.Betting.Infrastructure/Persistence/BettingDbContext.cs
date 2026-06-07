@@ -47,6 +47,14 @@ public class BettingDbContext : DbContext
             builder.HasIndex(a => a.EventId).IsUnique();
         });
 
+        modelBuilder.Entity<AiGenerationLog>(builder =>
+        {
+            builder.HasKey(l => l.Id);
+            builder.Property(l => l.EventId).IsRequired();
+            builder.Property(l => l.Status).IsRequired().HasMaxLength(50);
+            builder.Property(l => l.ErrorMessage).HasColumnType("longtext");
+        });
+
         modelBuilder.Entity<Sport>(builder =>
         {
             builder.HasKey(s => s.Id);

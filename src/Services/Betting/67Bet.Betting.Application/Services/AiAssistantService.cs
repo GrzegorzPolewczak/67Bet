@@ -38,70 +38,102 @@ public class AiAssistantService : IAiAssistantService
             return existingInsight.Content;
         }
 
-        // 2. Pobierz podstawowe dane o meczu oraz zsynchronizowane twarde dane
-        string matchName;
-        string sportMetadata;
-        string recentScores = string.Empty;
-        string currentOdds = string.Empty;
+        return await InternalGenerateAndSaveInsightAsync(eventId);
+    }
 
-        if (Guid.TryParse(eventId, out var guid))
+    public async Task<IEnumerable<AiMatchInsightDto>> GetAllInsightsAsync()
+    {
+        var insights = await _insightRepository.GetAllAsync();
+        return insights.Select(i => new AiMatchInsightDto
         {
-            var localMatch = await _eventRepository.GetByIdAsync(guid);
-            if (localMatch != null)
+            EventId = i.EventId,
+            Content = i.Content,
+            GeneratedAt = i.GeneratedAt
+        });
+    }
+
+    public async Task<string> RegenerateInsightAsync(string eventId)
+    {
+        _logger.LogInformation("Admin requested manual regeneration of AI insight for event {EventId}", eventId);
+        return await InternalGenerateAndSaveInsightAsync(eventId);
+    }
+
+    public async Task<bool> DeleteInsightAsync(string eventId)
+    {
+        try
+        {
+            await _insightRepository.DeleteAsync(eventId);
+            _logger.LogInformation("Admin deleted AI insight for event {EventId}", eventId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting AI insight for event {EventId}", eventId);
+            return false;
+        }
+    }
+
+    private async Task<string> InternalGenerateAndSaveInsightAsync(string eventId)
+    {
+        try
+        {
+            // 2. Pobierz podstawowe dane o meczu oraz zsynchronizowane twarde dane
+            string matchName;
+            string sportMetadata;
+            string recentScores = string.Empty;
+            string currentOdds = string.Empty;
+
+            if (Guid.TryParse(eventId, out var guid))
             {
-                matchName = localMatch.Name;
-                sportMetadata = localMatch.Metadata; // Lub sport ID z repo
+                var localMatch = await _eventRepository.GetByIdAsync(guid);
+                if (localMatch != null)
+                {
+                    matchName = localMatch.Name;
+                    sportMetadata = localMatch.Metadata;
+                }
+                else
+                {
+                    var externalMatch = await _oddsServiceClient.GetEventByIdAsync(eventId);
+                    if (externalMatch == null)
+                        throw new KeyNotFoundException($"Event with ID {eventId} not found locally or in Odds Service.");
+
+                    matchName = externalMatch.Name;
+                    sportMetadata = externalMatch.SportKey;
+                    recentScores = externalMatch.RecentScores ?? string.Empty;
+                    currentOdds = externalMatch.CurrentOdds ?? string.Empty;
+                }
             }
             else
             {
                 var externalMatch = await _oddsServiceClient.GetEventByIdAsync(eventId);
                 if (externalMatch == null)
-                    throw new KeyNotFoundException($"Event with ID {eventId} not found locally or in Odds Service.");
+                    throw new KeyNotFoundException($"External event with ID {eventId} not found in Odds Service.");
 
                 matchName = externalMatch.Name;
                 sportMetadata = externalMatch.SportKey;
                 recentScores = externalMatch.RecentScores ?? string.Empty;
                 currentOdds = externalMatch.CurrentOdds ?? string.Empty;
             }
-        }
-        else
-        {
-            var externalMatch = await _oddsServiceClient.GetEventByIdAsync(eventId);
-            if (externalMatch == null)
-                throw new KeyNotFoundException($"External event with ID {eventId} not found in Odds Service.");
 
-            matchName = externalMatch.Name;
-            sportMetadata = externalMatch.SportKey;
-            recentScores = externalMatch.RecentScores ?? string.Empty;
-            currentOdds = externalMatch.CurrentOdds ?? string.Empty;
-        }
+            // 3. Przygotuj prompt dla Gemini z użyciem lokalnie zsynchronizowanych danych
+            var prompt = BuildContextPrompt(matchName, sportMetadata, recentScores, currentOdds);
 
-        // 3. Przygotuj prompt dla Gemini z użyciem lokalnie zsynchronizowanych danych
-        var prompt = BuildContextPrompt(matchName, sportMetadata, recentScores, currentOdds);
-
-        // 4. Pobierz analizę z Gemini API
-        try
-        {
+            // 4. Pobierz analizę z Gemini API
             var generatedText = await _geminiClient.GenerateTextAsync(prompt);
 
             // 5. Zapisz lub zaktualizuj w bazie (Caching)
-            var insightToSave = await _insightRepository.GetByEventIdAsync(eventId);
-            if (insightToSave == null)
-            {
-                var newInsight = new AiMatchInsight(eventId, generatedText);
-                await _insightRepository.AddOrUpdateAsync(newInsight);
-            }
-            else
-            {
-                insightToSave.UpdateInsight(generatedText);
-                await _insightRepository.AddOrUpdateAsync(insightToSave);
-            }
+            var newInsight = new AiMatchInsight(eventId, generatedText);
+            await _insightRepository.AddOrUpdateAsync(newInsight);
+
+            // 6. Logowanie sukcesu
+            await _insightRepository.AddLogAsync(new AiGenerationLog(eventId, "Success"));
 
             return generatedText;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating AI insight for event {EventId}", eventId);
+            _logger.LogError(ex, "Error during internal AI generation for event {EventId}", eventId);
+            await _insightRepository.AddLogAsync(new AiGenerationLog(eventId, "Error", ex.Message));
             return "W tej chwili nie możemy wygenerować analizy opartej o fakty. Spróbuj później!";
         }
     }

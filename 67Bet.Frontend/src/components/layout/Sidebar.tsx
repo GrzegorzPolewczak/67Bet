@@ -42,6 +42,12 @@ const sports = [
   { icon: Activity, name: "Basketball", path: "/sport/Basketball" },
   { icon: Gamepad2, name: "Esports", path: "/sport/Esports" },
   { icon: Star, name: "MMA", path: "/sport/MMA" },
+  {
+    icon: Zap,
+    name: "Custom Bets",
+    path: "/custom-bet",
+    color: "text-primary-500",
+  },
 ];
 
 const Sidebar: React.FC = () => {

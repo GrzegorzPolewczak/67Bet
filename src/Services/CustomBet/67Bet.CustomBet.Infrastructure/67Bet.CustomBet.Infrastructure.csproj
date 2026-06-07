@@ -2,12 +2,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\67Bet.CustomBet.Domain\67Bet.CustomBet.Domain.csproj" />
+    <ProjectReference Include="..\67Bet.CustomBet.Application\67Bet.CustomBet.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.8" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0-preview.3.efcore.9.0.0" />
   </ItemGroup>
 

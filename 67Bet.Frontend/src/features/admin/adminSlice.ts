@@ -1,19 +1,24 @@
-import {
-  createSlice,
-  createAsyncThunk,
-  type PayloadAction,
-} from "@reduxjs/toolkit";
-import { customBetApi } from "../../api/axios";
+import { bettingApi, customBetApi } from "../../api/axios";
 import { referralApi } from "../../api/referral";
 
 export interface CustomBetRequest {
   id: string;
   userId: string;
   description: string;
-  status: "Pending" | "Accepted" | "Rejected";
+  status: "Pending" | "Reviewing" | "Accepted" | "Rejected";
   createdAt: string;
   finalOdds?: number;
   adminNote?: string;
+  aiSuggestedOdds?: number;
+  aiAnalysisNote?: string;
+  aiRiskLevel?: string;
+  aiCategory?: string;
+}
+
+export interface AiMatchInsight {
+  eventId: string;
+  content: string;
+  generatedAt: string;
 }
 
 export interface PromoCode {
@@ -24,6 +29,7 @@ export interface PromoCode {
 
 interface AdminState {
   pendingRequests: CustomBetRequest[];
+  aiInsights: AiMatchInsight[];
   promoCodes: PromoCode[];
   loading: boolean;
   error: string | null;
@@ -36,6 +42,7 @@ interface AdminState {
 
 const initialState: AdminState = {
   pendingRequests: [],
+  aiInsights: [],
   promoCodes: [],
   loading: false,
   error: null,
@@ -45,6 +52,58 @@ const initialState: AdminState = {
     revenue: 15420.5,
   },
 };
+
+export const fetchAiInsightsAsync = createAsyncThunk(
+  "admin/fetchAiInsights",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await bettingApi.get("/AiAssistant/admin/insights");
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+);
+
+export const regenerateAiInsightAsync = createAsyncThunk(
+  "admin/regenerateAiInsight",
+  async (eventId: string, { rejectWithValue }) => {
+    try {
+      const response = await bettingApi.post(
+        `/AiAssistant/admin/event/${eventId}/regenerate`,
+      );
+      return { eventId, content: response.data.insight };
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+);
+
+export const deleteAiInsightAsync = createAsyncThunk(
+  "admin/deleteAiInsight",
+  async (eventId: string, { rejectWithValue }) => {
+    try {
+      await bettingApi.delete(`/AiAssistant/admin/event/${eventId}`);
+      return eventId;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+);
+
+export const fetchAiRecommendationAsync = createAsyncThunk(
+  "admin/fetchAiRecommendation",
+  async (requestId: string, { rejectWithValue }) => {
+    try {
+      const response = await customBetApi.get(
+        `/CustomBet/requests/${requestId}/recommendation`,
+      );
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  },
+);
 
 export const fetchPromoCodesAsync = createAsyncThunk(
   "admin/fetchPromoCodes",
@@ -210,6 +269,31 @@ const adminSlice = createSlice({
       .addCase(submitCustomBetAsync.fulfilled, (state, action) => {
         // Add the newly created request to the pending list so it shows up in the dashboard
         state.pendingRequests.unshift(action.payload);
+      })
+      .addCase(fetchAiInsightsAsync.fulfilled, (state, action) => {
+        state.aiInsights = action.payload;
+      })
+      .addCase(regenerateAiInsightAsync.fulfilled, (state, action) => {
+        const index = state.aiInsights.findIndex(
+          (i) => i.eventId === action.payload.eventId,
+        );
+        if (index !== -1) {
+          state.aiInsights[index].content = action.payload.content;
+          state.aiInsights[index].generatedAt = new Date().toISOString();
+        }
+      })
+      .addCase(deleteAiInsightAsync.fulfilled, (state, action) => {
+        state.aiInsights = state.aiInsights.filter(
+          (i) => i.eventId !== action.payload,
+        );
+      })
+      .addCase(fetchAiRecommendationAsync.fulfilled, (state, action) => {
+        const index = state.pendingRequests.findIndex(
+          (r) => r.id === action.payload.id,
+        );
+        if (index !== -1) {
+          state.pendingRequests[index] = action.payload;
+        }
       })
       .addCase(fetchPromoCodesAsync.fulfilled, (state, action) => {
         state.promoCodes = action.payload;

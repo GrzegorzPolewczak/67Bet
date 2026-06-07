@@ -8,21 +8,25 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
+using _67Bet.CustomBet.Application.Interfaces;
+
 namespace _67Bet.UnitTests.Services;
 
 public class CustomBetServiceTests
 {
     private readonly Mock<ICustomBetRepository> _customBetRepositoryMock;
+    private readonly Mock<IGeminiClient> _geminiClientMock;
     private readonly CustomBetService _customBetService;
 
     public CustomBetServiceTests()
     {
         _customBetRepositoryMock = new Mock<ICustomBetRepository>();
-        _customBetService = new CustomBetService(_customBetRepositoryMock.Object);
+        _geminiClientMock = new Mock<IGeminiClient>();
+        _customBetService = new CustomBetService(_customBetRepositoryMock.Object, _geminiClientMock.Object);
     }
 
     [Fact]
-    public async Task CreateRequestAsync_ShouldCreateRequestWithAiOdds()
+    public async Task CreateRequestAsync_ShouldCreateRequest()
     {
         // Arrange
         var userId = Guid.NewGuid();
@@ -35,10 +39,34 @@ public class CustomBetServiceTests
         request.Should().NotBeNull();
         request.UserId.Should().Be(userId);
         request.Description.Should().Be(description);
-        request.AiSuggestedOdds.Should().Be(2.50m);
-        request.Status.Should().Be(RequestStatus.Reviewing);
+        request.Status.Should().Be(RequestStatus.Pending);
 
         _customBetRepositoryMock.Verify(x => x.AddAsync(request), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAiRecommendationAsync_ShouldUpdateFieldsWithAiData()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var request = new CustomBetRequest(userId, "Barcelona to win 5-0");
+        var requestId = request.Id;
+        var aiResponse = "{ \"odds\": 15.5, \"risk\": \"High\", \"reasoning\": \"Highly unlikely scoreline\", \"category\": \"Football\" }";
+
+        _customBetRepositoryMock.Setup(x => x.GetByIdAsync(requestId)).ReturnsAsync(request);
+        _geminiClientMock.Setup(x => x.GenerateTextAsync(It.IsAny<string>())).ReturnsAsync(aiResponse);
+
+        // Act
+        var result = await _customBetService.GetAiRecommendationAsync(requestId);
+
+        // Assert
+        result.AiSuggestedOdds.Should().Be(15.5m);
+        result.AiRiskLevel.Should().Be("High");
+        result.AiAnalysisNote.Should().Be("Highly unlikely scoreline");
+        result.AiCategory.Should().Be("Football");
+        result.Status.Should().Be(RequestStatus.Reviewing);
+
+        _customBetRepositoryMock.Verify(x => x.UpdateAsync(request), Times.Once);
     }
 
     [Fact]

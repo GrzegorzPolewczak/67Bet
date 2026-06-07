@@ -1,0 +1,53 @@
+@startuml Admin_AI_Enhancements_Classes
+!theme plain
+title Diagram Klas: Admin Panel AI Enhancements
+
+package "Betting.Domain" {
+    class AiMatchInsight {
+        +string EventId
+        +string Content
+        +DateTime GeneratedAt
+        +UpdateInsight(string content)
+    }
+
+    class AiGenerationLog {
+        +Guid Id
+        +string EventId
+        +DateTime Timestamp
+        +string Status
+        +string ErrorMessage
+    }
+}
+
+package "CustomBet.Domain" {
+    class CustomBetRequest {
+        +Guid Id
+        +string Description
+        +decimal Stake
+        +decimal AiSuggestedOdds
+        +string AiAnalysisNote
+        +string AiRiskLevel
+        +string AiCategory
+        +Accept(decimal finalOdds)
+        +Reject(string reason)
+    }
+}
+
+package "Application Services" {
+    interface IAiAssistantService {
+        +Task<string> GetMatchInsightAsync(string eventId)
+        +Task<IEnumerable<AiMatchInsight>> GetAllInsightsAsync()
+        +Task<string> RegenerateInsightAsync(string eventId)
+        +Task<bool> DeleteInsightAsync(string eventId)
+    }
+
+    interface ICustomBetService {
+        +Task<CustomBetRequest> GetAiRecommendationAsync(Guid requestId)
+        +Task AcceptRequestAsync(Guid requestId, decimal finalOdds)
+    }
+}
+
+IAiAssistantService --> AiMatchInsight
+IAiAssistantService --> AiGenerationLog
+ICustomBetService --> CustomBetRequest
+@enduml

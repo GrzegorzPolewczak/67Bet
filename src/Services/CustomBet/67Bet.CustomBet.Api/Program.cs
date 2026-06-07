@@ -84,8 +84,17 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<_67Bet.CustomBet.Infrastructure.Persistence.CustomBetDbContext>();
-    context.Database.EnsureCreated();
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<_67Bet.CustomBet.Infrastructure.Persistence.CustomBetDbContext>();
+        // Używamy Migrate zamiast EnsureCreated, aby obsłużyć zmiany w schemacie (nowe pola AI)
+        Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.Migrate(context.Database);
+        Console.WriteLine("CustomBet database migrated successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error migrating CustomBet database: {ex.Message}");
+    }
 }
 
 app.UseMiddleware<ExceptionMiddleware>();

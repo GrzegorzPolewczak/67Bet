@@ -18,6 +18,13 @@ public class AiMatchInsightRepository : EFRepository<AiMatchInsight, BettingDbCo
             .FirstOrDefaultAsync(x => x.EventId == eventId);
     }
 
+    public override async Task<IEnumerable<AiMatchInsight>> GetAllAsync()
+    {
+        return await _dbSet
+            .OrderByDescending(x => x.GeneratedAt)
+            .ToListAsync();
+    }
+
     public async Task AddOrUpdateAsync(AiMatchInsight insight)
     {
         var existing = await _dbSet.FirstOrDefaultAsync(x => x.EventId == insight.EventId);
@@ -28,9 +35,25 @@ public class AiMatchInsightRepository : EFRepository<AiMatchInsight, BettingDbCo
         }
         else
         {
-            _context.Entry(existing).CurrentValues.SetValues(insight);
+            existing.UpdateInsight(insight.Content);
         }
 
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(string eventId)
+    {
+        var existing = await _dbSet.FirstOrDefaultAsync(x => x.EventId == eventId);
+        if (existing != null)
+        {
+            _dbSet.Remove(existing);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task AddLogAsync(AiGenerationLog log)
+    {
+        await _context.Set<AiGenerationLog>().AddAsync(log);
         await _context.SaveChangesAsync();
     }
 }
