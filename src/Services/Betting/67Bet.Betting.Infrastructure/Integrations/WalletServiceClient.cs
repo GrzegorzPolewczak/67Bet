@@ -16,7 +16,7 @@ public class WalletServiceClient : IWalletService
         _httpClient = httpClient;
         _logger = logger;
 
-        var baseUrl = configuration["WalletService:BaseUrl"] ?? "http://localhost:5400/api/";
+        var baseUrl = configuration["WalletService:BaseUrl"] ?? "http://localhost:5200/api/";
         _httpClient.BaseAddress = new Uri(baseUrl);
     }
 
@@ -26,7 +26,7 @@ public class WalletServiceClient : IWalletService
         {
             // Note: In a real scenario, we might need to pass the userId in a header or as a query param
             // if the service is called on behalf of a user.
-            var response = await _httpClient.GetAsync($"Wallet/balance?userId={userId}");
+            var response = await _httpClient.GetAsync($"wallet/balance?userId={userId}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<BalanceResponse>();
@@ -44,7 +44,7 @@ public class WalletServiceClient : IWalletService
     {
         try
         {
-            var response = await _httpClient.GetAsync($"Wallet/balance?userId={userId}");
+            var response = await _httpClient.GetAsync($"wallet/balance?userId={userId}");
             if (response.IsSuccessStatusCode)
             {
                 var result = await response.Content.ReadFromJsonAsync<BalanceResponse>();
@@ -60,24 +60,24 @@ public class WalletServiceClient : IWalletService
 
     public async Task DepositAsync(Guid userId, decimal amount)
     {
-        await _httpClient.PostAsJsonAsync("Wallet/deposit", new { UserId = userId, Amount = amount });
+        await _httpClient.PostAsJsonAsync("wallet/deposit", new { UserId = userId, Amount = amount });
     }
 
     public async Task DepositFreebetAsync(Guid userId, decimal amount)
     {
-        await _httpClient.PostAsJsonAsync("Wallet/deposit-freebet", new { UserId = userId, Amount = amount });
+        await _httpClient.PostAsJsonAsync("wallet/deposit-freebet", new { UserId = userId, Amount = amount });
     }
 
     public async Task WithdrawAsync(Guid userId, decimal amount)
     {
-        await _httpClient.PostAsJsonAsync("Wallet/withdraw", new { UserId = userId, Amount = amount });
+        await _httpClient.PostAsJsonAsync("wallet/withdraw", new { UserId = userId, Amount = amount });
     }
 
     public async Task<bool> ProcessStakeAsync(Guid userId, decimal amount)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("Wallet/process-stake", new { UserId = userId, Amount = amount });
+            var response = await _httpClient.PostAsJsonAsync("wallet/process-stake", new { UserId = userId, Amount = amount });
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
@@ -91,7 +91,7 @@ public class WalletServiceClient : IWalletService
     {
         try
         {
-            await _httpClient.PostAsJsonAsync("Wallet/process-payout", new { UserId = userId, Amount = amount });
+            await _httpClient.PostAsJsonAsync("wallet/process-payout", new { UserId = userId, Amount = amount });
         }
         catch (Exception ex)
         {
@@ -103,7 +103,7 @@ public class WalletServiceClient : IWalletService
     {
         try
         {
-            return await _httpClient.GetFromJsonAsync<_67Bet.Wallet.Domain.Entities.Wallet>($"Wallet/{userId}");
+            return await _httpClient.GetFromJsonAsync<_67Bet.Wallet.Domain.Entities.Wallet>($"wallet/{userId}");
         }
         catch
         {
