@@ -26,6 +26,7 @@ const sports = [
     color: "text-purple-500",
   },
   { icon: CircleDot, name: "Plinko", path: "/plinko", color: "text-cyan-400" },
+  { icon: CircleDot, name: "Roulette", path: "/roulette", color: "text-red-500" },
   {
     icon: Zap,
     name: "Live",

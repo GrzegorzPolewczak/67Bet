@@ -1,0 +1,78 @@
+@startuml
+
+enum RouletteBetType {
+  StraightUp
+  Red
+  Black
+  Even
+  Odd
+  Low
+  High
+  DozenFirst
+  DozenSecond
+  DozenThird
+  ColumnFirst
+  ColumnSecond
+  ColumnThird
+}
+
+class RouletteBet {
+  +Guid Id
+  +RouletteBetType BetType
+  +int? ChosenNumber
+  +decimal Stake
+  +bool IsWon
+  +decimal Payout
+  ~Settle(int spinResult)
+}
+
+class RouletteRound {
+  +Guid Id
+  +Guid UserId
+  +int SpinResult
+  +decimal TotalStake
+  +decimal TotalPayout
+  +bool IsPayoutSettled
+  +DateTime CreatedAtUtc
+  +IReadOnlyCollection<RouletteBet> Bets
+  +MarkPayoutSettled()
+}
+
+interface IRouletteRoundRepository {
+  +AddAsync(RouletteRound round)
+  +GetByIdAsync(Guid roundId)
+  +UpdateAsync(RouletteRound round)
+  +GetRecentForUserAsync(Guid userId, int limit)
+}
+
+interface IRouletteService {
+  +PlayAsync(Guid userId, RoulettePlayRequest request, string? bearerToken)
+  +SettleRoundAsync(Guid userId, Guid roundId, string? bearerToken)
+  +GetHistoryAsync(Guid userId, int limit)
+}
+
+interface IRouletteWalletGateway {
+  +ProcessStakeAsync(Guid userId, decimal amount, string? bearerToken)
+  +ProcessPayoutAsync(Guid userId, decimal amount, string? bearerToken)
+}
+
+class RouletteService {
+  -IRouletteRoundRepository _roundRepository
+  -IRouletteWalletGateway _walletGateway
+  -IResponsibleGamblingService? _responsibleGamblingService
+}
+
+class InMemoryRouletteRoundRepository
+class RouletteController
+class RouletteWalletController
+
+RouletteRound "1" *-- "1..*" RouletteBet
+RouletteBet --> RouletteBetType
+RouletteService ..|> IRouletteService
+RouletteService --> IRouletteRoundRepository
+RouletteService --> IRouletteWalletGateway
+InMemoryRouletteRoundRepository ..|> IRouletteRoundRepository
+RouletteController --> IRouletteService
+RouletteWalletController --> "IWalletService"
+
+@enduml
