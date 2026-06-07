@@ -6,7 +6,7 @@ namespace _67Bet.Betting.Domain.Entities.VirtualRacing
 {
     public class VirtualRace : BaseEntity, IAggregateRoot
     {
-        public string Name { get; private set; }
+        public string Name { get; private set; } = null!;
         public DateTime StartTime { get; private set; }
         public bool IsFinished { get; private set; }
         public Guid? WinningHorseId { get; private set; }

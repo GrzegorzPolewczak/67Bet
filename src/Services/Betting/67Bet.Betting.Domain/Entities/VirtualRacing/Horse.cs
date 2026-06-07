@@ -5,7 +5,7 @@ namespace _67Bet.Betting.Domain.Entities.VirtualRacing
 {
     public class Horse : BaseEntity, IAggregateRoot
     {
-        public string Name { get; private set; }
+        public string Name { get; private set; } = null!;
         public int SkillLevel { get; private set; }
 
         protected Horse() { } // EF Core
