@@ -74,11 +74,10 @@ const betslipSlice = createSlice({
         (s) => s.outcomeId === action.payload.outcomeId,
       );
       if (exists) {
-        // Already in betslip, do nothing or update
-        ((s) => s.eventId === action.payload.eventId,
-          (state.selections = state.selections.map((s) =>
-            s.eventId === action.payload.eventId ? action.payload : s,
-          )));
+        // Already in betslip, update the selection for this event
+        state.selections = state.selections.map((s) =>
+          s.eventId === action.payload.eventId ? action.payload : s,
+        );
       } else {
         // If we want to enforce one selection per event and we HAVE eventId:
         if (action.payload.eventId) {
