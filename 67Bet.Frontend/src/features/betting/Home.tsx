@@ -172,59 +172,56 @@ const Home: React.FC = () => {
                     {Array.isArray(event.markets) &&
                     event.markets.length > 0 &&
                     Array.isArray(event.markets[0]?.outcomes) ? (
-                      event.markets[0].outcomes.map(
-                        (outcome, index) => (
-                          <OddButton
-                            key={outcome?.id || index}
-                            name={outcome?.name || "-"}
-                            odd={outcome?.odd || 0}
-                            isSelected={
-                              outcome?.id && outcome?.isBettable
-                                ? isSelected(outcome.id)
-                                : false
-                            }
-                            disabled={!event.isBettable || !outcome?.isBettable}
-                            title={
-                              event.isBettable && outcome?.isBettable
-                                ? undefined
-                                : "Kurs z zewnętrznego API jest tylko podglądem. Do kuponu można dodawać rynki z Betting API i Virtual Racing."
-                            }
-                            onClick={() => {
-                              const market = event.markets[0];
-                              if (
-                                market &&
-                                event.isBettable &&
-                                outcome?.id &&
-                                outcome?.isBettable
-                              ) {
-                                if (isSelected(outcome.id)) {
-                                  dispatch(removeSelection(outcome.id));
-                                } else {
-                                  dispatch(
-                                    addSelection({
-                                      eventId: event.id,
-                                      eventName: event.name || "Unknown Event",
-                                      marketId: market.id,
-                                      marketName:
-                                        market.name || "Unknown Market",
-                                      outcomeId: outcome.id,
-                                      outcomeName:
-                                        outcome.name === "1"
-                                          ? event.name?.split(" vs ")[0] ||
-                                            "Team 1"
-                                          : outcome.name === "2"
-                                            ? event.name?.split(" vs ")[1] ||
-                                              "Team 2"
-                                            : outcome.name,
-                                      odd: outcome.odd || 0,
-                                    }),
-                                  );
-                                }
+                      event.markets[0].outcomes.map((outcome, index) => (
+                        <OddButton
+                          key={outcome?.id || index}
+                          name={outcome?.name || "-"}
+                          odd={outcome?.odd || 0}
+                          isSelected={
+                            outcome?.id && outcome?.isBettable
+                              ? isSelected(outcome.id)
+                              : false
+                          }
+                          disabled={!event.isBettable || !outcome?.isBettable}
+                          title={
+                            event.isBettable && outcome?.isBettable
+                              ? undefined
+                              : "Kurs z zewnętrznego API jest tylko podglądem. Do kuponu można dodawać rynki z Betting API i Virtual Racing."
+                          }
+                          onClick={() => {
+                            const market = event.markets[0];
+                            if (
+                              market &&
+                              event.isBettable &&
+                              outcome?.id &&
+                              outcome?.isBettable
+                            ) {
+                              if (isSelected(outcome.id)) {
+                                dispatch(removeSelection(outcome.id));
+                              } else {
+                                dispatch(
+                                  addSelection({
+                                    eventId: event.id,
+                                    eventName: event.name || "Unknown Event",
+                                    marketId: market.id,
+                                    marketName: market.name || "Unknown Market",
+                                    outcomeId: outcome.id,
+                                    outcomeName:
+                                      outcome.name === "1"
+                                        ? event.name?.split(" vs ")[0] ||
+                                          "Team 1"
+                                        : outcome.name === "2"
+                                          ? event.name?.split(" vs ")[1] ||
+                                            "Team 2"
+                                          : outcome.name,
+                                    odd: outcome.odd || 0,
+                                  }),
+                                );
                               }
-                            }}
-                          />
-                        ),
-                      )
+                            }
+                          }}
+                        />
+                      ))
                     ) : (
                       <span className="text-xs text-gray-500 font-bold border border-dark-600 border-dashed px-4 py-2 rounded-xl">
                         Odds upcoming

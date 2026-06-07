@@ -271,7 +271,9 @@ const MatchDetailsView: React.FC = () => {
             </h2>
             {!event.isBettable && (
               <div className="mb-5 rounded-2xl border border-blue-500/30 bg-blue-500/10 p-4 text-xs font-bold text-blue-200">
-                This match comes from the External Odds API. Odds are displayed for preview; only Betting API and Virtual Racing outcomes can be placed on a ticket.
+                This match comes from the External Odds API. Odds are displayed
+                for preview; only Betting API and Virtual Racing outcomes can be
+                placed on a ticket.
               </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -303,7 +305,11 @@ const MatchDetailsView: React.FC = () => {
                                 : "Kurs z zewnętrznego API jest tylko podglądem."
                             }
                             onClick={() => {
-                              if (event.isBettable && outcome.id && outcome.isBettable) {
+                              if (
+                                event.isBettable &&
+                                outcome.id &&
+                                outcome.isBettable
+                              ) {
                                 if (isSelected(outcome.id)) {
                                   dispatch(removeSelection(outcome.id));
                                 } else {

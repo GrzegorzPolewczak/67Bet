@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Wallet.Domain.Entities;
@@ -8,8 +8,8 @@ using _67Bet.Wallet.Domain.Enums;
 namespace _67Bet.Wallet.Application.Services;
 
 /*
- * Serwis WalletService implementuje logikÄ™ zarzÄ…dzania Ĺ›rodkami finansowymi.
- * Zapewnia spĂłjnoĹ›Ä‡ operacji na saldzie (wpĹ‚aty/wypĹ‚aty) oraz rejestruje historiÄ™ transakcji.
+ * Serwis WalletService implementuje logikę zarządzania środkami finansowymi.
+ * Zapewnia spójność operacji na saldzie, wpłatach, wypłatach i stawkach.
  */
 public class WalletService : IWalletService
 {
@@ -77,19 +77,25 @@ public class WalletService : IWalletService
         var wallet = await _walletRepository.GetByUserIdAsync(userId);
         if (wallet == null) return false;
 
-        if (wallet.FreebetBalance >= amount)
+        if (amount <= 0) return false;
+
+        var totalAvailable = wallet.Balance + wallet.FreebetBalance;
+        if (totalAvailable < amount) return false;
+
+        var remainingAmount = amount;
+
+        // Najpierw używamy freebetów, a brakującą część dobieramy ze zwykłego salda.
+        // Dzięki temu kupon za 10 zł przejdzie przy np. 5 zł freebetu + 5 zł zwykłych środków.
+        if (wallet.FreebetBalance > 0)
         {
-            wallet.WithdrawFreebet(amount);
-            // Uwaga: Tutaj moĹĽna by dodaÄ‡ informacjÄ™, ĹĽe to zakĹ‚ad z Freebetu, 
-            // ale na tym etapie upraszczamy do zmiany salda.
+            var freebetToUse = Math.Min(wallet.FreebetBalance, remainingAmount);
+            wallet.WithdrawFreebet(freebetToUse);
+            remainingAmount -= freebetToUse;
         }
-        else if (wallet.Balance >= amount)
+
+        if (remainingAmount > 0)
         {
-            wallet.Withdraw(amount);
-        }
-        else
-        {
-            return false;
+            wallet.Withdraw(remainingAmount);
         }
 
         var transaction = new Transaction(wallet.Id, amount, TransactionType.Stake);

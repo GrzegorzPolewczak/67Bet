@@ -56,8 +56,8 @@ const MOCK_EVENTS: Event[] = [
     sportKey: "soccer",
     time: "20:45",
     rawTime: new Date().toISOString(),
-    source: "internal",
-    isBettable: true,
+    source: "external",
+    isBettable: false,
     markets: [
       {
         id: "11111111-1111-1111-1111-111111111111",
@@ -67,19 +67,19 @@ const MOCK_EVENTS: Event[] = [
             id: "a0000000-0000-0000-0000-000000000001",
             name: "1",
             odd: 2.1,
-            isBettable: true,
+            isBettable: false,
           },
           {
             id: "a0000000-0000-0000-0000-000000000002",
             name: "X",
             odd: 3.5,
-            isBettable: true,
+            isBettable: false,
           },
           {
             id: "a0000000-0000-0000-0000-000000000003",
             name: "2",
             odd: 3.2,
-            isBettable: true,
+            isBettable: false,
           },
         ],
       },
@@ -92,8 +92,8 @@ const MOCK_EVENTS: Event[] = [
     sportKey: "soccer",
     time: "21:00",
     rawTime: new Date().toISOString(),
-    source: "internal",
-    isBettable: true,
+    source: "external",
+    isBettable: false,
     markets: [
       {
         id: "22222222-2222-2222-2222-222222222222",
@@ -103,19 +103,19 @@ const MOCK_EVENTS: Event[] = [
             id: "b0000000-0000-0000-0000-000000000001",
             name: "1",
             odd: 1.85,
-            isBettable: true,
+            isBettable: false,
           },
           {
             id: "b0000000-0000-0000-0000-000000000002",
             name: "X",
             odd: 3.8,
-            isBettable: true,
+            isBettable: false,
           },
           {
             id: "b0000000-0000-0000-0000-000000000003",
             name: "2",
             odd: 4.1,
-            isBettable: true,
+            isBettable: false,
           },
         ],
       },
@@ -146,7 +146,10 @@ const formatDateTime = (value: unknown): string => {
   });
 };
 
-const getInternalOutcomeName = (eventName: string, outcomeName: string): string => {
+const getInternalOutcomeName = (
+  eventName: string,
+  outcomeName: string,
+): string => {
   const [homeTeam, awayTeam] = eventName.split(" vs ");
   if (outcomeName === "1") return homeTeam || "Team 1";
   if (outcomeName === "2") return awayTeam || "Team 2";
@@ -198,7 +201,10 @@ const mapInternalEvent = (eventRaw: unknown): Event => {
 
 const mapExternalEvent = (eventRaw: unknown): Event => {
   const event = asObject(eventRaw);
-  const externalId = toSafeString(event.id ?? event.externalId, "unknown-external-event");
+  const externalId = toSafeString(
+    event.id ?? event.externalId,
+    "unknown-external-event",
+  );
   const homeTeam = toSafeString(event.homeTeam ?? event.home_team, "Home");
   const awayTeam = toSafeString(event.awayTeam ?? event.away_team, "Away");
   const eventName = `${homeTeam} vs ${awayTeam}`;
@@ -210,7 +216,10 @@ const mapExternalEvent = (eventRaw: unknown): Event => {
   return {
     id: `external:${externalId}`,
     name: eventName,
-    league: toSafeString(event.sportTitle ?? event.sport_title, "External Odds"),
+    league: toSafeString(
+      event.sportTitle ?? event.sport_title,
+      "External Odds",
+    ),
     sportKey: toSafeString(event.sportKey ?? event.sport_key, "external"),
     rawTime,
     time: formatDateTime(rawTime),
@@ -253,7 +262,6 @@ const fetchExternalEvents = async (): Promise<unknown[]> => {
     return events;
   }
 };
-
 
 const toDateMs = (value: string): number => {
   const time = new Date(value).getTime();

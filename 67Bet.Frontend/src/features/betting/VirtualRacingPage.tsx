@@ -42,8 +42,13 @@ const toNumberValue = (value: unknown, fallback = 0): number => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const normalizeParticipant = (participantRaw: unknown): VirtualRaceParticipantDto => {
-  const participant = participantRaw as Record<string, unknown> | null | undefined;
+const normalizeParticipant = (
+  participantRaw: unknown,
+): VirtualRaceParticipantDto => {
+  const participant = participantRaw as
+    | Record<string, unknown>
+    | null
+    | undefined;
 
   return {
     id: toStringValue(participant?.id ?? participant?.Id),
@@ -87,7 +92,8 @@ const formatRaceStartTime = (value: string): string => {
 
 const getErrorMessage = (error: unknown, fallback: string): string => {
   if (typeof error === "object" && error !== null) {
-    const response = (error as { response?: { data?: { error?: string } } }).response;
+    const response = (error as { response?: { data?: { error?: string } } })
+      .response;
     const message = (error as { message?: string }).message;
     return response?.data?.error || message || fallback;
   }
@@ -321,8 +327,7 @@ const VirtualRacingPage: React.FC = () => {
                           {race.name}
                         </h3>
                         <p className="text-sm md:text-base text-gray-400 mt-1">
-                          Starts:{" "}
-                          {formatRaceStartTime(race.startTime)}
+                          Starts: {formatRaceStartTime(race.startTime)}
                         </p>
                       </div>
                     </div>
@@ -493,7 +498,9 @@ const VirtualRacingPage: React.FC = () => {
                         onClick={() =>
                           !hasPendingSlipSelection && simulateRace(race.id)
                         }
-                        disabled={isSimulating === race.id || hasPendingSlipSelection}
+                        disabled={
+                          isSimulating === race.id || hasPendingSlipSelection
+                        }
                         title={
                           hasPendingSlipSelection
                             ? "Najpierw postaw kupon albo usuń wybrany typ z kuponu."
