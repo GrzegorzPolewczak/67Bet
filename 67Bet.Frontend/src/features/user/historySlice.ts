@@ -3,8 +3,14 @@ import { bettingApi } from "../../api/axios";
 
 interface BetDto {
   outcomeId: string;
+  outcomeName: string;
+  marketName: string;
+  eventName: string;
+  startTime: string;
   fixedPrice: number;
   status: string;
+  resultStatus?: string;
+  winningOutcomeName?: string | null;
 }
 
 interface TicketDto {

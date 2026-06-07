@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Kontekst bazy danych dla modułu Betting.
  * Definiuje mapowania ORM dla zdarzeń, rynków, wyników i kuponów.
  */
@@ -91,6 +91,7 @@ public class BettingDbContext : DbContext
             builder.Property(b => b.OutcomeName).IsRequired().HasMaxLength(255);
             builder.Property(b => b.MarketName).IsRequired().HasMaxLength(100);
             builder.Property(b => b.EventName).IsRequired().HasMaxLength(255);
+            builder.Property(b => b.WinningOutcomeName).HasMaxLength(255);
             builder.Property(b => b.StartTime).HasColumnType("datetime(6)");
             builder.Property(b => b.FixedPrice).HasColumnType("decimal(18,2)");
         });

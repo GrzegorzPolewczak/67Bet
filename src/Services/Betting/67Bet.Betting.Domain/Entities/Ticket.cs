@@ -70,6 +70,7 @@ public class Bet : BaseEntity
     public DateTime StartTime { get; private set; }
     public decimal FixedPrice { get; private set; }
     public BetStatus Status { get; private set; }
+    public string? WinningOutcomeName { get; private set; }
 
     public Bet(Guid ticketId, Guid outcomeId, string outcomeName, string marketName, string eventName, DateTime startTime, decimal fixedPrice)
     {
@@ -83,9 +84,10 @@ public class Bet : BaseEntity
         Status = BetStatus.Pending;
     }
 
-    public void Settle(BetStatus status)
+    public void Settle(BetStatus status, string? winningOutcomeName = null)
     {
         Status = status;
+        WinningOutcomeName = winningOutcomeName;
     }
 
     // EF Core

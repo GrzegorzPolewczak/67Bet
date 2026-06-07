@@ -89,6 +89,10 @@ namespace _67Bet.Betting.Infrastructure.Migrations
                     b.Property<Guid>("TicketId")
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("WinningOutcomeName")
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TicketId");

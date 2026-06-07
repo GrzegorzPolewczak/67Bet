@@ -28,12 +28,31 @@ namespace _67Bet.Betting.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<VirtualRace>> GetFinishedRacesAsync()
+        {
+            return await _context.VirtualRaces
+                .Include(r => r.Participants)
+                .ThenInclude(p => p.Horse)
+                .Where(r => r.IsFinished)
+                .OrderByDescending(r => r.StartTime)
+                .ToListAsync();
+        }
+
         public async Task<VirtualRace?> GetByIdAsync(Guid id)
         {
             return await _context.VirtualRaces
                 .Include(r => r.Participants)
                 .ThenInclude(p => p.Horse)
                 .FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+
+        public async Task<VirtualRace?> GetByParticipantIdAsync(Guid participantId)
+        {
+            return await _context.VirtualRaces
+                .Include(r => r.Participants)
+                .ThenInclude(p => p.Horse)
+                .FirstOrDefaultAsync(r => r.Participants.Any(p => p.Id == participantId));
         }
 
         public async Task AddAsync(VirtualRace race)

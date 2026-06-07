@@ -45,6 +45,13 @@ public class MarketRepository : EFRepository<Market, BettingDbContext>, IMarketR
             .FirstOrDefaultAsync(m => m.Id == id);
     }
 
+    public override async Task<IEnumerable<Market>> GetAllAsync()
+    {
+        return await _dbSet
+            .Include(m => m.Outcomes)
+            .ToListAsync();
+    }
+
     public async Task<IEnumerable<Market>> GetByEventIdAsync(Guid eventId)
     {
         return await _dbSet

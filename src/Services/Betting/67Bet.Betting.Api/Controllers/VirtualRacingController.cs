@@ -10,10 +10,14 @@ namespace _67Bet.Betting.Api.Controllers
     public class VirtualRacingController : ControllerBase
     {
         private readonly IVirtualRacingService _virtualRacingService;
+        private readonly IBettingService _bettingService;
 
-        public VirtualRacingController(IVirtualRacingService virtualRacingService)
+        public VirtualRacingController(
+            IVirtualRacingService virtualRacingService,
+            IBettingService bettingService)
         {
             _virtualRacingService = virtualRacingService;
+            _bettingService = bettingService;
         }
 
         [HttpGet("active")]
@@ -37,12 +41,28 @@ namespace _67Bet.Betting.Api.Controllers
             }
         }
 
+
+        [HttpPost("settle-finished")]
+        public async Task<IActionResult> SettleFinishedRaces()
+        {
+            try
+            {
+                await _bettingService.SettleFinishedVirtualRacesAsync();
+                return Ok(new { Message = "Finished virtual races settled." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Error = ex.Message });
+            }
+        }
+
         [HttpPost("{id:guid}/simulate")]
         public async Task<IActionResult> SimulateRace(Guid id)
         {
             try
             {
                 var winningHorseId = await _virtualRacingService.SimulateRaceAsync(id);
+                await _bettingService.SettleVirtualRaceAsync(id);
                 return Ok(new { WinningHorseId = winningHorseId });
             }
             catch (Exception ex)

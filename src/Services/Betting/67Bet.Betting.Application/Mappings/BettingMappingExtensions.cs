@@ -49,6 +49,8 @@ public static class BettingMappingExtensions
 
     public static BetDto ToDto(this Bet bet)
     {
+        var resultStatus = bet.Status.ToString();
+
         return new BetDto(
             bet.OutcomeId,
             bet.OutcomeName,
@@ -56,7 +58,9 @@ public static class BettingMappingExtensions
             bet.EventName,
             bet.StartTime,
             bet.FixedPrice,
-            bet.Status.ToString()
+            bet.Status.ToString(),
+            resultStatus,
+            bet.WinningOutcomeName
         );
     }
 }
