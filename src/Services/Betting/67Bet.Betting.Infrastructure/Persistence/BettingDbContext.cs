@@ -88,6 +88,10 @@ public class BettingDbContext : DbContext
         modelBuilder.Entity<Bet>(builder =>
         {
             builder.HasKey(b => b.Id);
+            builder.Property(b => b.OutcomeName).IsRequired().HasMaxLength(255);
+            builder.Property(b => b.MarketName).IsRequired().HasMaxLength(100);
+            builder.Property(b => b.EventName).IsRequired().HasMaxLength(255);
+            builder.Property(b => b.StartTime).HasColumnType("datetime(6)");
             builder.Property(b => b.FixedPrice).HasColumnType("decimal(18,2)");
         });
 
