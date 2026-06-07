@@ -67,7 +67,9 @@ public sealed class PlinkoController : ControllerBase
     private static string GetDefaultWalletBaseUrl()
     {
         var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        return string.Equals(environmentName, "Production", StringComparison.OrdinalIgnoreCase)
+        var isAzureAppService = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME"));
+
+        return isAzureAppService || string.Equals(environmentName, "Production", StringComparison.OrdinalIgnoreCase)
             ? ProductionWalletBaseUrl
             : LocalWalletBaseUrl;
     }
