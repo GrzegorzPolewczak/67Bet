@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using _67Bet.Betting.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,7 +15,7 @@ public class OddsServiceClient : IOddsServiceClient
     {
         _httpClient = httpClient;
         _logger = logger;
-        
+
         var baseUrl = configuration["OddsService:BaseUrl"] ?? "http://localhost:5300/api/";
         _httpClient.BaseAddress = new Uri(baseUrl);
     }
@@ -26,9 +27,9 @@ public class OddsServiceClient : IOddsServiceClient
             // Zakładamy, że Odds API ma punkt końcowy do pobierania pojedynczego wydarzenia
             // W ExternalOddsController widzimy tylko /events (lista wszystkich)
             // Możemy albo pobrać wszystkie i filtrować, albo dodać endpoint w Odds API
-            
+
             _logger.LogInformation("Fetching event {EventId} from Odds Service", eventId);
-            
+
             // Tymczasowo pobieramy wszystkie i szukamy, bo nie widzimy endpointu /events/{id}
             var response = await _httpClient.GetAsync("ExternalOdds/events");
             if (!response.IsSuccessStatusCode) return null;
@@ -41,7 +42,9 @@ public class OddsServiceClient : IOddsServiceClient
             return new ExternalMatchDto
             {
                 Name = $"{match.HomeTeam} vs {match.AwayTeam}",
-                SportKey = match.SportTitle ?? match.SportKey ?? "Sport"
+                SportKey = match.SportTitle ?? match.SportKey ?? "Sport",
+                RecentScores = match.RecentScores,
+                CurrentOdds = match.Bookmakers != null ? JsonSerializer.Serialize(match.Bookmakers) : null
             };
         }
         catch (Exception ex)
@@ -58,5 +61,7 @@ public class OddsServiceClient : IOddsServiceClient
         public string? AwayTeam { get; set; }
         public string? SportKey { get; set; }
         public string? SportTitle { get; set; }
+        public string? RecentScores { get; set; }
+        public object? Bookmakers { get; set; }
     }
 }

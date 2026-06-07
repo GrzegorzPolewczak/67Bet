@@ -34,7 +34,7 @@ public class IdentityService : IIdentityService
         var existingUser = await _userRepository.GetByEmailAsync(email);
         if (existingUser != null) throw new InvalidOperationException("Użytkownik o tym adresie e-mail już istnieje.");
 
-        string passwordHash = BCrypt.Net.BCrypt.HashPassword(password); 
+        string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
 
         var user = new User(username, email, passwordHash);
         await _userRepository.AddAsync(user);

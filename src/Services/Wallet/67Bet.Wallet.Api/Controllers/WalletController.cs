@@ -27,7 +27,7 @@ public class WalletController : ControllerBase
         {
             // Support both authenticated user and explicit userId for service-to-service calls
             var targetUserId = userId ?? GetUserId();
-            
+
             var wallet = await _walletService.GetWalletByUserIdAsync(targetUserId);
             if (wallet == null)
             {

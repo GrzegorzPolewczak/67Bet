@@ -33,6 +33,12 @@ package "Identity Service" {
         User
     }
 
+    enum KycSessionStatus <<implemented>> {
+        Pending
+        Completed
+        Failed
+    }
+
     class User <<implemented, AggregateRoot>> {
         +Username : string
         +Email : string
@@ -42,6 +48,13 @@ package "Identity Service" {
         +ChangeRole(newRole: Role) : void
     }
 
+    class KycSession <<implemented, AggregateRoot>> {
+        +Status : KycSessionStatus
+        +KycSession()
+        +Complete() : void
+        +Fail() : void
+    }
+
     interface IUserRepository <<implemented>> {
         +GetByIdAsync(id: Guid) : Task<User?>
         +GetByEmailAsync(email: string) : Task<User?>
@@ -49,11 +62,22 @@ package "Identity Service" {
         +UpdateAsync(user: User) : Task
     }
 
+    interface IKycSessionRepository <<implemented>> {
+        +GetByIdAsync(id: Guid) : Task<KycSession?>
+        +AddAsync(session: KycSession) : Task
+        +UpdateAsync(session: KycSession) : Task
+    }
+
     interface IIdentityService <<implemented>> {
         +GetUserByIdAsync(userId: Guid) : Task<User?>
         +GetUserByEmailAsync(email: string) : Task<User?>
         +RegisterAsync(username: string, email: string, password: string) : Task<User>
         +AuthenticateAsync(email: string, password: string) : Task<bool>
+    }
+
+    interface IKycService <<implemented>> {
+        +GenerateSessionAsync() : Task<Guid>
+        +CompleteSessionAsync(sessionId: Guid) : Task
     }
 
     class UserRepository <<implemented>> {
@@ -64,6 +88,10 @@ package "Identity Service" {
         +UpdateAsync(user: User) : Task
     }
 
+    class KycSessionRepository <<implemented>> {
+        -_context : IdentityDbContext
+    }
+
     class IdentityService <<implemented>> {
         -_userRepository : IUserRepository
         +GetUserByIdAsync(userId: Guid) : Task<User?>
@@ -72,8 +100,15 @@ package "Identity Service" {
         +AuthenticateAsync(email: string, password: string) : Task<bool>
     }
 
+    class KycService <<implemented>> {
+        -_kycSessionRepository : IKycSessionRepository
+        +GenerateSessionAsync() : Task<Guid>
+        +CompleteSessionAsync(sessionId: Guid) : Task
+    }
+
     class IdentityDbContext <<implemented>> {
         +Users : DbSet<User>
+        +KycSessions : DbSet<KycSession>
         #OnModelCreating(modelBuilder: ModelBuilder) : void
     }
 }

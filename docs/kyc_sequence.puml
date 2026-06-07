@@ -1,0 +1,35 @@
+@startuml kyc_sequence
+actor User
+participant "Desktop Browser" as Desktop
+participant "Mobile Browser" as Mobile
+participant "Identity API" as API
+participant "SignalR Hub" as Hub
+database "Database" as DB
+
+== Inicjalizacja sesji ==
+User -> Desktop : Otwiera widok weryfikacji
+Desktop -> API : GET /api/session
+API -> DB : Zapisuje nową sesję (KycSession) z unikalnym GUID
+API --> Desktop : Zwraca sessionId (GUID)
+Desktop -> Hub : Nawiązuje połączenie i dołącza do grupy (sessionId)
+Desktop -> Desktop : Generuje i wyświetla kod QR z URL /mobile/{sessionId}
+
+== Proces weryfikacji na urządzeniu mobilnym ==
+User -> Mobile : Skanuje QR kod, otwiera URL
+User -> Mobile : Wykonuje zdjęcie ID (aparat tylny)
+User -> Mobile : Wykonuje Selfie (aparat przedni)
+User -> Mobile : Klika "Verify"
+Mobile -> API : POST /api/verify/{sessionId} (multipart/form-data: idCard, selfie)
+
+== Symulacja weryfikacji (AI) ==
+API -> API : Symulacja AI (Task.Delay 3000ms)
+API -> DB : Aktualizuje status sesji na "Completed"
+
+== Powiadomienie w czasie rzeczywistym ==
+API -> Hub : Broadcast "VerificationCompleted" dla grupy {sessionId}
+Hub --> Desktop : Odbiera zdarzenie "VerificationCompleted"
+API --> Mobile : Zwraca 200 OK
+Mobile -> User : Wyświetla "Done! Look back at your computer screen."
+Desktop -> Desktop : Ukrywa kod QR
+Desktop -> User : Wyświetla komunikat "Verification Successful"
+@enduml

@@ -18,6 +18,7 @@ public static class DependencyInjection
             options.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0))));
 
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IKycSessionRepository, KycSessionRepository>();
 
         return services;
     }

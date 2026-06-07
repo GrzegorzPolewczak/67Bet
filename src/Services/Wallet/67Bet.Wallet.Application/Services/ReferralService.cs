@@ -52,7 +52,7 @@ namespace _67Bet.Wallet.Application.Services
             if (promo != null)
             {
                 if (!promo.IsActive) throw new InvalidOperationException("Kod promocyjny jest nieaktywny.");
-                
+
                 var alreadyUsed = await _usageRepository.HasUsedCodeAsync(userId, promo.Id);
                 if (alreadyUsed) throw new InvalidOperationException("Kod zostaĹ‚ juĹĽ wykorzystany na tym koncie.");
 

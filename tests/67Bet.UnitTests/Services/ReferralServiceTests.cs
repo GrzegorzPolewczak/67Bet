@@ -41,7 +41,7 @@ namespace _67Bet.UnitTests.Services
             var userId = Guid.NewGuid();
             var code = "PROMO100";
             var promoCode = new PromoCode(code, 100m);
-            
+
             _promoRepoMock.Setup(r => r.GetByCodeAsync(code)).ReturnsAsync(promoCode);
             _usageRepoMock.Setup(r => r.HasUsedCodeAsync(userId, promoCode.Id)).ReturnsAsync(false);
 
@@ -98,7 +98,7 @@ namespace _67Bet.UnitTests.Services
             var creatorId = Guid.NewGuid();
             var code = "STAR";
             var creatorCode = new ReferralCode(creatorId, code);
-            
+
             // Set usage to 4, so the next one (5) hits the milestone
             typeof(ReferralCode).GetProperty("UsageCount").SetValue(creatorCode, 4);
 

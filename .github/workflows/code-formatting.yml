@@ -1,0 +1,43 @@
+name: Auto Format Code
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  format:
+    name: Format Code
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Needed to commit changes back to the PR branch
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Format C# Code
+        run: dotnet format 67Bet.slnx
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Format Frontend Code (Prettier)
+        working-directory: ./67Bet.Frontend
+        run: npx prettier --write "src/**/*.{ts,tsx,css}"
+
+      - name: Commit formatting changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "style: auto-format code (dotnet format & prettier)"
+          branch: ${{ github.head_ref }}
+          commit_user_name: "github-actions[bot]"
+          commit_user_email: "github-actions[bot]@users.noreply.github.com"

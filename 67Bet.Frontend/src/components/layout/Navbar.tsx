@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Wallet, Menu, Search, Bell, LogOut, Gift } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
@@ -6,19 +6,28 @@ import type { RootState, AppDispatch } from "../../app/store";
 import { toggleBetslip } from "../../features/betslip/betslipSlice";
 import { logout } from "../../features/auth/authSlice";
 import { fetchBalanceAsync } from "../../features/wallet/walletSlice";
+import { fetchGamificationProgress } from "../../features/gamification/gamificationSlice";
 import { motion } from "framer-motion";
 
 const Navbar: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
-  const { balance, freebetBalance } = useSelector((state: RootState) => state.wallet);
-  const betSelectionsCount = useSelector((state: RootState) => state.betslip.selections.length);
+  const { isAuthenticated, user } = useSelector(
+    (state: RootState) => state.auth,
+  );
+  const { balance, freebetBalance } = useSelector(
+    (state: RootState) => state.wallet,
+  );
+  const { progress } = useSelector((state: RootState) => state.gamification);
+  const betSelectionsCount = useSelector(
+    (state: RootState) => state.betslip.selections.length,
+  );
   const [isLogoHovered, setIsLogoHovered] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchBalanceAsync());
+      dispatch(fetchGamificationProgress());
     }
   }, [isAuthenticated, dispatch]);
 
@@ -28,56 +37,74 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-dark-800 border-b border-dark-700 h-16 flex items-center justify-between px-6 z-50">     
+    <nav className="bg-dark-800 border-b border-dark-700 h-16 flex items-center justify-between px-6 z-50">
       <div className="flex items-center gap-4">
         <Menu className="text-gray-400 cursor-pointer lg:hidden" />
         <Link
           to="/"
-          className="text-3xl font-black text-primary-500 tracking-tighter italic flex items-center group"      
+          className="text-3xl font-black text-primary-500 tracking-tighter italic flex items-center group"
           onMouseEnter={() => setIsLogoHovered(true)}
           onMouseLeave={() => setIsLogoHovered(false)}
         >
           <div className="flex items-center">
             <motion.span
-              animate={isLogoHovered ? {
-                y: [-8, 8, -8],
-                rotate: [-5, 5, -5]
-              } : { y: 0, rotate: 0 }}
-              transition={isLogoHovered ? {
-                duration: 0.6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              } : {
-                type: "spring",
-                stiffness: 200,
-                damping: 25,
-                mass: 1.2
-              }}
+              animate={
+                isLogoHovered
+                  ? {
+                      y: [-8, 8, -8],
+                      rotate: [-5, 5, -5],
+                    }
+                  : { y: 0, rotate: 0 }
+              }
+              transition={
+                isLogoHovered
+                  ? {
+                      duration: 0.6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }
+                  : {
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 25,
+                      mass: 1.2,
+                    }
+              }
               className="inline-block"
             >
               6
             </motion.span>
             <motion.span
-              animate={isLogoHovered ? {
-                y: [8, -8, 8],
-                rotate: [5, -5, 5]
-              } : { y: 0, rotate: 0 }}
-              transition={isLogoHovered ? {
-                duration: 0.6,
-                repeat: Infinity,
-                ease: "easeInOut"
-              } : {
-                type: "spring",
-                stiffness: 200,
-                damping: 25,
-                mass: 1.2
-              }}
+              animate={
+                isLogoHovered
+                  ? {
+                      y: [8, -8, 8],
+                      rotate: [5, -5, 5],
+                    }
+                  : { y: 0, rotate: 0 }
+              }
+              transition={
+                isLogoHovered
+                  ? {
+                      duration: 0.6,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }
+                  : {
+                      type: "spring",
+                      stiffness: 200,
+                      damping: 25,
+                      mass: 1.2,
+                    }
+              }
               className="inline-block"
             >
               7
             </motion.span>
           </div>
-          <span className="text-white ml-1 group-hover:text-primary-400 transition-colors">BET</span>
+          <span className="text-white ml-1 group-hover:text-primary-400 transition-colors">
+            BET
+          </span>
         </Link>
       </div>
 
@@ -97,7 +124,9 @@ const Navbar: React.FC = () => {
           <>
             <div className="flex items-center gap-4">
               <div className="flex flex-col items-end">
-                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Saldo</span>
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                  Saldo
+                </span>
                 <div className="flex flex-col items-end gap-0.5">
                   <div className="flex items-center gap-1.5 text-accent-success font-black text-sm">
                     <Wallet className="w-3.5 h-3.5" />
@@ -127,16 +156,23 @@ const Navbar: React.FC = () => {
               </div>
             </div>
 
-            <Link to="/settings" className="relative text-gray-400 hover:text-white transition-colors">
+            <Link
+              to="/settings"
+              className="relative text-gray-400 hover:text-white transition-colors"
+            >
               <Bell className="w-6 h-6" />
-              <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">2</span>
+              <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                2
+              </span>
             </Link>
 
             <button
               onClick={() => dispatch(toggleBetslip())}
               className="relative p-2 bg-dark-700 rounded-lg hover:bg-dark-600 transition-colors"
             >
-              <div className="text-xs font-bold px-2 py-1 bg-primary-600 rounded text-white">SLIP</div>    
+              <div className="text-xs font-bold px-2 py-1 bg-primary-600 rounded text-white">
+                SLIP
+              </div>
               {betSelectionsCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-accent-danger text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center border-2 border-dark-800 font-bold">
                   {betSelectionsCount}
@@ -145,7 +181,21 @@ const Navbar: React.FC = () => {
             </button>
 
             <div className="flex items-center gap-3 pl-4 border-l border-dark-600">
-              <Link to="/settings" className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold hover:bg-primary-500 transition-colors cursor-pointer text-white">
+              <div className="flex flex-col items-end mr-2">
+                <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                  Level {progress?.currentLevel || 1}
+                </span>
+                <div className="w-20 h-1.5 bg-dark-900 rounded-full mt-0.5 overflow-hidden border border-dark-600">
+                  <div
+                    className="h-full bg-primary-500 transition-all duration-1000"
+                    style={{ width: `${progress?.progressPercentage || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              <Link
+                to="/settings"
+                className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-sm font-bold hover:bg-primary-500 transition-colors cursor-pointer text-white"
+              >
                 {user?.username?.[0]?.toUpperCase() || "U"}
               </Link>
               <button
@@ -159,8 +209,16 @@ const Navbar: React.FC = () => {
           </>
         ) : (
           <div className="flex items-center gap-4">
-            <Link to="/login" className="text-sm font-semibold hover:text-primary-500 transition-colors">Login</Link>
-            <Link to="/register" className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 active:scale-95">
+            <Link
+              to="/login"
+              className="text-sm font-semibold hover:text-primary-500 transition-colors"
+            >
+              Login
+            </Link>
+            <Link
+              to="/register"
+              className="bg-primary-600 hover:bg-primary-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all transform hover:scale-105 active:scale-95"
+            >
               Join Now
             </Link>
           </div>

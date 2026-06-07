@@ -17,22 +17,22 @@ public class PandaScoreMatch
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }
-    
+
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
-    
+
     [JsonPropertyName("status")]
     public string Status { get; set; } = string.Empty;
-    
+
     [JsonPropertyName("begin_at")]
     public DateTime? BeginAt { get; set; }
-    
+
     [JsonPropertyName("live_url")]
     public string? LiveUrl { get; set; }
-    
+
     [JsonPropertyName("videogame")]
     public PandaScoreVideoGame VideoGame { get; set; } = new();
-    
+
     [JsonPropertyName("opponents")]
     public List<PandaScoreOpponentWrapper> Opponents { get; set; } = new();
 }
@@ -66,7 +66,7 @@ public class PandaScoreApiClient : IPandaScoreApiClient
         _httpClient = httpClient;
         _logger = logger;
         _apiKey = configuration["PandaScoreApi:ApiKey"] ?? throw new InvalidOperationException("PandaScore API Key missing");
-        
+
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
@@ -77,9 +77,9 @@ public class PandaScoreApiClient : IPandaScoreApiClient
         {
             var url = "matches/upcoming?sort=begin_at&per_page=15";
             var response = await _httpClient.GetFromJsonAsync<List<PandaScoreMatch>>(url);
-            
+
             var mappedEvents = new List<ExternalEventDto>();
-            
+
             if (response != null)
             {
                 foreach (var match in response)

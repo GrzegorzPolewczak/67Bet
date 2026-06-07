@@ -34,15 +34,15 @@ public class AiAssistantServiceTests
     }
 
     [Fact]
-    public async Task GetMatchInsightAsync_ShouldReturnCachedValue_WhenExistsInDb()
+    public async Task GetMatchInsightAsync_ShouldReturnCachedValue_WhenExistsInDbAndIsRecent()
     {
         // Arrange
         var eventGuid = Guid.NewGuid();
         var eventId = eventGuid.ToString();
         var cachedContent = "To jest tekst z bazy";
-        var existingInsight = new AiMatchInsight(eventGuid, cachedContent);
+        var existingInsight = new AiMatchInsight(eventId, cachedContent);
 
-        _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventGuid))
+        _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventId))
             .ReturnsAsync(existingInsight);
 
         // Act
@@ -51,7 +51,7 @@ public class AiAssistantServiceTests
         // Assert
         Assert.Equal(cachedContent, result);
         _geminiClientMock.Verify(c => c.GenerateTextAsync(It.IsAny<string>()), Times.Never);
-        _insightRepoMock.Verify(r => r.AddAsync(It.IsAny<AiMatchInsight>()), Times.Never);
+        _insightRepoMock.Verify(r => r.AddOrUpdateAsync(It.IsAny<AiMatchInsight>()), Times.Never);
     }
 
     [Fact]
@@ -64,9 +64,9 @@ public class AiAssistantServiceTests
         var match = new Event(matchName, Guid.NewGuid(), "Champions League", DateTime.UtcNow, "Football");
         var aiResponse = "Analiza od AI";
 
-        _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventGuid))
+        _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventId))
             .ReturnsAsync((AiMatchInsight?)null);
-        
+
         _eventRepoMock.Setup(r => r.GetByIdAsync(eventGuid))
             .ReturnsAsync(match);
 
@@ -79,7 +79,7 @@ public class AiAssistantServiceTests
         // Assert
         Assert.Equal(aiResponse, result);
         _geminiClientMock.Verify(c => c.GenerateTextAsync(It.IsAny<string>()), Times.Once);
-        _insightRepoMock.Verify(r => r.AddAsync(It.Is<AiMatchInsight>(i => i.Content == aiResponse && i.EventId == eventGuid)), Times.Once);
+        _insightRepoMock.Verify(r => r.AddOrUpdateAsync(It.Is<AiMatchInsight>(i => i.Content == aiResponse && i.EventId == eventId)), Times.Once);
     }
 
     [Fact]
@@ -88,12 +88,12 @@ public class AiAssistantServiceTests
         // Arrange
         var eventGuid = Guid.NewGuid();
         var eventId = eventGuid.ToString();
-        var externalMatch = new ExternalMatchDto { Name = "External Team A vs B", SportKey = "Tennis" };
+        var externalMatch = new ExternalMatchDto { Name = "External Team A vs B", SportKey = "Tennis", RecentScores = "scores", CurrentOdds = "odds" };
         var aiResponse = "Analiza od AI dla meczu zewnętrznego";
 
-        _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventGuid))
+        _insightRepoMock.Setup(r => r.GetByEventIdAsync(eventId))
             .ReturnsAsync((AiMatchInsight?)null);
-        
+
         _eventRepoMock.Setup(r => r.GetByIdAsync(eventGuid))
             .ReturnsAsync((Event?)null);
 
@@ -109,7 +109,7 @@ public class AiAssistantServiceTests
         // Assert
         Assert.Equal(aiResponse, result);
         _oddsServiceMock.Verify(s => s.GetEventByIdAsync(eventId), Times.Once);
-        _geminiClientMock.Verify(c => c.GenerateTextAsync(It.Is<string>(p => p.Contains(externalMatch.Name))), Times.Once);
+        _geminiClientMock.Verify(c => c.GenerateTextAsync(It.Is<string>(p => p.Contains(externalMatch.Name) && p.Contains("scores") && p.Contains("odds"))), Times.Once);
     }
 
     [Fact]

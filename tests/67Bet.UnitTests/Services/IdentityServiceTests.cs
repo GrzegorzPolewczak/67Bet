@@ -27,7 +27,7 @@ public class IdentityServiceTests
         var username = "testuser";
         var email = "test@example.com";
         var password = "Password123!";
-        
+
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(email))
             .ReturnsAsync((User?)null);
 
@@ -39,7 +39,7 @@ public class IdentityServiceTests
         user.Username.Should().Be(username);
         user.Email.Should().Be(email);
         BCrypt.Net.BCrypt.Verify(password, user.PasswordHash).Should().BeTrue();
-        
+
         _userRepositoryMock.Verify(x => x.AddAsync(It.IsAny<User>()), Times.Once);
     }
 
@@ -49,7 +49,7 @@ public class IdentityServiceTests
         // Arrange
         var email = "existing@example.com";
         var existingUser = new User("existing", email, "hash");
-        
+
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(email))
             .ReturnsAsync(existingUser);
 
@@ -67,7 +67,7 @@ public class IdentityServiceTests
         var password = "CorrectPassword";
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
         var user = new User("testuser", email, passwordHash);
-        
+
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(email))
             .ReturnsAsync(user);
 
@@ -85,7 +85,7 @@ public class IdentityServiceTests
         var email = "test@example.com";
         var passwordHash = BCrypt.Net.BCrypt.HashPassword("CorrectPassword");
         var user = new User("testuser", email, passwordHash);
-        
+
         _userRepositoryMock.Setup(x => x.GetByEmailAsync(email))
             .ReturnsAsync(user);
 

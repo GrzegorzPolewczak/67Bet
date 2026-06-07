@@ -18,7 +18,7 @@ public class OddsService : IOddsService
         // Uproszczony wzór: Kurs = (1 / P) * (1 - Marża)
         decimal margin = 0.05m; // 5% marży bukmacherskiej
         decimal odds = (1.0m / probability) * (1.0m - margin);
-        
+
         return Task.FromResult(Math.Max(1.01m, Math.Round(odds, 2)));
     }
 

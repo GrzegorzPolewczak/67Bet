@@ -67,10 +67,10 @@ public class ApiSportsClient : ILiveDataProvider
             }
 
             var response = await _httpClient.GetFromJsonAsync<ApiSportsResponse<ApiSportsLiveMatch>>($"{baseUrl}/{endpoint}");
-            
+
             if (response?.Response != null && response.Response.Count > 0)
             {
-                var match = response.Response.Find(m => 
+                var match = response.Response.Find(m =>
                     m.Fixture?.Status?.Elapsed != null || m.Events.Count > 0
                 ) ?? response.Response[0];
 
@@ -80,10 +80,10 @@ public class ApiSportsClient : ILiveDataProvider
                     SportKey = sportKey,
                     CurrentTime = (match.Fixture?.Status?.Elapsed ?? 0) + ":00",
                     CurrentAction = match.Events.Count > 0 ? match.Events[^1].Detail : "In Play",
-                    Score = new Dictionary<string, string> 
-                    { 
-                        { "Home", (match.Goals?.GetValueOrDefault("home") ?? 0).ToString() }, 
-                        { "Away", (match.Goals?.GetValueOrDefault("away") ?? 0).ToString() } 
+                    Score = new Dictionary<string, string>
+                    {
+                        { "Home", (match.Goals?.GetValueOrDefault("home") ?? 0).ToString() },
+                        { "Away", (match.Goals?.GetValueOrDefault("away") ?? 0).ToString() }
                     },
                     Statistics = MapStats(match.Statistics, sportKey),
                     TimelineEvents = MapEvents(match.Events),
@@ -125,7 +125,8 @@ public class ApiSportsClient : ILiveDataProvider
 
         foreach (var e in apiEvents)
         {
-            list.Add(new TimelineEventDto {
+            list.Add(new TimelineEventDto
+            {
                 Type = e.Type,
                 Minute = (e.Time?.Elapsed ?? 0) + "'",
                 Description = e.Detail,

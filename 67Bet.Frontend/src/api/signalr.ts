@@ -1,4 +1,4 @@
-import * as signalR from '@microsoft/signalr';
+import * as signalR from "@microsoft/signalr";
 
 export interface LiveMatchState {
   matchId: string;
@@ -17,7 +17,7 @@ export interface LiveMatchState {
   }>;
 }
 
-const API_URL = import.meta.env.VITE_API_ODDS || 'http://localhost:5300';
+const API_URL = import.meta.env.VITE_API_ODDS || "http://localhost:5300";
 const connection = new signalR.HubConnectionBuilder()
   .withUrl(`${API_URL}/liveTrackerHub`)
   .withAutomaticReconnect()
@@ -28,9 +28,9 @@ export const startSignalRConnection = async () => {
   if (connection.state === signalR.HubConnectionState.Disconnected) {
     try {
       await connection.start();
-      console.log('SignalR Connected.');
+      console.log("SignalR Connected.");
     } catch (err) {
-      console.error('SignalR Connection Error: ', err);
+      console.error("SignalR Connection Error: ", err);
       setTimeout(startSignalRConnection, 5000);
     }
   }
@@ -39,9 +39,9 @@ export const startSignalRConnection = async () => {
 export const subscribeToMatch = async (matchId: string) => {
   if (connection.state === signalR.HubConnectionState.Connected) {
     try {
-      await connection.invoke('SubscribeToMatch', matchId);
+      await connection.invoke("SubscribeToMatch", matchId);
     } catch (err) {
-      console.error('Error subscribing to match: ', err);
+      console.error("Error subscribing to match: ", err);
     }
   }
 };
@@ -49,17 +49,19 @@ export const subscribeToMatch = async (matchId: string) => {
 export const unsubscribeFromMatch = async (matchId: string) => {
   if (connection.state === signalR.HubConnectionState.Connected) {
     try {
-      await connection.invoke('UnsubscribeFromMatch', matchId);
+      await connection.invoke("UnsubscribeFromMatch", matchId);
     } catch (err) {
-      console.error('Error unsubscribing from match: ', err);
+      console.error("Error unsubscribing from match: ", err);
     }
   }
 };
 
-export const onMatchUpdate = (callback: (matchUpdate: LiveMatchState) => void) => {
-  connection.on('ReceiveMatchUpdate', callback);
+export const onMatchUpdate = (
+  callback: (matchUpdate: LiveMatchState) => void,
+) => {
+  connection.on("ReceiveMatchUpdate", callback);
 };
 
 export const offMatchUpdate = () => {
-  connection.off('ReceiveMatchUpdate');
+  connection.off("ReceiveMatchUpdate");
 };

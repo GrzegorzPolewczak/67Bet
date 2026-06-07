@@ -39,6 +39,9 @@ namespace _67Bet.Odds.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("RecentScores")
+                        .HasColumnType("longtext");
+
                     b.Property<string>("SportKey")
                         .IsRequired()
                         .HasColumnType("longtext");

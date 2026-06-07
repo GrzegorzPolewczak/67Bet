@@ -19,4 +19,6 @@ public class ExternalMatchDto
 {
     public string Name { get; set; } = string.Empty;
     public string SportKey { get; set; } = string.Empty;
+    public string? RecentScores { get; set; }
+    public string? CurrentOdds { get; set; }
 }

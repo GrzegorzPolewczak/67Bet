@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
 
         var user = await _identityService.GetUserByEmailAsync(request.Email);
         var token = GenerateJwtToken(user!);
-        
+
         return Ok(token);
     }
 
@@ -54,7 +54,7 @@ public class AuthController : ControllerBase
 
         var userId = Guid.Parse(userIdClaim.Value);
         var user = await _identityService.GetUserByIdAsync(userId);
-        
+
         if (user == null) return NotFound("Użytkownik nie znaleziony.");
 
         return Ok(user.ToDto());
@@ -71,7 +71,8 @@ public class AuthController : ControllerBase
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.UserRole.ToString())
+            new Claim(ClaimTypes.Role, user.UserRole.ToString()),
+            new Claim("IsKycVerified", user.IsKycVerified.ToString())
         };
 
         var token = new JwtSecurityToken(

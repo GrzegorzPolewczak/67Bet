@@ -38,7 +38,7 @@ public class Ticket : BaseEntity, IAggregateRoot
     private void CalculateTotalOdds()
     {
         TotalOdds = Bets.Aggregate(1.0m, (acc, bet) => acc * bet.FixedPrice);
-        
+
         var rawWinning = Stake * TotalOdds;
         if (IsFreebet)
         {

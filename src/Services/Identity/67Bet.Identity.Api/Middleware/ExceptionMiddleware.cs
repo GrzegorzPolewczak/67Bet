@@ -30,7 +30,7 @@ public class ExceptionMiddleware
     private static Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-        
+
         var statusCode = exception switch
         {
             InvalidOperationException => (int)HttpStatusCode.BadRequest,

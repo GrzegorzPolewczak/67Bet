@@ -40,7 +40,7 @@ public class TennisSimulator : BaseMatchSimulator
         {
             match.CurrentAction = "Intense Rally";
             match.CurrentZone = Random.Next(100) < 50 ? "HomeDef" : "AwayDef";
-            
+
             // Losowa wygrana punktu po wymianie
             if (Random.Next(100) < 30)
             {
@@ -87,7 +87,7 @@ public class TennisSimulator : BaseMatchSimulator
             match.Score[team] = (currentSets + 1).ToString();
             match.CurrentAction = $"SET {team}!!!";
             AddTimelineEvent(match, "Set", team, $"SET won by {team}");
-            
+
             // Reset gemów po secie
             match.Statistics["GamesHome"] = 0;
             match.Statistics["GamesAway"] = 0;

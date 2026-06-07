@@ -18,19 +18,22 @@ public class BettingService : IBettingService
     private readonly ITicketRepository _ticketRepository;
     private readonly IWalletService _walletService;
     private readonly IVirtualRaceRepository _virtualRaceRepository;
+    private readonly IGamificationService _gamificationService;
 
     public BettingService(
         IEventRepository eventRepository,
         IMarketRepository marketRepository,
         ITicketRepository ticketRepository,
         IWalletService walletService,
-        IVirtualRaceRepository virtualRaceRepository)
+        IVirtualRaceRepository virtualRaceRepository,
+        IGamificationService gamificationService)
     {
         _eventRepository = eventRepository;
         _marketRepository = marketRepository;
         _ticketRepository = ticketRepository;
         _walletService = walletService;
         _virtualRaceRepository = virtualRaceRepository;
+        _gamificationService = gamificationService;
     }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
@@ -60,6 +63,10 @@ public class BettingService : IBettingService
 
             // Search in regular events
             foreach (var @event in activeEvents)
+            var events = await _eventRepository.GetActiveEventsAsync();
+            Outcome? foundOutcome = null;
+
+            foreach (var @event in events)
             {
                 var market = @event.Markets.FirstOrDefault(m => m.Outcomes.Any(o => o.Id == outcomeId));
                 if (market != null && market.IsActive)
@@ -68,6 +75,14 @@ public class BettingService : IBettingService
                     ticket.AddBet(outcome.Id, outcome.Name, market.Name, @event.Name, @event.StartTime, outcome.CurrentPrice);
                     found = true;
                     break;
+                    if (!market.IsActive) continue;
+
+                    var outcome = market.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
+                    if (outcome != null)
+                    {
+                        foundOutcome = outcome;
+                        break;
+                    }
                 }
             }
 
@@ -78,6 +93,10 @@ public class BettingService : IBettingService
             {
                 var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
                 if (participant != null)
+                var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
+                VirtualRaceParticipant? foundVirtualParticipant = null;
+
+                foreach (var race in virtualRaces)
                 {
                     ticket.AddBet(participant.Id, participant.Horse.Name, "Winner", race.Name, race.StartTime, participant.Odds);
                     found = true;
@@ -93,6 +112,10 @@ public class BettingService : IBettingService
         }
 
         await _ticketRepository.AddAsync(ticket);
+
+        // Award XP for placing a bet
+        await _gamificationService.AwardXpForBetAsync(userId, stake);
+
         return ticket;
     }
 
@@ -113,15 +136,15 @@ public class BettingService : IBettingService
                 outcome.SetResult(isWinner);
             }
         }
-        
+
         var tickets = await _ticketRepository.GetActiveTicketsAsync();
-        
+
         foreach (var ticket in tickets)
         {
             bool ticketHasThisEvent = false;
             foreach (var bet in ticket.Bets)
             {
-                if (winningOutcomeIds.Contains(bet.OutcomeId) || 
+                if (winningOutcomeIds.Contains(bet.OutcomeId) ||
                     markets.Any(m => m.Outcomes.Any(o => o.Id == bet.OutcomeId)))
                 {
                     ticketHasThisEvent = true;
@@ -138,7 +161,7 @@ public class BettingService : IBettingService
             {
                 var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
                 
-                if (outcomeStatus == OutcomeResult.Won)
+                if (outcomeStatus == OutcomeResult.Lost)
                 {
                     bet.Settle(BetStatus.Won);
                 }
@@ -163,8 +186,11 @@ public class BettingService : IBettingService
             {
                 ticket.Settle(TicketStatus.Won);
                 await _ticketRepository.UpdateAsync(ticket);
-                
+
                 await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
+
+                // Award XP for winning a bet
+                await _gamificationService.AwardXpForWinAsync(ticket.UserId, ticket.Stake, ticket.TotalOdds);
             }
             else
             {
@@ -176,7 +202,36 @@ public class BettingService : IBettingService
 
     private async Task<OutcomeResult> GetOutcomeStatusAsync(Guid outcomeId)
     {
-        return OutcomeResult.Won;
+        // Ta metoda powinna sprawdzać status konkretnego wyniku w bazie
+        // Dla uproszczenia w tej wersji zwracamy status z encji Outcome
+        var markets = await _marketRepository.GetAllAsync(); // To jest mało wydajne, ale w tej skali akceptowalne
+        foreach (var m in markets)
+        {
+            var outcome = m.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
+            if (outcome != null)
+            {
+                if (outcome.IsWinner == true) return OutcomeResult.Won;
+                if (outcome.IsWinner == false) return OutcomeResult.Lost;
+                return OutcomeResult.Pending;
+            }
+        }
+
+        // Sprawdź wirtualne wyścigi
+        var races = await _virtualRaceRepository.GetActiveRacesAsync();
+        foreach (var race in races)
+        {
+            var p = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
+            if (p != null)
+            {
+                if (race.IsFinished)
+                {
+                    return race.WinningHorseId == p.HorseId ? OutcomeResult.Won : OutcomeResult.Lost;
+                }
+                return OutcomeResult.Pending;
+            }
+        }
+
+        return OutcomeResult.Pending;
     }
 
     public async Task<Ticket?> GetTicketByIdAsync(Guid ticketId)

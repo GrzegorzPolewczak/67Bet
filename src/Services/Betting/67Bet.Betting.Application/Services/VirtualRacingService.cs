@@ -63,7 +63,7 @@ namespace _67Bet.Betting.Application.Services
             var random = new Random();
             var participants = race.Participants.ToList();
             var totalWeight = participants.Sum(p => (1 / (double)p.Odds));
-            
+
             var roll = random.NextDouble() * totalWeight;
             double cumulative = 0;
             Guid winningHorseId = participants.First().HorseId;

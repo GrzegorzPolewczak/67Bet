@@ -23,10 +23,10 @@ public class CustomBetService : ICustomBetService
     public async Task<CustomBetRequest> CreateRequestAsync(Guid userId, string description)
     {
         var request = new CustomBetRequest(userId, description);
-        
+
         // W wersji I: Symulujemy wycenę przez AI (AI Suggested Odds)
         // W pełnej wersji tutaj byłoby wywołanie modelu ML.NET
-        decimal simulatedAiOdds = 2.50m; 
+        decimal simulatedAiOdds = 2.50m;
         request.SetAiSuggestedOdds(simulatedAiOdds);
 
         await _customBetRepository.AddAsync(request);

@@ -8,7 +8,9 @@ import { motion } from 'framer-motion';
 
 const BetHistoryPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { tickets, loading, error } = useSelector((state: RootState) => state.history);
+  const { tickets, loading, error } = useSelector(
+    (state: RootState) => state.history,
+  );
 
   useEffect(() => {
     dispatch(fetchHistoryAsync());
@@ -22,7 +24,10 @@ const BetHistoryPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      <Link to="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm font-bold"
+      >
         <ChevronLeft className="w-4 h-4" /> Back to Betting
       </Link>
 
@@ -31,9 +36,11 @@ const BetHistoryPage: React.FC = () => {
           <h1 className="text-3xl font-black text-white flex items-center gap-3">
             <History className="w-8 h-8 text-primary-500" /> Bet History
           </h1>
-          <p className="text-gray-400 text-sm">Review your past and active bets.</p>
+          <p className="text-gray-400 text-sm">
+            Review your past and active bets.
+          </p>
         </div>
-        <button 
+        <button
           onClick={() => dispatch(fetchHistoryAsync())}
           className="text-xs font-bold text-gray-400 hover:text-white transition-colors"
         >
@@ -56,13 +63,15 @@ const BetHistoryPage: React.FC = () => {
           <Info className="w-10 h-10 text-gray-500" />
           <div>
             <p className="text-lg font-bold text-gray-300">No bets found</p>
-            <p className="text-sm text-gray-500 mt-1">You haven't placed any bets yet.</p>
+            <p className="text-sm text-gray-500 mt-1">
+              You haven't placed any bets yet.
+            </p>
           </div>
         </div>
       ) : (
         <div className="grid gap-4">
           {tickets.map((ticket) => (
-            <motion.div 
+            <motion.div
               key={ticket.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -70,8 +79,12 @@ const BetHistoryPage: React.FC = () => {
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 border-b border-dark-700 pb-4">
                 <div>
-                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Ticket ID</span>
-                  <span className="text-sm font-mono text-gray-300">{ticket.id.split('-')[0]}...</span>
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                    Ticket ID
+                  </span>
+                  <span className="text-sm font-mono text-gray-300">
+                    {ticket.id.split("-")[0]}...
+                  </span>
                 </div>
                 <div className="flex items-center gap-6">
                   <button 
@@ -82,22 +95,39 @@ const BetHistoryPage: React.FC = () => {
                     <Share2 className="w-5 h-5" />
                   </button>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Total Odds</span>
-                    <span className="text-sm font-black text-white">@{Number(ticket.totalOdds || 0).toFixed(2)}</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                      Total Odds
+                    </span>
+                    <span className="text-sm font-black text-white">
+                      @{Number(ticket.totalOdds || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Stake</span>
-                    <span className="text-sm font-black text-white">${Number(ticket.stake || 0).toFixed(2)}</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                      Stake
+                    </span>
+                    <span className="text-sm font-black text-white">
+                      ${Number(ticket.stake || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">Payout</span>
-                    <span className="text-sm font-black text-accent-success">${Number(ticket.potentialWinning || 0).toFixed(2)}</span>
+                    <span className="text-xs font-bold text-gray-500 uppercase tracking-widest block mb-1">
+                      Payout
+                    </span>
+                    <span className="text-sm font-black text-accent-success">
+                      ${Number(ticket.potentialWinning || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="text-right">
-                    <span className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${
-                      ticket.status === 'Open' ? 'bg-primary-600/20 text-primary-500' : 
-                      ticket.status === 'Won' ? 'bg-accent-success/20 text-accent-success' : 'bg-accent-danger/20 text-accent-danger'
-                    }`}>
+                    <span
+                      className={`text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-lg ${
+                        ticket.status === "Open"
+                          ? "bg-primary-600/20 text-primary-500"
+                          : ticket.status === "Won"
+                            ? "bg-accent-success/20 text-accent-success"
+                            : "bg-accent-danger/20 text-accent-danger"
+                      }`}
+                    >
                       {ticket.status}
                     </span>
                   </div>
@@ -105,7 +135,9 @@ const BetHistoryPage: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Selections ({ticket.bets.length})</h4>
+                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
+                  Selections ({ticket.bets.length})
+                </h4>
                 {ticket.bets.map((bet, i) => (
                   <div key={i} className="flex items-center justify-between bg-dark-900 rounded-xl p-4 border border-dark-600">
                     <div className="space-y-1">

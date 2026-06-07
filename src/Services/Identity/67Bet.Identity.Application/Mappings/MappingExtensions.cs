@@ -11,7 +11,8 @@ public static class MappingExtensions
             user.Id,
             user.Username,
             user.Email,
-            user.UserRole.ToString()
+            user.UserRole.ToString(),
+            user.IsKycVerified
         );
     }
 }

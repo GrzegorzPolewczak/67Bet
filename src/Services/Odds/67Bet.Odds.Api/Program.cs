@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +21,7 @@ builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67B
 builder.Services.AddSingleton<_67Bet.Odds.Api.Services.MatchSimulatorFactory>();
 builder.Services.AddHostedService<_67Bet.Odds.Api.Services.LiveTrackerBackgroundService>();
 
-// Configure CORS
+// Configure CORS (Oryginalna podwójna konfiguracja)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -32,7 +33,6 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -69,7 +69,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "67Bet Odds API", Version = "v1" });
-    
+
     // Add JWT support to Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
@@ -102,13 +102,29 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+// Auto-migrate database on startup
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var context = scope.ServiceProvider.GetRequiredService<_67Bet.Odds.Infrastructure.Persistence.OddsDbContext>();
+        context.Database.Migrate();
+        Console.WriteLine("Odds database migrated successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error migrating odds database: {ex.Message}");
+    }
+}
+
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
-app.UseSwaggerUI(c => {
+app.UseSwaggerUI(c =>
+{
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "67Bet Odds API v1");
     c.RoutePrefix = string.Empty;
 });
@@ -122,6 +138,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapHub<_67Bet.Odds.Api.Hubs.LiveTrackerHub>("/liveTrackerHub");
+app.MapHub<_67Bet.Odds.Api.Hubs.LiveTrackerHub>("/api/liveTrackerHub");
 
 app.Run();

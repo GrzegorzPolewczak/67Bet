@@ -15,6 +15,7 @@ namespace _67Bet.Identity.Infrastructure.Persistence
     public class IdentityDbContext : DbContext
     {
         public DbSet<User> Users => Set<User>();
+        public DbSet<KycSession> KycSessions => Set<KycSession>();
 
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 
@@ -27,6 +28,12 @@ namespace _67Bet.Identity.Infrastructure.Persistence
                 builder.Property(u => u.Email).IsRequired().HasMaxLength(100);
                 builder.HasIndex(u => u.Username).IsUnique();
                 builder.HasIndex(u => u.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<KycSession>(builder =>
+            {
+                builder.HasKey(k => k.Id);
+                builder.Property(k => k.Status).IsRequired();
             });
         }
     }

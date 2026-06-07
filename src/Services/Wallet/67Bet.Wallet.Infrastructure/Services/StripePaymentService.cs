@@ -17,7 +17,7 @@ public class StripePaymentService : IPaymentService
     private readonly IWalletService _walletService;
 
     public StripePaymentService(
-        IConfiguration configuration, 
+        IConfiguration configuration,
         ILogger<StripePaymentService> logger,
         IWalletService walletService)
     {
@@ -31,7 +31,7 @@ public class StripePaymentService : IPaymentService
     {
         var options = new PaymentIntentCreateOptions
         {
-            Amount = (long)(amount * 100), 
+            Amount = (long)(amount * 100),
             Currency = currency.ToLower(),
             PaymentMethodTypes = new List<string> { "card", "blik" },
             Metadata = new Dictionary<string, string>
@@ -44,7 +44,7 @@ public class StripePaymentService : IPaymentService
         var intent = await service.CreateAsync(options);
 
         return new PaymentIntentResponseDto(
-            intent.ClientSecret, 
+            intent.ClientSecret,
             _configuration["Stripe:PublishableKey"] ?? string.Empty);
     }
 
@@ -101,7 +101,7 @@ public class StripePaymentService : IPaymentService
             var paymentIntent = stripeEvent.Data.Object as PaymentIntent;
             if (paymentIntent != null)
             {
-                if (paymentIntent.Metadata.TryGetValue("UserId", out var userIdString) && 
+                if (paymentIntent.Metadata.TryGetValue("UserId", out var userIdString) &&
                     Guid.TryParse(userIdString, out var userId))
                 {
                     var amount = paymentIntent.Amount / 100m;
