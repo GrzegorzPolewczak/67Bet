@@ -6,7 +6,7 @@ namespace _67Bet.Wallet.Domain.Entities
     public class ReferralCode : BaseEntity, IAggregateRoot
     {
         public Guid UserId { get; private set; }
-        public string Code { get; private set; }
+        public string Code { get; private set; } = null!;
         public int UsageCount { get; private set; }
 
         public ReferralCode(Guid userId, string code)
