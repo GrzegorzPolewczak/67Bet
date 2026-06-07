@@ -34,7 +34,10 @@ function App() {
         <Route path="roulette" element={<RoulettePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="referrals" element={<ReferralsPage />} />
-        <Route path="responsible-gambling" element={<ResponsibleGamblingPage />} />
+        <Route
+          path="responsible-gambling"
+          element={<ResponsibleGamblingPage />}
+        />
         <Route path="history" element={<BetHistoryPage />} />
         <Route path="share-ticket/:id" element={<SharedTicketPage />} />
         <Route path="deposit" element={<DepositPage />} />
