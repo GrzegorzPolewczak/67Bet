@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Application.Services;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Entities.VirtualRacing;
@@ -21,6 +22,7 @@ public class BettingServiceTests
     private readonly Mock<ITicketRepository> _ticketRepositoryMock;
     private readonly Mock<IWalletService> _walletServiceMock;
     private readonly Mock<IVirtualRaceRepository> _virtualRaceRepositoryMock;
+    private readonly Mock<IGamificationService> _gamificationServiceMock;
     private readonly BettingService _bettingService;
 
     public BettingServiceTests()
@@ -30,12 +32,14 @@ public class BettingServiceTests
         _ticketRepositoryMock = new Mock<ITicketRepository>();
         _walletServiceMock = new Mock<IWalletService>();
         _virtualRaceRepositoryMock = new Mock<IVirtualRaceRepository>();
+        _gamificationServiceMock = new Mock<IGamificationService>();
         _bettingService = new BettingService(
             _eventRepositoryMock.Object,
             _marketRepositoryMock.Object,
             _ticketRepositoryMock.Object,
             _walletServiceMock.Object,
-            _virtualRaceRepositoryMock.Object);
+            _virtualRaceRepositoryMock.Object,
+            _gamificationServiceMock.Object);
     }
 
     [Fact]
@@ -114,8 +118,12 @@ public class BettingServiceTests
 
         _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId)).ReturnsAsync(@event);
         _marketRepositoryMock.Setup(x => x.GetByEventIdAsync(eventId)).ReturnsAsync(new List<Market> { market });
+        _marketRepositoryMock.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Market> { market }); // Added this
         _ticketRepositoryMock.Setup(x => x.GetActiveTicketsAsync()).ReturnsAsync(new List<Ticket> { ticket });
         _eventRepositoryMock.Setup(x => x.GetActiveEventsAsync()).ReturnsAsync(new List<Event> { @event });
+
+        // Ensure outcome is winner
+        outcome.SetResult(true);
 
         // Act
         await _bettingService.SettleEventAsync(eventId, new List<Guid> { outcome.Id });

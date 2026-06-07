@@ -5,6 +5,7 @@
 using Microsoft.EntityFrameworkCore;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Entities.VirtualRacing;
+using _67Bet.Betting.Domain.Entities.Gamification;
 
 namespace _67Bet.Betting.Infrastructure.Persistence;
 
@@ -22,6 +23,11 @@ public class BettingDbContext : DbContext
     public DbSet<VirtualRace> VirtualRaces => Set<VirtualRace>();
     public DbSet<Horse> Horses => Set<Horse>();
     public DbSet<VirtualRaceParticipant> VirtualRaceParticipants => Set<VirtualRaceParticipant>();
+
+    // Gamification
+    public DbSet<UserGamification> UserGamifications => Set<UserGamification>();
+    public DbSet<Achievement> Achievements => Set<Achievement>();
+    public DbSet<UserAchievement> UserAchievements => Set<UserAchievement>();
 
     public BettingDbContext(DbContextOptions<BettingDbContext> options) : base(options) { }
 
@@ -104,6 +110,27 @@ public class BettingDbContext : DbContext
                    .WithMany()
                    .HasForeignKey(p => p.HorseId)
                    .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Gamification Configurations
+        modelBuilder.Entity<UserGamification>(builder =>
+        {
+            builder.HasKey(ug => ug.Id);
+            builder.HasIndex(ug => ug.UserId).IsUnique();
+        });
+
+        modelBuilder.Entity<Achievement>(builder =>
+        {
+            builder.HasKey(a => a.Id);
+            builder.Property(a => a.Name).IsRequired().HasMaxLength(100);
+            builder.Property(a => a.Threshold).HasColumnType("decimal(18,2)");
+        });
+
+        modelBuilder.Entity<UserAchievement>(builder =>
+        {
+            builder.HasKey(ua => ua.Id);
+            builder.HasIndex(ua => new { ua.UserId, ua.AchievementId }).IsUnique();
+            builder.Property(ua => ua.CurrentProgress).HasColumnType("decimal(18,2)");
         });
     }
 }

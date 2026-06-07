@@ -35,6 +35,11 @@ public static class DependencyInjection
         services.AddScoped<IVirtualRaceRepository, VirtualRaceRepository>();
         services.AddScoped<IHorseRepository, HorseRepository>();
 
+        // Gamification Repositories
+        services.AddScoped<IUserGamificationRepository, UserGamificationRepository>();
+        services.AddScoped<IAchievementRepository, AchievementRepository>();
+        services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
+
         return services;
     }
 }

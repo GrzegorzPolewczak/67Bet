@@ -1,0 +1,77 @@
+@startuml gamification_class_diagram
+!theme plain
+
+package "Betting Service - Gamification Module" {
+    
+    class UserGamification <<Entity>> {
+        +UserId : Guid
+        +ExperiencePoints : long
+        +CurrentLevel : int
+        +LastLoginDate : DateTime?
+        +AddExperience(amount: long) : bool
+        +CheckLevelUp() : bool
+    }
+
+    class Achievement <<Entity>> {
+        +Name : string
+        +Description : string
+        +Type : AchievementType
+        +Threshold : decimal
+        +IconUrl : string
+    }
+
+    enum AchievementType {
+        TotalBets
+        HighOdds
+        TotalWinnings
+        LoginStreak
+    }
+
+    class UserAchievement <<Entity>> {
+        +UserId : Guid
+        +AchievementId : Guid
+        +CurrentProgress : decimal
+        +IsUnlocked : bool
+        +UnlockedAt : DateTime?
+        +UpdateProgress(amount: decimal) : bool
+    }
+
+    interface IGamificationService {
+        +AwardXpForBetAsync(userId: Guid, stake: decimal) : Task
+        +AwardXpForWinAsync(userId: Guid, stake: decimal, odds: decimal) : Task
+        +ProcessDailyLoginAsync(userId: Guid) : Task
+        +GetUserProgressAsync(userId: Guid) : Task<UserGamificationDto>
+        +GetUserAchievementsAsync(userId: Guid) : Task<IEnumerable<UserAchievementDto>>
+    }
+
+    class GamificationService {
+        -_gamificationRepo : IUserGamificationRepository
+        -_achievementRepo : IAchievementRepository
+        -_userAchievementRepo : IUserAchievementRepository
+        -_hubContext : IHubContext<GamificationHub>
+    }
+
+    interface IUserGamificationRepository {
+        +GetByUserIdAsync(userId: Guid) : Task<UserGamification?>
+        +UpdateAsync(gamification: UserGamification) : Task
+    }
+
+    interface IAchievementRepository {
+        +GetAllAsync() : Task<IEnumerable<Achievement>>
+    }
+
+    interface IUserAchievementRepository {
+        +GetByUserIdAsync(userId: Guid) : Task<IEnumerable<UserAchievement>>
+        +GetSpecificAsync(userId: Guid, achievementId: Guid) : Task<UserAchievement?>
+        +UpdateAsync(userAchievement: UserAchievement) : Task
+    }
+}
+
+UserGamification "1" -- "0..*" UserAchievement : has
+Achievement "1" -- "0..*" UserAchievement : tracks progress for
+GamificationService ..|> IGamificationService
+GamificationService --> IUserGamificationRepository : uses
+GamificationService --> IAchievementRepository : uses
+GamificationService --> IUserAchievementRepository : uses
+
+@enduml

@@ -1,0 +1,36 @@
+@startuml gamification_sequence
+!theme plain
+
+actor User
+participant "Betting.Api\n(TicketsController)" as API
+participant "Betting.Application\n(BettingService)" as BettingService
+participant "Betting.Application\n(GamificationService)" as GamificationService
+database "Betting.Infrastructure\n(Database)" as DB
+participant "SignalR Hub" as SignalR
+
+title Gamification - XP Awarding Flow (Placing a Bet)
+
+User -> API: PlaceTicketAsync(stake, outcomeIds)
+API -> BettingService: PlaceTicketAsync(userId, stake, outcomeIds)
+activate BettingService
+
+BettingService -> DB: Save Ticket
+BettingService -> GamificationService: AwardXpForBetAsync(userId, stake)
+activate GamificationService
+
+GamificationService -> DB: Get UserGamification
+GamificationService -> GamificationService: Calculate New XP\n(XP += Stake * 1.0)
+GamificationService -> GamificationService: Check for Level Up
+GamificationService -> DB: Save UserGamification
+
+GamificationService -> GamificationService: UpdateAchievementProgressAsync(userId, "Debiutant")
+GamificationService -> DB: Update UserAchievement
+
+GamificationService -> SignalR: Send GamificationUpdate\n(XP, Level, NewAchievements)
+deactivate GamificationService
+
+BettingService --> API: TicketCreated
+deactivate BettingService
+API --> User: 201 Created
+
+@enduml
