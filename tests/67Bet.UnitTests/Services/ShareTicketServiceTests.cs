@@ -21,11 +21,13 @@ public class ShareTicketServiceTests
 {
     private readonly Mock<IEventRepository> _eventRepositoryMock = new();
     private readonly Mock<IMarketRepository> _marketRepositoryMock = new();
+    private readonly Mock<ISportRepository> _sportRepositoryMock = new();
     private readonly Mock<ITicketRepository> _ticketRepositoryMock = new();
     private readonly Mock<IWalletService> _walletServiceMock = new();
     private readonly Mock<IVirtualRaceRepository> _virtualRaceRepositoryMock = new();
     private readonly Mock<IGamificationService> _gamificationServiceMock = new();
     private readonly Mock<IResponsibleGamblingService> _responsibleGamblingServiceMock = new();
+    private readonly Mock<IOddsServiceClient> _oddsServiceClientMock = new();
 
     private BettingService CreateService()
     {
@@ -36,11 +38,13 @@ public class ShareTicketServiceTests
         return new BettingService(
             _eventRepositoryMock.Object,
             _marketRepositoryMock.Object,
+            _sportRepositoryMock.Object,
             _ticketRepositoryMock.Object,
             _walletServiceMock.Object,
             _virtualRaceRepositoryMock.Object,
             _gamificationServiceMock.Object,
-            _responsibleGamblingServiceMock.Object);
+            _responsibleGamblingServiceMock.Object,
+            _oddsServiceClientMock.Object);
     }
 
     [Fact]
