@@ -53,6 +53,8 @@ const calculateBoardFee = (stake: number, balls: number, rows: number) => {
   return Math.round(stake * balls * feeRate * 100) / 100;
 };
 
+const toMoney = (value: number) => Math.round(value * 100) / 100;
+
 const createMultipliers = (riskLevel: RiskLevel, rows: number) => {
   const edge = riskLevel === "Low" ? 2.2 : riskLevel === "High" ? 28 : 6;
   const center = riskLevel === "Low" ? 0.55 : riskLevel === "High" ? 0 : 0.18;
@@ -168,6 +170,7 @@ const PlinkoPage: React.FC = () => {
   const [riskLevel, setRiskLevel] = useState<RiskLevel>("Medium");
   const [rows, setRows] = useState(16);
   const [balance, setBalance] = useState(0);
+  const [freebetBalance, setFreebetBalance] = useState(0);
   const [isBuying, setIsBuying] = useState(false);
   const [droppingRounds, setDroppingRounds] = useState<PlinkoRound[]>([]);
   const [pendingRounds, setPendingRounds] = useState<PlinkoRound[]>([]);
@@ -189,6 +192,7 @@ const PlinkoPage: React.FC = () => {
   useEffect(() => {
     if (isDemoMode) {
       setBalance(1000);
+      setFreebetBalance(0);
       setError(null);
       return;
     }
@@ -206,6 +210,9 @@ const PlinkoPage: React.FC = () => {
     try {
       const response = await walletApi.get("/wallet/balance");
       setBalance(Number(response.data.balance || response.data.Balance || 0));
+      setFreebetBalance(
+        Number(response.data.freebetBalance || response.data.FreebetBalance || 0),
+      );
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -253,6 +260,36 @@ const PlinkoPage: React.FC = () => {
     createdAt: new Date(round.createdAtUtc || round.CreatedAtUtc || new Date()),
   });
 
+  const chargeDisplayedWalletForBatch = () => {
+    if (isDemoMode) {
+      setBalance((current) => toMoney(current - totalCost));
+      return;
+    }
+
+    const costPerBall = toMoney(stake + boardFeePerBall);
+
+    setFreebetBalance((currentFreebet) => {
+      let nextFreebet = currentFreebet;
+      let cashCharge = 0;
+
+      for (let i = 0; i < ballCount; i += 1) {
+        if (nextFreebet >= costPerBall) {
+          nextFreebet = toMoney(nextFreebet - costPerBall);
+        } else {
+          cashCharge = toMoney(cashCharge + costPerBall);
+        }
+      }
+
+      if (cashCharge > 0) {
+        setBalance((currentBalance) =>
+          toMoney(Math.max(0, currentBalance - cashCharge)),
+        );
+      }
+
+      return nextFreebet;
+    });
+  };
+
   const buyBalls = async () => {
     if (!Number.isFinite(stake) || stake <= 0) {
       setError("Stake must be greater than zero.");
@@ -279,7 +316,7 @@ const PlinkoPage: React.FC = () => {
           createDemoRound(stake, riskLevel, rows, batchId),
         );
 
-        setBalance((current) => Math.round((current - totalCost) * 100) / 100);
+        chargeDisplayedWalletForBatch();
         setActiveBatch({
           id: batchId,
           balls: ballCount,
@@ -315,7 +352,7 @@ const PlinkoPage: React.FC = () => {
         ...current,
         ...rounds.map((response) => mapRound(response.data, batchId)),
       ]);
-      await fetchWalletBalance();
+      chargeDisplayedWalletForBatch();
     } catch (err: any) {
       setError(
         err.response?.data?.error ||
@@ -404,6 +441,11 @@ const PlinkoPage: React.FC = () => {
             <p className="text-xl font-black text-white">
               {balance.toFixed(2)} PLN
             </p>
+            {!isDemoMode && freebetBalance > 0 && (
+              <p className="mt-1 text-xs font-black text-cyan-300 uppercase tracking-wider">
+                Freebet {freebetBalance.toFixed(2)} PLN
+              </p>
+            )}
           </div>
         </div>
       </div>
