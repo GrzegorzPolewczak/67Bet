@@ -12,6 +12,8 @@ public static class DependencyInjection
         services.AddScoped<IAiAssistantService, AiAssistantService>();
         services.AddScoped<IVirtualRacingService, VirtualRacingService>();
         services.AddScoped<IGamificationService, GamificationService>();
+        services.AddSingleton<IResponsibleGamblingClock, SystemResponsibleGamblingClock>();
+        services.AddScoped<IResponsibleGamblingService, ResponsibleGamblingService>();
         return services;
     }
 }
