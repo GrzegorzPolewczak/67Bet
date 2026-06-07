@@ -16,7 +16,10 @@ public record CustomBetRequestDto(
     DateTime CreatedAt
 );
 
-public record CreateCustomBetRequest(string Description);
+public class CreateCustomBetRequest
+{
+    public string Description { get; set; } = string.Empty;
+}
 
 public record AcceptCustomBetRequest(decimal FinalOdds, string? AdminNote);
 

@@ -20,7 +20,7 @@ public class CustomBetController : ControllerBase
 
     [Authorize]
     [HttpPost("requests")]
-    public async Task<ActionResult<CustomBetRequestDto>> SubmitRequest(CreateCustomBetRequest request)
+    public async Task<ActionResult<CustomBetRequestDto>> SubmitRequest([FromBody] CreateCustomBetRequest request)
     {
         var userId = GetUserId();
         var result = await _customBetService.CreateRequestAsync(userId, request.Description);

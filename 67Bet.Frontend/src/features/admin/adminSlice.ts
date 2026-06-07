@@ -222,7 +222,7 @@ export const submitCustomBetAsync = createAsyncThunk(
   "admin/submitCustomBet",
   async (description: string, { rejectWithValue }) => {
     try {
-      const response = await customBetApi.post("/CustomBet/requests", {
+      const response = await customBetApi.post("CustomBet/requests", {
         description,
       });
       return response.data;
