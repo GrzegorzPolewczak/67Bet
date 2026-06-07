@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Domain.Entities.Plinko;
+using _67Bet.Betting.Domain.Enums;
 using _67Bet.Betting.Domain.Repositories;
 
 namespace _67Bet.Betting.Application.Services;
@@ -13,11 +14,16 @@ public sealed class PlinkoService : IPlinkoService
 
     private readonly IPlinkoRoundRepository _roundRepository;
     private readonly IPlinkoWalletGateway _walletGateway;
+    private readonly IResponsibleGamblingService? _responsibleGamblingService;
 
-    public PlinkoService(IPlinkoRoundRepository roundRepository, IPlinkoWalletGateway walletGateway)
+    public PlinkoService(
+        IPlinkoRoundRepository roundRepository,
+        IPlinkoWalletGateway walletGateway,
+        IResponsibleGamblingService? responsibleGamblingService = null)
     {
         _roundRepository = roundRepository;
         _walletGateway = walletGateway;
+        _responsibleGamblingService = responsibleGamblingService;
     }
 
     public PlinkoBoardDto GetBoard(PlinkoRiskLevel riskLevel, int rows)
@@ -35,8 +41,24 @@ public sealed class PlinkoService : IPlinkoService
         if (request.BoardFee < 0) throw new InvalidOperationException("Board fee cannot be negative.");
 
         var totalCost = request.Stake + request.BoardFee;
+        if (_responsibleGamblingService != null)
+        {
+            var validation = await _responsibleGamblingService.ValidateStakeAsync(userId, totalCost);
+            if (!validation.IsAllowed)
+            {
+                throw new InvalidOperationException(validation.Message ?? "Stake is blocked by responsible gambling limits.");
+            }
+        }
+
         var stakeAccepted = await _walletGateway.ProcessStakeAsync(userId, totalCost, bearerToken);
         if (!stakeAccepted) throw new InvalidOperationException("Insufficient wallet balance.");
+
+        if (_responsibleGamblingService != null)
+        {
+            await _responsibleGamblingService.RecordActivityAsync(
+                userId,
+                new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Stake, totalCost));
+        }
 
         var pathMoves = GeneratePath(request.Rows);
         var landingSlot = pathMoves.Count(move => move == 'R');
@@ -60,6 +82,12 @@ public sealed class PlinkoService : IPlinkoService
             if (round.Payout > 0)
             {
                 await _walletGateway.ProcessPayoutAsync(userId, round.Payout, bearerToken);
+                if (_responsibleGamblingService != null)
+                {
+                    await _responsibleGamblingService.RecordActivityAsync(
+                        userId,
+                        new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Payout, round.Payout));
+                }
             }
 
             round.MarkPayoutSettled();

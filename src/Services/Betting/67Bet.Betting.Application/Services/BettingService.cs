@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Domain.Entities;
 using _67Bet.Betting.Domain.Repositories;
@@ -19,6 +20,7 @@ public class BettingService : IBettingService
     private readonly IWalletService _walletService;
     private readonly IVirtualRaceRepository _virtualRaceRepository;
     private readonly IGamificationService _gamificationService;
+    private readonly IResponsibleGamblingService _responsibleGamblingService;
 
     public BettingService(
         IEventRepository eventRepository,
@@ -26,7 +28,8 @@ public class BettingService : IBettingService
         ITicketRepository ticketRepository,
         IWalletService walletService,
         IVirtualRaceRepository virtualRaceRepository,
-        IGamificationService gamificationService)
+        IGamificationService gamificationService,
+        IResponsibleGamblingService responsibleGamblingService)
     {
         _eventRepository = eventRepository;
         _marketRepository = marketRepository;
@@ -34,6 +37,7 @@ public class BettingService : IBettingService
         _walletService = walletService;
         _virtualRaceRepository = virtualRaceRepository;
         _gamificationService = gamificationService;
+        _responsibleGamblingService = responsibleGamblingService;
     }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
@@ -49,9 +53,17 @@ public class BettingService : IBettingService
         if (outcomeIds == null || !outcomeIds.Any())
             throw new ArgumentException("Kupon musi zawierać przynajmniej jeden zakład.");
 
+        var validation = await _responsibleGamblingService.ValidateStakeAsync(userId, stake);
+        if (!validation.IsAllowed)
+            throw new InvalidOperationException(validation.Message ?? "Stake is blocked by responsible gambling limits.");
+
         var stakeProcessed = await _walletService.ProcessStakeAsync(userId, stake);
         if (!stakeProcessed)
             throw new InvalidOperationException("Niewystarczające środki na koncie użytkownika.");
+
+        await _responsibleGamblingService.RecordActivityAsync(
+            userId,
+            new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Stake, stake));
 
         var ticket = new Ticket(userId, stake);
         var activeEvents = await _eventRepository.GetActiveEventsAsync();
@@ -172,6 +184,9 @@ public class BettingService : IBettingService
                 await _ticketRepository.UpdateAsync(ticket);
 
                 await _walletService.ProcessPayoutAsync(ticket.UserId, ticket.PotentialWinning);
+                await _responsibleGamblingService.RecordActivityAsync(
+                    ticket.UserId,
+                    new RecordResponsibleGamblingActivityRequest(ResponsibleGamblingActivityType.Payout, ticket.PotentialWinning));
 
                 // Award XP for winning a bet
                 await _gamificationService.AwardXpForWinAsync(ticket.UserId, ticket.Stake, ticket.TotalOdds);

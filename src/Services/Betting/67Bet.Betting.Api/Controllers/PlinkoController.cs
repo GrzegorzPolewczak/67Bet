@@ -23,10 +23,10 @@ public sealed class PlinkoController : ControllerBase
 
     private readonly IPlinkoService _plinkoService;
 
-    public PlinkoController()
+    public PlinkoController(IResponsibleGamblingService responsibleGamblingService)
     {
         var walletBaseUrl = Environment.GetEnvironmentVariable("PLINKO_WALLET_API_URL") ?? GetDefaultWalletBaseUrl();
-        _plinkoService = new PlinkoService(RoundRepository, new HttpPlinkoWalletGateway(walletBaseUrl));
+        _plinkoService = new PlinkoService(RoundRepository, new HttpPlinkoWalletGateway(walletBaseUrl), responsibleGamblingService);
     }
 
     [HttpGet("board")]
