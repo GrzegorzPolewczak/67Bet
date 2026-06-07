@@ -25,12 +25,12 @@ public class Ticket : BaseEntity, IAggregateRoot
         IsFreebet = isFreebet;
     }
 
-    public void AddBet(Guid outcomeId, decimal fixedPrice)
+    public void AddBet(Guid outcomeId, string outcomeName, string marketName, string eventName, DateTime startTime, decimal fixedPrice)
     {
         if (Status != TicketStatus.Pending)
             throw new InvalidOperationException("Cannot add bets to a non-pending ticket.");
 
-        var bet = new Bet(Id, outcomeId, fixedPrice);
+        var bet = new Bet(Id, outcomeId, outcomeName, marketName, eventName, startTime, fixedPrice);
         Bets.Add(bet);
         CalculateTotalOdds();
     }
@@ -64,13 +64,21 @@ public class Bet : BaseEntity
 {
     public Guid TicketId { get; private set; }
     public Guid OutcomeId { get; private set; }
+    public string OutcomeName { get; private set; } = string.Empty;
+    public string MarketName { get; private set; } = string.Empty;
+    public string EventName { get; private set; } = string.Empty;
+    public DateTime StartTime { get; private set; }
     public decimal FixedPrice { get; private set; }
     public BetStatus Status { get; private set; }
 
-    public Bet(Guid ticketId, Guid outcomeId, decimal fixedPrice)
+    public Bet(Guid ticketId, Guid outcomeId, string outcomeName, string marketName, string eventName, DateTime startTime, decimal fixedPrice)
     {
         TicketId = ticketId;
         OutcomeId = outcomeId;
+        OutcomeName = outcomeName;
+        MarketName = marketName;
+        EventName = eventName;
+        StartTime = startTime;
         FixedPrice = fixedPrice;
         Status = BetStatus.Pending;
     }

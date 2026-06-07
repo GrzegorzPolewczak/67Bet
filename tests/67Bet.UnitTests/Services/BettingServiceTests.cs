@@ -76,6 +76,7 @@ public class BettingServiceTests
         var market = new Market(@event.Id, "Winner");
         var outcome = new Outcome(market.Id, "Team A", 0.5m, 2.0m);
         market.Outcomes.Add(outcome);
+        @event.Markets.Add(market);
 
         _eventRepositoryMock.Setup(x => x.GetActiveEventsAsync())
             .ReturnsAsync(new List<Event> { @event });
@@ -113,7 +114,7 @@ public class BettingServiceTests
 
         var userId = Guid.NewGuid();
         var ticket = new Ticket(userId, 100m);
-        ticket.AddBet(outcome.Id, 2.0m);
+        ticket.AddBet(outcome.Id, outcome.Name, market.Name, @event.Name, @event.StartTime, 2.0m);
         ticket.Settle(TicketStatus.Pending);
 
         _eventRepositoryMock.Setup(x => x.GetByIdAsync(eventId)).ReturnsAsync(@event);
@@ -143,8 +144,8 @@ public class BettingServiceTests
         var ticket = new Ticket(userId, stake, isFreebet: true);
 
         // Act
-        ticket.AddBet(Guid.NewGuid(), 2.0m); // Odds 2.0
-
+        ticket.AddBet(Guid.NewGuid(), "Outcome", "Market", "Event", DateTime.Now, 2.0m); // Odds 2.0
+        
         // Assert
         // Standard win: 100 * 2.0 = 200
         // Freebet win: 200 * 0.7 = 140

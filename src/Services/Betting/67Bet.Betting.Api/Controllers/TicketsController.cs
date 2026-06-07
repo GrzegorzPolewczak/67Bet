@@ -35,6 +35,15 @@ public class TicketsController : ControllerBase
         return Ok(tickets.Select(t => t.ToDto()));
     }
 
+    [AllowAnonymous]
+    [HttpGet("share/{id}")]
+    public async Task<ActionResult<TicketDto>> GetSharedTicket(Guid id)
+    {
+        var ticket = await _bettingService.GetTicketByIdAsync(id);
+        if (ticket == null) return NotFound();
+        return Ok(ticket.ToDto());
+    }
+
     private Guid GetUserId()
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
