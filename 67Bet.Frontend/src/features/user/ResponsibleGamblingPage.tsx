@@ -86,7 +86,9 @@ const ResponsibleGamblingPage: React.FC = () => {
       const response = await bettingApi.get("/responsible-gambling/me");
       setDashboard(response.data);
     } catch (err: any) {
-      setError(err.response?.data?.message || err.response?.data || err.message);
+      setError(
+        err.response?.data?.message || err.response?.data || err.message,
+      );
     } finally {
       setIsLoading(false);
     }
@@ -123,8 +125,12 @@ const ResponsibleGamblingPage: React.FC = () => {
       <div className="max-w-5xl mx-auto px-4 py-12">
         <div className="bg-dark-800 border border-dark-700 rounded-2xl p-8 text-center">
           <ShieldAlert className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
-          <h1 className="text-3xl font-black text-white mb-3">Responsible Gambling Center</h1>
-          <p className="text-gray-400">Log in to manage personal limits and cooling-off periods.</p>
+          <h1 className="text-3xl font-black text-white mb-3">
+            Responsible Gambling Center
+          </h1>
+          <p className="text-gray-400">
+            Log in to manage personal limits and cooling-off periods.
+          </p>
         </div>
       </div>
     );
@@ -138,8 +144,12 @@ const ResponsibleGamblingPage: React.FC = () => {
             <ShieldAlert className="w-7 h-7 text-cyan-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-black text-white">Responsible Gambling Center</h1>
-            <p className="text-gray-400 text-sm mt-1">Limits, cooling-off and activity usage.</p>
+            <h1 className="text-3xl font-black text-white">
+              Responsible Gambling Center
+            </h1>
+            <p className="text-gray-400 text-sm mt-1">
+              Limits, cooling-off and activity usage.
+            </p>
           </div>
         </div>
         <button
@@ -166,8 +176,16 @@ const ResponsibleGamblingPage: React.FC = () => {
             <h2 className="text-xl font-black text-white">Usage</h2>
           </div>
           <div className="space-y-4">
-            <UsageRow label="Daily stake" used={dashboard?.usage.dailyStakeUsed} remaining={dashboard?.usage.dailyStakeRemaining} />
-            <UsageRow label="Weekly net loss" used={dashboard?.usage.weeklyNetLoss} remaining={dashboard?.usage.weeklyLossRemaining} />
+            <UsageRow
+              label="Daily stake"
+              used={dashboard?.usage.dailyStakeUsed}
+              remaining={dashboard?.usage.dailyStakeRemaining}
+            />
+            <UsageRow
+              label="Weekly net loss"
+              used={dashboard?.usage.weeklyNetLoss}
+              remaining={dashboard?.usage.weeklyLossRemaining}
+            />
           </div>
         </div>
 
@@ -180,14 +198,22 @@ const ResponsibleGamblingPage: React.FC = () => {
             {([1, 2, 3] as LimitType[]).map((type) => {
               const limit = limitsByType.get(type);
               return (
-                <div key={type} className="bg-dark-900 border border-dark-700 rounded-2xl p-5">
+                <div
+                  key={type}
+                  className="bg-dark-900 border border-dark-700 rounded-2xl p-5"
+                >
                   <div className="flex justify-between gap-4 mb-2">
-                    <h3 className="text-white font-black">{limitLabels[type]}</h3>
-                    <span className="text-cyan-400 font-black">{formatMoney(limit?.amount)}</span>
+                    <h3 className="text-white font-black">
+                      {limitLabels[type]}
+                    </h3>
+                    <span className="text-cyan-400 font-black">
+                      {formatMoney(limit?.amount)}
+                    </span>
                   </div>
                   {limit?.pendingAmount && (
                     <div className="mt-4 text-xs text-yellow-300 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-3">
-                      Pending {formatMoney(limit.pendingAmount)} from {formatDate(limit.pendingActivationUtc)}
+                      Pending {formatMoney(limit.pendingAmount)} from{" "}
+                      {formatDate(limit.pendingActivationUtc)}
                     </div>
                   )}
                 </div>
@@ -200,17 +226,25 @@ const ResponsibleGamblingPage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
           <h2 className="text-xl font-black text-white mb-5">Set Limit</h2>
-          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Limit type</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">
+            Limit type
+          </label>
           <select
             value={limitType}
-            onChange={(event) => setLimitType(Number(event.target.value) as LimitType)}
+            onChange={(event) =>
+              setLimitType(Number(event.target.value) as LimitType)
+            }
             className="w-full bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
           >
             {([1, 2, 3] as LimitType[]).map((type) => (
-              <option key={type} value={type}>{limitLabels[type]}</option>
+              <option key={type} value={type}>
+                {limitLabels[type]}
+              </option>
             ))}
           </select>
-          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mt-5 mb-2">Amount</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mt-5 mb-2">
+            Amount
+          </label>
           <input
             type="number"
             min={1}
@@ -219,7 +253,10 @@ const ResponsibleGamblingPage: React.FC = () => {
             onChange={(event) => setLimitAmount(Number(event.target.value))}
             className="w-full bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
           />
-          <button onClick={setLimit} className="w-full mt-5 h-12 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-dark-900 font-black">
+          <button
+            onClick={setLimit}
+            className="w-full mt-5 h-12 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-dark-900 font-black"
+          >
             Save Limit
           </button>
         </div>
@@ -229,17 +266,23 @@ const ResponsibleGamblingPage: React.FC = () => {
             <Ban className="w-6 h-6 text-red-400" />
             <h2 className="text-xl font-black text-white">Cooling-Off</h2>
           </div>
-          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Duration</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">
+            Duration
+          </label>
           <select
             value={selfExclusionHours}
-            onChange={(event) => setSelfExclusionHours(Number(event.target.value))}
+            onChange={(event) =>
+              setSelfExclusionHours(Number(event.target.value))
+            }
             className="w-full bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
           >
             <option value={24}>24 hours</option>
             <option value={168}>7 days</option>
             <option value={720}>30 days</option>
           </select>
-          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mt-5 mb-2">Reason</label>
+          <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mt-5 mb-2">
+            Reason
+          </label>
           <input
             value={selfExclusionReason}
             onChange={(event) => setSelfExclusionReason(event.target.value)}
@@ -257,15 +300,24 @@ const ResponsibleGamblingPage: React.FC = () => {
         <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-5">
             <Clock className="w-6 h-6 text-cyan-400" />
-            <h2 className="text-xl font-black text-white">Self-Exclusion History</h2>
+            <h2 className="text-xl font-black text-white">
+              Self-Exclusion History
+            </h2>
           </div>
           {dashboard?.selfExclusionHistory.length ? (
             <div className="space-y-3">
               {dashboard.selfExclusionHistory.map((item) => (
-                <div key={item.id} className="bg-dark-900 border border-dark-700 rounded-xl p-4">
+                <div
+                  key={item.id}
+                  className="bg-dark-900 border border-dark-700 rounded-xl p-4"
+                >
                   <div className="flex justify-between gap-4">
-                    <span className="font-black text-white">{item.isActive ? "Active" : "Expired"}</span>
-                    <span className="text-sm text-gray-400">Until {formatDate(item.endsAtUtc)}</span>
+                    <span className="font-black text-white">
+                      {item.isActive ? "Active" : "Expired"}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      Until {formatDate(item.endsAtUtc)}
+                    </span>
                   </div>
                   <p className="text-sm text-gray-500 mt-2">{item.reason}</p>
                 </div>
@@ -282,11 +334,11 @@ const ResponsibleGamblingPage: React.FC = () => {
   );
 };
 
-const UsageRow: React.FC<{ label: string; used?: number | null; remaining?: number | null }> = ({
-  label,
-  used,
-  remaining,
-}) => (
+const UsageRow: React.FC<{
+  label: string;
+  used?: number | null;
+  remaining?: number | null;
+}> = ({ label, used, remaining }) => (
   <div className="bg-dark-900 border border-dark-700 rounded-xl p-4">
     <div className="flex justify-between gap-4">
       <span className="text-gray-400 font-bold">{label}</span>
