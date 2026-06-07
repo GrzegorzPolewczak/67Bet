@@ -40,6 +40,11 @@ public static class DependencyInjection
         services.AddScoped<IAchievementRepository, AchievementRepository>();
         services.AddScoped<IUserAchievementRepository, UserAchievementRepository>();
 
+        // Responsible Gambling Repositories
+        services.AddScoped<IResponsibleGamblingLimitRepository, ResponsibleGamblingLimitRepository>();
+        services.AddScoped<ISelfExclusionRepository, SelfExclusionRepository>();
+        services.AddScoped<IResponsibleGamblingActivityRepository, ResponsibleGamblingActivityRepository>();
+
         return services;
     }
 }

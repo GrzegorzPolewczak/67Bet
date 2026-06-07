@@ -9,6 +9,7 @@ import PlinkoPage from "./features/betting/PlinkoPage";
 import SettingsPage from "./features/user/SettingsPage";
 import ReferralsPage from "./features/user/ReferralsPage";
 import BetHistoryPage from "./features/user/BetHistoryPage";
+import ResponsibleGamblingPage from "./features/user/ResponsibleGamblingPage";
 import SharedTicketPage from "./features/betting/SharedTicketPage";
 import AdminDashboard from "./features/admin/AdminDashboard";
 import LoginPage from "./features/auth/LoginPage";
@@ -31,6 +32,7 @@ function App() {
         <Route path="plinko" element={<PlinkoPage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="referrals" element={<ReferralsPage />} />
+        <Route path="responsible-gambling" element={<ResponsibleGamblingPage />} />
         <Route path="history" element={<BetHistoryPage />} />
         <Route path="share-ticket/:id" element={<SharedTicketPage />} />
         <Route path="deposit" element={<DepositPage />} />
