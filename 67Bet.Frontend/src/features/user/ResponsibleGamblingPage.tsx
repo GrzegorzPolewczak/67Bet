@@ -3,7 +3,6 @@ import { useSelector } from "react-redux";
 import {
   AlertTriangle,
   Ban,
-  CheckCircle2,
   Clock,
   Gauge,
   RefreshCw,
@@ -12,8 +11,7 @@ import {
 import type { RootState } from "../../app/store";
 import { bettingApi } from "../../api/axios";
 
-type LimitType = 1 | 2 | 3 | 4;
-type ActivityType = 1 | 2 | 3;
+type LimitType = 1 | 2 | 3;
 
 interface LimitDto {
   id: string;
@@ -47,24 +45,10 @@ interface DashboardDto {
   selfExclusionHistory: SelfExclusionDto[];
 }
 
-interface ValidationResultDto {
-  isAllowed: boolean;
-  reasonCode?: string | null;
-  message?: string | null;
-  blockedUntilUtc?: string | null;
-}
-
 const limitLabels: Record<LimitType, string> = {
   1: "Single stake",
   2: "Daily stake",
   3: "Weekly loss",
-  4: "Daily deposit",
-};
-
-const activityLabels: Record<ActivityType, string> = {
-  1: "Stake",
-  2: "Deposit",
-  3: "Payout",
 };
 
 const formatMoney = (value?: number | null) =>
@@ -80,11 +64,6 @@ const ResponsibleGamblingPage: React.FC = () => {
   const [limitAmount, setLimitAmount] = useState(100);
   const [selfExclusionHours, setSelfExclusionHours] = useState(24);
   const [selfExclusionReason, setSelfExclusionReason] = useState("");
-  const [validationAmount, setValidationAmount] = useState(25);
-  const [validationMode, setValidationMode] = useState<"stake" | "deposit">("stake");
-  const [validationResult, setValidationResult] = useState<ValidationResultDto | null>(null);
-  const [activityType, setActivityType] = useState<ActivityType>(1);
-  const [activityAmount, setActivityAmount] = useState(25);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,32 +111,6 @@ const ResponsibleGamblingPage: React.FC = () => {
       await bettingApi.post("/responsible-gambling/me/self-exclusion", {
         durationHours: selfExclusionHours,
         reason: selfExclusionReason,
-      });
-      await fetchDashboard();
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.response?.data || err.message);
-    }
-  };
-
-  const validateAmount = async () => {
-    setError(null);
-    try {
-      const endpoint = validationMode === "stake" ? "validate-stake" : "validate-deposit";
-      const response = await bettingApi.post(`/responsible-gambling/me/${endpoint}`, {
-        amount: validationAmount,
-      });
-      setValidationResult(response.data);
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.response?.data || err.message);
-    }
-  };
-
-  const recordActivity = async () => {
-    setError(null);
-    try {
-      await bettingApi.post("/responsible-gambling/me/activity", {
-        type: activityType,
-        amount: activityAmount,
       });
       await fetchDashboard();
     } catch (err: any) {
@@ -214,7 +167,6 @@ const ResponsibleGamblingPage: React.FC = () => {
           </div>
           <div className="space-y-4">
             <UsageRow label="Daily stake" used={dashboard?.usage.dailyStakeUsed} remaining={dashboard?.usage.dailyStakeRemaining} />
-            <UsageRow label="Daily deposit" used={dashboard?.usage.dailyDepositUsed} remaining={dashboard?.usage.dailyDepositRemaining} />
             <UsageRow label="Weekly net loss" used={dashboard?.usage.weeklyNetLoss} remaining={dashboard?.usage.weeklyLossRemaining} />
           </div>
         </div>
@@ -225,7 +177,7 @@ const ResponsibleGamblingPage: React.FC = () => {
             <h2 className="text-xl font-black text-white">Active Limits</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {([1, 2, 3, 4] as LimitType[]).map((type) => {
+            {([1, 2, 3] as LimitType[]).map((type) => {
               const limit = limitsByType.get(type);
               return (
                 <div key={type} className="bg-dark-900 border border-dark-700 rounded-2xl p-5">
@@ -254,7 +206,7 @@ const ResponsibleGamblingPage: React.FC = () => {
             onChange={(event) => setLimitType(Number(event.target.value) as LimitType)}
             className="w-full bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
           >
-            {([1, 2, 3, 4] as LimitType[]).map((type) => (
+            {([1, 2, 3] as LimitType[]).map((type) => (
               <option key={type} value={type}>{limitLabels[type]}</option>
             ))}
           </select>
@@ -300,74 +252,6 @@ const ResponsibleGamblingPage: React.FC = () => {
           >
             Start Cooling-Off
           </button>
-        </div>
-
-        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-          <h2 className="text-xl font-black text-white mb-5">Validation</h2>
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            {(["stake", "deposit"] as const).map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setValidationMode(mode)}
-                className={`h-11 rounded-xl font-black capitalize ${
-                  validationMode === mode ? "bg-cyan-600 text-dark-900" : "bg-dark-900 text-gray-300 border border-dark-600"
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
-          <input
-            type="number"
-            min={1}
-            step={0.01}
-            value={validationAmount}
-            onChange={(event) => setValidationAmount(Number(event.target.value))}
-            className="w-full bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
-          />
-          <button onClick={validateAmount} className="w-full mt-5 h-12 rounded-xl bg-dark-700 hover:bg-dark-600 text-white font-black">
-            Check Amount
-          </button>
-          {validationResult && (
-            <div className={`mt-5 rounded-xl border p-4 ${
-              validationResult.isAllowed ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-300" : "bg-red-500/10 border-red-500/40 text-red-300"
-            }`}>
-              <div className="flex items-center gap-2 font-black">
-                {validationResult.isAllowed ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
-                {validationResult.isAllowed ? "Allowed" : "Blocked"}
-              </div>
-              {validationResult.message && <p className="text-sm mt-2">{validationResult.message}</p>}
-              {validationResult.blockedUntilUtc && <p className="text-sm mt-2">Until {formatDate(validationResult.blockedUntilUtc)}</p>}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">
-          <h2 className="text-xl font-black text-white mb-5">Record Activity</h2>
-          <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3">
-            <select
-              value={activityType}
-              onChange={(event) => setActivityType(Number(event.target.value) as ActivityType)}
-              className="bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
-            >
-              {([1, 2, 3] as ActivityType[]).map((type) => (
-                <option key={type} value={type}>{activityLabels[type]}</option>
-              ))}
-            </select>
-            <input
-              type="number"
-              min={1}
-              step={0.01}
-              value={activityAmount}
-              onChange={(event) => setActivityAmount(Number(event.target.value))}
-              className="bg-dark-900 border border-dark-600 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
-            />
-            <button onClick={recordActivity} className="h-12 px-6 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-dark-900 font-black">
-              Record
-            </button>
-          </div>
         </div>
 
         <div className="bg-dark-800 border border-dark-700 rounded-2xl p-6">

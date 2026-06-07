@@ -2,6 +2,7 @@ using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Application.Services;
 using _67Bet.Betting.Domain.Entities.Plinko;
+using _67Bet.Betting.Domain.Enums;
 using _67Bet.Betting.Domain.Repositories;
 using FluentAssertions;
 
@@ -85,6 +86,25 @@ public class PlinkoServiceTests
         settledAgain.IsPayoutSettled.Should().BeTrue();
         wallet.ProcessedPayout.Should().Be(round.Payout);
         wallet.PayoutCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task PlayAndSettle_WhenResponsibleGamblingServiceProvided_RecordsStakeAndPayout()
+    {
+        var userId = Guid.NewGuid();
+        var repository = new FakePlinkoRoundRepository();
+        var wallet = new FakePlinkoWalletGateway(true);
+        var responsibleGambling = new FakeResponsibleGamblingService();
+        var service = new PlinkoService(repository, wallet, responsibleGambling);
+
+        var round = await service.PlayAsync(userId, new PlinkoPlayRequest(25m, PlinkoRiskLevel.Low, 10, 5m), "token");
+        await service.SettleRoundAsync(userId, round.Id, "token");
+
+        responsibleGambling.ValidatedStake.Should().Be(30m);
+        responsibleGambling.Activities.Should().Contain(activity =>
+            activity.Type == ResponsibleGamblingActivityType.Stake && activity.Amount == 30m);
+        responsibleGambling.Activities.Should().Contain(activity =>
+            activity.Type == ResponsibleGamblingActivityType.Payout && activity.Amount == round.Payout);
     }
 
     [Fact]
@@ -175,6 +195,44 @@ public class PlinkoServiceTests
         {
             ProcessedPayout = amount;
             PayoutCallCount += 1;
+            return Task.CompletedTask;
+        }
+    }
+
+    private sealed class FakeResponsibleGamblingService : IResponsibleGamblingService
+    {
+        public decimal ValidatedStake { get; private set; }
+        public List<RecordResponsibleGamblingActivityRequest> Activities { get; } = new();
+
+        public Task<ResponsibleGamblingDashboardDto> GetDashboardAsync(Guid userId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ResponsibleGamblingLimitDto> SetLimitAsync(Guid userId, SetResponsibleGamblingLimitRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<SelfExclusionDto> StartSelfExclusionAsync(Guid userId, StartSelfExclusionRequest request)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ResponsibleGamblingValidationResultDto> ValidateStakeAsync(Guid userId, decimal amount)
+        {
+            ValidatedStake = amount;
+            return Task.FromResult(new ResponsibleGamblingValidationResultDto(true, null, null, null, null, null));
+        }
+
+        public Task<ResponsibleGamblingValidationResultDto> ValidateDepositAsync(Guid userId, decimal amount)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RecordActivityAsync(Guid userId, RecordResponsibleGamblingActivityRequest request)
+        {
+            Activities.Add(request);
             return Task.CompletedTask;
         }
     }

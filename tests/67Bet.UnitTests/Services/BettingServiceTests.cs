@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Application.Services;
 using _67Bet.Betting.Domain.Entities;
@@ -23,6 +24,7 @@ public class BettingServiceTests
     private readonly Mock<IWalletService> _walletServiceMock;
     private readonly Mock<IVirtualRaceRepository> _virtualRaceRepositoryMock;
     private readonly Mock<IGamificationService> _gamificationServiceMock;
+    private readonly Mock<IResponsibleGamblingService> _responsibleGamblingServiceMock;
     private readonly BettingService _bettingService;
 
     public BettingServiceTests()
@@ -33,13 +35,18 @@ public class BettingServiceTests
         _walletServiceMock = new Mock<IWalletService>();
         _virtualRaceRepositoryMock = new Mock<IVirtualRaceRepository>();
         _gamificationServiceMock = new Mock<IGamificationService>();
+        _responsibleGamblingServiceMock = new Mock<IResponsibleGamblingService>();
+        _responsibleGamblingServiceMock
+            .Setup(x => x.ValidateStakeAsync(It.IsAny<Guid>(), It.IsAny<decimal>()))
+            .ReturnsAsync(new ResponsibleGamblingValidationResultDto(true, null, null, null, null, null));
         _bettingService = new BettingService(
             _eventRepositoryMock.Object,
             _marketRepositoryMock.Object,
             _ticketRepositoryMock.Object,
             _walletServiceMock.Object,
             _virtualRaceRepositoryMock.Object,
-            _gamificationServiceMock.Object);
+            _gamificationServiceMock.Object,
+            _responsibleGamblingServiceMock.Object);
     }
 
     [Fact]
@@ -61,6 +68,28 @@ public class BettingServiceTests
         // Act & Assert
         await _bettingService.Invoking(s => s.PlaceTicketAsync(userId, stake, new List<Guid> { Guid.NewGuid() }))
             .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task PlaceTicketAsync_ShouldBlockStake_WhenResponsibleGamblingLimitDeniesRequest()
+    {
+        var userId = Guid.NewGuid();
+        var stake = 100m;
+        _responsibleGamblingServiceMock
+            .Setup(x => x.ValidateStakeAsync(userId, stake))
+            .ReturnsAsync(new ResponsibleGamblingValidationResultDto(
+                false,
+                "DAILY_STAKE_LIMIT",
+                "Stake exceeds the daily stake limit.",
+                10m,
+                0m,
+                null));
+
+        await _bettingService.Invoking(s => s.PlaceTicketAsync(userId, stake, new List<Guid> { Guid.NewGuid() }))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("Stake exceeds the daily stake limit.");
+
+        _walletServiceMock.Verify(w => w.ProcessStakeAsync(It.IsAny<Guid>(), It.IsAny<decimal>()), Times.Never);
     }
 
     [Fact]
@@ -98,6 +127,12 @@ public class BettingServiceTests
 
         _ticketRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Ticket>()), Times.Once);
         _walletServiceMock.Verify(w => w.ProcessStakeAsync(userId, stake), Times.Once);
+        _responsibleGamblingServiceMock.Verify(
+            x => x.RecordActivityAsync(
+                userId,
+                It.Is<RecordResponsibleGamblingActivityRequest>(request =>
+                    request.Type == ResponsibleGamblingActivityType.Stake && request.Amount == stake)),
+            Times.Once);
     }
 
     [Fact]
@@ -132,6 +167,12 @@ public class BettingServiceTests
         // Assert
         ticket.Status.Should().Be(TicketStatus.Won);
         _walletServiceMock.Verify(w => w.ProcessPayoutAsync(userId, 200m), Times.Once);
+        _responsibleGamblingServiceMock.Verify(
+            x => x.RecordActivityAsync(
+                userId,
+                It.Is<RecordResponsibleGamblingActivityRequest>(request =>
+                    request.Type == ResponsibleGamblingActivityType.Payout && request.Amount == 200m)),
+            Times.Once);
         _ticketRepositoryMock.Verify(x => x.UpdateAsync(ticket), Times.AtLeastOnce);
     }
 
