@@ -146,7 +146,10 @@ const formatDateTime = (value: unknown): string => {
   });
 };
 
-const getInternalOutcomeName = (eventName: string, outcomeName: string): string => {
+const getInternalOutcomeName = (
+  eventName: string,
+  outcomeName: string,
+): string => {
   const [homeTeam, awayTeam] = eventName.split(" vs ");
   if (outcomeName === "1") return homeTeam || "Team 1";
   if (outcomeName === "2") return awayTeam || "Team 2";
@@ -198,7 +201,10 @@ const mapInternalEvent = (eventRaw: unknown): Event => {
 
 const mapExternalEvent = (eventRaw: unknown): Event => {
   const event = asObject(eventRaw);
-  const externalId = toSafeString(event.id ?? event.externalId, "unknown-external-event");
+  const externalId = toSafeString(
+    event.id ?? event.externalId,
+    "unknown-external-event",
+  );
   const homeTeam = toSafeString(event.homeTeam ?? event.home_team, "Home");
   const awayTeam = toSafeString(event.awayTeam ?? event.away_team, "Away");
   const eventName = `${homeTeam} vs ${awayTeam}`;
@@ -210,7 +216,10 @@ const mapExternalEvent = (eventRaw: unknown): Event => {
   return {
     id: `external:${externalId}`,
     name: eventName,
-    league: toSafeString(event.sportTitle ?? event.sport_title, "External Odds"),
+    league: toSafeString(
+      event.sportTitle ?? event.sport_title,
+      "External Odds",
+    ),
     sportKey: toSafeString(event.sportKey ?? event.sport_key, "external"),
     rawTime,
     time: formatDateTime(rawTime),
@@ -253,7 +262,6 @@ const fetchExternalEvents = async (): Promise<unknown[]> => {
     return events;
   }
 };
-
 
 const toDateMs = (value: string): number => {
   const time = new Date(value).getTime();
