@@ -5,7 +5,7 @@ namespace _67Bet.Wallet.Domain.Entities
 {
     public class PromoCode : BaseEntity, IAggregateRoot
     {
-        public string Code { get; private set; }
+        public string Code { get; private set; } = null!;
         public decimal RewardAmount { get; private set; }
         public bool IsActive { get; private set; }
 
