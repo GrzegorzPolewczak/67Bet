@@ -6,6 +6,8 @@ interface OddButtonProps {
   odd: number;
   isSelected: boolean;
   onClick: () => void;
+  disabled?: boolean;
+  title?: string;
 }
 
 const OddButton: React.FC<OddButtonProps> = ({
@@ -13,6 +15,8 @@ const OddButton: React.FC<OddButtonProps> = ({
   odd,
   isSelected,
   onClick,
+  disabled = false,
+  title,
 }) => {
   const numericOdd = Number(odd) || 0;
   const [prevOdd, setPrevOdd] = useState(numericOdd);
@@ -33,11 +37,15 @@ const OddButton: React.FC<OddButtonProps> = ({
 
   return (
     <button
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      title={title}
       className={`relative flex flex-col items-center justify-center w-24 py-2.5 rounded-xl border transition-all overflow-hidden ${
-        isSelected
-          ? "bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-600/20"
-          : "bg-dark-700 border-dark-600 text-gray-400 hover:border-primary-500 hover:text-white"
+        disabled
+          ? "bg-dark-900 border-dark-700 text-gray-600 cursor-not-allowed opacity-70"
+          : isSelected
+            ? "bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-600/20"
+            : "bg-dark-700 border-dark-600 text-gray-400 hover:border-primary-500 hover:text-white"
       }`}
     >
       <AnimatePresence>

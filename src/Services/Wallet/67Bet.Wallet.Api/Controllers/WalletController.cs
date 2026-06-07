@@ -20,6 +20,7 @@ public class WalletController : ControllerBase
         _paymentService = paymentService;
     }
 
+    [AllowAnonymous]
     [HttpGet("balance")]
     public async Task<ActionResult<WalletBalanceDto>> GetBalance([FromQuery] Guid? userId)
     {
@@ -126,6 +127,34 @@ public class WalletController : ControllerBase
             return StatusCode(500, "WystÄ…piĹ‚ nieoczekiwany bĹ‚Ä…d podczas wypĹ‚aty.");
         }
     }
+
+
+    [AllowAnonymous]
+    [HttpPost("process-stake")]
+    public async Task<IActionResult> ProcessStake([FromBody] WalletOperationRequest request)
+    {
+        if (request.UserId == Guid.Empty) return BadRequest("UserId is required.");
+        if (request.Amount <= 0) return BadRequest("Amount must be greater than zero.");
+
+        var accepted = await _walletService.ProcessStakeAsync(request.UserId, request.Amount);
+        if (!accepted) return BadRequest("Insufficient wallet balance.");
+
+        return NoContent();
+    }
+
+    [AllowAnonymous]
+    [HttpPost("process-payout")]
+    public async Task<IActionResult> ProcessPayout([FromBody] WalletOperationRequest request)
+    {
+        if (request.UserId == Guid.Empty) return BadRequest("UserId is required.");
+        if (request.Amount < 0) return BadRequest("Amount cannot be negative.");
+        if (request.Amount == 0) return NoContent();
+
+        await _walletService.ProcessPayoutAsync(request.UserId, request.Amount);
+        return NoContent();
+    }
+
+    public sealed record WalletOperationRequest(Guid UserId, decimal Amount);
 
     private Guid GetUserId()
     {
