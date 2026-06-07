@@ -63,10 +63,6 @@ public class BettingService : IBettingService
 
             // Search in regular events
             foreach (var @event in activeEvents)
-                var events = await _eventRepository.GetActiveEventsAsync();
-            Outcome? foundOutcome = null;
-
-            foreach (var @event in events)
             {
                 var market = @event.Markets.FirstOrDefault(m => m.Outcomes.Any(o => o.Id == outcomeId));
                 if (market != null && market.IsActive)
@@ -75,14 +71,6 @@ public class BettingService : IBettingService
                     ticket.AddBet(outcome.Id, outcome.Name, market.Name, @event.Name, @event.StartTime, outcome.CurrentPrice);
                     found = true;
                     break;
-                    if (!market.IsActive) continue;
-
-                    var outcome = market.Outcomes.FirstOrDefault(o => o.Id == outcomeId);
-                    if (outcome != null)
-                    {
-                        foundOutcome = outcome;
-                        break;
-                    }
                 }
             }
 
@@ -93,10 +81,6 @@ public class BettingService : IBettingService
             {
                 var participant = race.Participants.FirstOrDefault(p => p.Id == outcomeId);
                 if (participant != null)
-                    var virtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();
-                VirtualRaceParticipant? foundVirtualParticipant = null;
-
-                foreach (var race in virtualRaces)
                 {
                     ticket.AddBet(participant.Id, participant.Horse.Name, "Winner", race.Name, race.StartTime, participant.Odds);
                     found = true;
@@ -161,7 +145,7 @@ public class BettingService : IBettingService
             {
                 var outcomeStatus = await GetOutcomeStatusAsync(bet.OutcomeId);
 
-                if (outcomeStatus == OutcomeResult.Lost)
+                if (outcomeStatus == OutcomeResult.Won)
                 {
                     bet.Settle(BetStatus.Won);
                 }
