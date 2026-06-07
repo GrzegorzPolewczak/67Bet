@@ -28,6 +28,7 @@ interface BetDto {
 
 interface TicketDto {
   id: string;
+  createdAt?: string;
   stake: number;
   totalOdds: number;
   potentialWinning: number;
@@ -188,7 +189,8 @@ const SharedTicketPage: React.FC = () => {
           </h2>
           {ticket.bets.map((bet, index) => {
             const resultStatus = bet.resultStatus || bet.status;
-            const isFinished = resultStatus === "Won" || resultStatus === "Lost";
+            const isFinished =
+              resultStatus === "Won" || resultStatus === "Lost";
 
             return (
               <motion.div

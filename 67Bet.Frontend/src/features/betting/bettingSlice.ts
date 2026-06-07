@@ -175,7 +175,7 @@ const mapInternalEvent = (eventRaw: unknown): Event => {
     sportKey: toSafeString(event.sportKey, "internal"),
     rawTime,
     time: formatDateTime(rawTime),
-    source: "internal",
+    source: toSafeString(event.source, "internal") === "external" ? "external" : "internal",
     isBettable: true,
     markets: asArray(event.markets).map((marketRaw) => {
       const market = asObject(marketRaw);
@@ -268,12 +268,33 @@ const toDateMs = (value: string): number => {
   return Number.isNaN(time) ? Number.MAX_SAFE_INTEGER : time;
 };
 
+const canonicalEventKey = (event: Event): string => {
+  const eventTime = new Date(event.rawTime).getTime();
+  const roundedTime = Number.isNaN(eventTime)
+    ? event.rawTime
+    : new Date(eventTime).toISOString().slice(0, 16);
+
+  return `${event.name.toLowerCase()}|${roundedTime}`;
+};
+
 const uniqueBySourceAndId = (events: Event[]): Event[] => {
-  const seen = new Set<string>();
-  return events.filter((event) => {
-    const key = `${event.source}:${event.id}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
+  const sortedByPriority = [...events].sort((a, b) => {
+    if (a.isBettable !== b.isBettable) return a.isBettable ? -1 : 1;
+    if (a.source !== b.source) return a.source === "internal" ? -1 : 1;
+    return toDateMs(a.rawTime) - toDateMs(b.rawTime);
+  });
+
+  const seenIds = new Set<string>();
+  const seenMatches = new Set<string>();
+
+  return sortedByPriority.filter((event) => {
+    const idKey = `${event.source}:${event.id}`;
+    const matchKey = canonicalEventKey(event);
+
+    if (seenIds.has(idKey) || seenMatches.has(matchKey)) return false;
+
+    seenIds.add(idKey);
+    seenMatches.add(matchKey);
     return true;
   });
 };

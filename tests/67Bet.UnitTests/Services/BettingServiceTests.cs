@@ -20,33 +20,42 @@ public class BettingServiceTests
 {
     private readonly Mock<IEventRepository> _eventRepositoryMock;
     private readonly Mock<IMarketRepository> _marketRepositoryMock;
+    private readonly Mock<ISportRepository> _sportRepositoryMock;
     private readonly Mock<ITicketRepository> _ticketRepositoryMock;
     private readonly Mock<IWalletService> _walletServiceMock;
     private readonly Mock<IVirtualRaceRepository> _virtualRaceRepositoryMock;
     private readonly Mock<IGamificationService> _gamificationServiceMock;
     private readonly Mock<IResponsibleGamblingService> _responsibleGamblingServiceMock;
+    private readonly Mock<IOddsServiceClient> _oddsServiceClientMock;
     private readonly BettingService _bettingService;
 
     public BettingServiceTests()
     {
         _eventRepositoryMock = new Mock<IEventRepository>();
         _marketRepositoryMock = new Mock<IMarketRepository>();
+        _sportRepositoryMock = new Mock<ISportRepository>();
         _ticketRepositoryMock = new Mock<ITicketRepository>();
         _walletServiceMock = new Mock<IWalletService>();
         _virtualRaceRepositoryMock = new Mock<IVirtualRaceRepository>();
         _gamificationServiceMock = new Mock<IGamificationService>();
         _responsibleGamblingServiceMock = new Mock<IResponsibleGamblingService>();
+        _oddsServiceClientMock = new Mock<IOddsServiceClient>();
+        _oddsServiceClientMock
+            .Setup(x => x.GetEventsAsync())
+            .ReturnsAsync(Array.Empty<ExternalOddsEventDto>());
         _responsibleGamblingServiceMock
             .Setup(x => x.ValidateStakeAsync(It.IsAny<Guid>(), It.IsAny<decimal>()))
             .ReturnsAsync(new ResponsibleGamblingValidationResultDto(true, null, null, null, null, null));
         _bettingService = new BettingService(
             _eventRepositoryMock.Object,
             _marketRepositoryMock.Object,
+            _sportRepositoryMock.Object,
             _ticketRepositoryMock.Object,
             _walletServiceMock.Object,
             _virtualRaceRepositoryMock.Object,
             _gamificationServiceMock.Object,
-            _responsibleGamblingServiceMock.Object);
+            _responsibleGamblingServiceMock.Object,
+            _oddsServiceClientMock.Object);
     }
 
     [Fact]

@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Text.Json;
 using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Domain.Entities;
 
@@ -13,8 +15,57 @@ public static class BettingMappingExtensions
             @event.Name,
             @event.StartTime,
             @event.Status.ToString(),
+            @event.League,
+            GetSportKey(@event),
+            GetSource(@event),
             markets.Select(m => m.ToDto()).ToList()
         );
+    }
+
+    private static string GetSportKey(Event @event)
+    {
+        if (string.IsNullOrWhiteSpace(@event.Metadata))
+            return @event.League;
+
+        try
+        {
+            using var document = JsonDocument.Parse(@event.Metadata);
+            if (document.RootElement.TryGetProperty("sportKey", out var sportKeyElement))
+            {
+                var sportKey = sportKeyElement.GetString();
+                if (!string.IsNullOrWhiteSpace(sportKey))
+                    return sportKey;
+            }
+        }
+        catch
+        {
+            // Metadata is optional and should never block event rendering.
+        }
+
+        return @event.League;
+    }
+
+    private static string GetSource(Event @event)
+    {
+        if (string.IsNullOrWhiteSpace(@event.Metadata))
+            return "internal";
+
+        try
+        {
+            using var document = JsonDocument.Parse(@event.Metadata);
+            if (document.RootElement.TryGetProperty("source", out var sourceElement))
+            {
+                var source = sourceElement.GetString();
+                if (string.Equals(source, "external", StringComparison.OrdinalIgnoreCase))
+                    return "external";
+            }
+        }
+        catch
+        {
+            // Metadata is optional and should never block event rendering.
+        }
+
+        return "internal";
     }
 
     public static MarketDto ToDto(this Market market)
@@ -39,6 +90,7 @@ public static class BettingMappingExtensions
     {
         return new TicketDto(
             ticket.Id,
+            ticket.CreatedAt,
             ticket.Stake,
             ticket.TotalOdds,
             ticket.PotentialWinning,

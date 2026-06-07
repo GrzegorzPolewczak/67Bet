@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.Json;
 using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Domain.Entities;
@@ -16,33 +17,178 @@ public class BettingService : IBettingService
 {
     private readonly IEventRepository _eventRepository;
     private readonly IMarketRepository _marketRepository;
+    private readonly ISportRepository _sportRepository;
     private readonly ITicketRepository _ticketRepository;
     private readonly IWalletService _walletService;
     private readonly IVirtualRaceRepository _virtualRaceRepository;
     private readonly IGamificationService _gamificationService;
     private readonly IResponsibleGamblingService _responsibleGamblingService;
+    private readonly IOddsServiceClient _oddsServiceClient;
 
     public BettingService(
         IEventRepository eventRepository,
         IMarketRepository marketRepository,
+        ISportRepository sportRepository,
         ITicketRepository ticketRepository,
         IWalletService walletService,
         IVirtualRaceRepository virtualRaceRepository,
         IGamificationService gamificationService,
-        IResponsibleGamblingService responsibleGamblingService)
+        IResponsibleGamblingService responsibleGamblingService,
+        IOddsServiceClient oddsServiceClient)
     {
         _eventRepository = eventRepository;
         _marketRepository = marketRepository;
+        _sportRepository = sportRepository;
         _ticketRepository = ticketRepository;
         _walletService = walletService;
         _virtualRaceRepository = virtualRaceRepository;
         _gamificationService = gamificationService;
         _responsibleGamblingService = responsibleGamblingService;
+        _oddsServiceClient = oddsServiceClient;
     }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
     {
+        await SyncExternalEventsIntoBettingDatabaseAsync();
         return await _eventRepository.GetActiveEventsAsync();
+    }
+
+    private async Task SyncExternalEventsIntoBettingDatabaseAsync()
+    {
+        var externalEvents = await _oddsServiceClient.GetEventsAsync();
+        if (!externalEvents.Any())
+            return;
+
+        foreach (var externalEvent in externalEvents)
+        {
+            if (string.IsNullOrWhiteSpace(externalEvent.Id))
+                continue;
+
+            if (externalEvent.CommenceTime < DateTime.UtcNow.AddHours(-2))
+                continue;
+
+            var bookmaker = externalEvent.Bookmakers.FirstOrDefault();
+            if (bookmaker == null || !bookmaker.Markets.Any())
+                continue;
+
+            var eventName = BuildExternalEventName(externalEvent);
+            var league = !string.IsNullOrWhiteSpace(externalEvent.SportTitle)
+                ? externalEvent.SportTitle
+                : FormatSportTitle(externalEvent.SportKey);
+            var metadata = JsonSerializer.Serialize(new
+            {
+                source = "external",
+                externalId = externalEvent.Id,
+                sportKey = externalEvent.SportKey,
+                streamUrl = externalEvent.StreamUrl,
+                recentScores = externalEvent.RecentScores
+            });
+
+            var existingEvent = await _eventRepository.GetByExternalIdAsync(externalEvent.Id);
+
+            if (existingEvent == null)
+            {
+                var sport = await GetOrCreateSportAsync(league);
+                existingEvent = new Event(eventName, sport.Id, league, externalEvent.CommenceTime, metadata);
+                SyncExternalMarkets(existingEvent, bookmaker.Markets);
+                await _eventRepository.AddAsync(existingEvent);
+                continue;
+            }
+
+            existingEvent.UpdateExternalInfo(eventName, league, externalEvent.CommenceTime, metadata);
+            SyncExternalMarkets(existingEvent, bookmaker.Markets);
+            await _eventRepository.UpdateAsync(existingEvent);
+        }
+    }
+
+    private async Task<Sport> GetOrCreateSportAsync(string sportName)
+    {
+        var safeName = string.IsNullOrWhiteSpace(sportName) ? "External Odds" : sportName.Trim();
+        var existing = await _sportRepository.GetByNameAsync(safeName);
+        if (existing != null)
+            return existing;
+
+        var sport = new Sport(safeName);
+        await _sportRepository.AddAsync(sport);
+        return sport;
+    }
+
+    private static void SyncExternalMarkets(Event bettingEvent, IEnumerable<ExternalOddsMarketDto> externalMarkets)
+    {
+        foreach (var externalMarket in externalMarkets)
+        {
+            if (string.IsNullOrWhiteSpace(externalMarket.Key) || !externalMarket.Outcomes.Any())
+                continue;
+
+            var marketName = NormalizeExternalMarketName(externalMarket.Key);
+            var market = bettingEvent.Markets.FirstOrDefault(m =>
+                string.Equals(m.Name, marketName, StringComparison.OrdinalIgnoreCase));
+
+            if (market == null)
+            {
+                market = new Market(bettingEvent.Id, marketName);
+                bettingEvent.Markets.Add(market);
+            }
+
+            foreach (var externalOutcome in externalMarket.Outcomes)
+            {
+                if (string.IsNullOrWhiteSpace(externalOutcome.Name) || externalOutcome.Price <= 0)
+                    continue;
+
+                market.AddOrUpdateOutcome(externalOutcome.Name.Trim(), externalOutcome.Price);
+            }
+        }
+    }
+
+    private static string BuildExternalEventName(ExternalOddsEventDto externalEvent)
+    {
+        var homeTeam = externalEvent.HomeTeam?.Trim();
+        var awayTeam = externalEvent.AwayTeam?.Trim();
+
+        if (!string.IsNullOrWhiteSpace(homeTeam) && !string.IsNullOrWhiteSpace(awayTeam))
+            return $"{homeTeam} vs {awayTeam}";
+
+        if (!string.IsNullOrWhiteSpace(homeTeam))
+            return homeTeam;
+
+        if (!string.IsNullOrWhiteSpace(awayTeam))
+            return awayTeam;
+
+        return "External Event";
+    }
+
+    private static string NormalizeExternalMarketName(string marketKey)
+    {
+        return marketKey switch
+        {
+            "h2h" => "Match Winner",
+            "spreads" => "Spread",
+            "totals" => "Totals",
+            _ => marketKey
+        };
+    }
+
+    private static string FormatSportTitle(string sportKey)
+    {
+        if (string.IsNullOrWhiteSpace(sportKey))
+            return "External Odds";
+
+        var parts = sportKey.Split('_', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 0)
+            return "External Odds";
+
+        return string.Join(" ", parts.Select(p =>
+        {
+            var lower = p.ToLowerInvariant();
+            return lower switch
+            {
+                "nba" => "NBA",
+                "mma" => "MMA",
+                "epl" => "EPL",
+                "csgo" => "CS:GO",
+                _ => char.ToUpperInvariant(lower[0]) + lower[1..]
+            };
+        }));
     }
 
     public async Task<Ticket> PlaceTicketAsync(Guid userId, decimal stake, IEnumerable<Guid> outcomeIds)
@@ -58,6 +204,8 @@ public class BettingService : IBettingService
         var validation = await _responsibleGamblingService.ValidateStakeAsync(userId, stake);
         if (!validation.IsAllowed)
             throw new InvalidOperationException(validation.Message ?? "Stake is blocked by responsible gambling limits.");
+
+        await SyncExternalEventsIntoBettingDatabaseAsync();
 
         var activeEvents = await _eventRepository.GetActiveEventsAsync();
         var activeVirtualRaces = await _virtualRaceRepository.GetActiveRacesAsync();

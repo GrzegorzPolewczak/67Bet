@@ -119,6 +119,11 @@ const BetHistoryPage: React.FC = () => {
                   <span className="text-sm font-mono text-gray-300">
                     {ticket.id.split("-")[0]}...
                   </span>
+                  {ticket.createdAt && (
+                    <span className="text-[10px] text-gray-500 block mt-1">
+                      {new Date(ticket.createdAt).toLocaleString()}
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-6">
                   <button
@@ -168,7 +173,8 @@ const BetHistoryPage: React.FC = () => {
                 </h4>
                 {ticket.bets.map((bet, i) => {
                   const resultStatus = bet.resultStatus || bet.status;
-                  const isFinished = resultStatus === "Won" || resultStatus === "Lost";
+                  const isFinished =
+                    resultStatus === "Won" || resultStatus === "Lost";
 
                   return (
                     <div

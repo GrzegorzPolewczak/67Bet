@@ -18,11 +18,34 @@ namespace _67Bet.Betting.Infrastructure.Repositories;
 public class SportRepository : EFRepository<Sport, BettingDbContext>, ISportRepository
 {
     public SportRepository(BettingDbContext context) : base(context) { }
+
+    public async Task<Sport?> GetByNameAsync(string name)
+    {
+        return await _dbSet.FirstOrDefaultAsync(s => s.Name == name);
+    }
 }
 
 public class EventRepository : EFRepository<Event, BettingDbContext>, IEventRepository
 {
     public EventRepository(BettingDbContext context) : base(context) { }
+
+    public override async Task<Event?> GetByIdAsync(Guid id)
+    {
+        return await _dbSet
+            .Include(e => e.Markets)
+                .ThenInclude(m => m.Outcomes)
+            .FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task<Event?> GetByExternalIdAsync(string externalId)
+    {
+        var marker = $"\"externalId\":\"{externalId}\"";
+
+        return await _dbSet
+            .Include(e => e.Markets)
+                .ThenInclude(m => m.Outcomes)
+            .FirstOrDefaultAsync(e => e.Metadata.Contains(marker));
+    }
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
     {
@@ -30,6 +53,7 @@ public class EventRepository : EFRepository<Event, BettingDbContext>, IEventRepo
             .Include(e => e.Markets)
                 .ThenInclude(m => m.Outcomes)
             .Where(e => e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live)
+            .OrderBy(e => e.StartTime)
             .ToListAsync();
     }
 }
@@ -77,6 +101,7 @@ public class TicketRepository : EFRepository<Ticket, BettingDbContext>, ITicketR
         return await _dbSet
             .Include(t => t.Bets)
             .Where(t => t.UserId == userId)
+            .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
     }
 
