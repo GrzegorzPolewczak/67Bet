@@ -37,6 +37,13 @@ interface PlinkoBatchSummary {
   totalPayout: number;
 }
 
+interface StoredPlinkoQueue {
+  pendingRounds: Array<Omit<PlinkoRound, "createdAt"> & { createdAt: string }>;
+  activeBatch: PlinkoBatchSummary | null;
+  balance: number;
+  freebetBalance: number;
+}
+
 const riskOptions: RiskLevel[] = ["Low", "Medium", "High"];
 const riskApiValue: Record<RiskLevel, number> = { Low: 1, Medium: 2, High: 3 };
 const riskLabel = (riskLevel: RiskLevel | number): RiskLevel => {
@@ -54,6 +61,7 @@ const calculateBoardFee = (stake: number, balls: number, rows: number) => {
 };
 
 const toMoney = (value: number) => Math.round(value * 100) / 100;
+const plinkoQueueStorageKey = (token: string) => `67bet:plinko:queue:${token}`;
 
 const createMultipliers = (riskLevel: RiskLevel, rows: number) => {
   const edge = riskLevel === "Low" ? 2.2 : riskLevel === "High" ? 28 : 6;
@@ -163,7 +171,9 @@ const createBallAnimation = (round: PlinkoRound) => {
 };
 
 const PlinkoPage: React.FC = () => {
-  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, token } = useSelector(
+    (state: RootState) => state.auth,
+  );
   const isDemoMode = !isAuthenticated;
   const [stake, setStake] = useState(10);
   const [ballCount, setBallCount] = useState(1);
@@ -181,8 +191,11 @@ const PlinkoPage: React.FC = () => {
   const [history, setHistory] = useState<PlinkoRound[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [multipliers, setMultipliers] = useState<number[]>([]);
+  const [queueRestored, setQueueRestored] = useState(false);
 
   const ballsInPlay = droppingRounds.length;
+  const queueStorageKey =
+    !isDemoMode && token ? plinkoQueueStorageKey(token) : null;
   const dropDurationMs = 2200;
   const totalStake = Math.round(stake * ballCount * 100) / 100;
   const boardFee = calculateBoardFee(stake, ballCount, rows);
@@ -193,12 +206,58 @@ const PlinkoPage: React.FC = () => {
     if (isDemoMode) {
       setBalance(1000);
       setFreebetBalance(0);
+      setPendingRounds([]);
+      setActiveBatch(null);
+      setQueueRestored(true);
       setError(null);
       return;
     }
 
+    if (!queueStorageKey) return;
+
+    const restored = restoreQueuedRounds(queueStorageKey);
+    if (restored) {
+      setPendingRounds(restored.pendingRounds);
+      setActiveBatch(restored.activeBatch);
+      setBalance(restored.balance);
+      setFreebetBalance(restored.freebetBalance);
+      setQueueRestored(true);
+      setError(null);
+      return;
+    }
+
+    setQueueRestored(true);
     fetchWalletBalance();
-  }, [isDemoMode]);
+  }, [isDemoMode, queueStorageKey]);
+
+  useEffect(() => {
+    if (isDemoMode || !queueStorageKey || !queueRestored) return;
+
+    if (pendingRounds.length === 0) {
+      localStorage.removeItem(queueStorageKey);
+      return;
+    }
+
+    const storedQueue: StoredPlinkoQueue = {
+      pendingRounds: pendingRounds.map((round) => ({
+        ...round,
+        createdAt: round.createdAt.toISOString(),
+      })),
+      activeBatch,
+      balance,
+      freebetBalance,
+    };
+
+    localStorage.setItem(queueStorageKey, JSON.stringify(storedQueue));
+  }, [
+    activeBatch,
+    balance,
+    freebetBalance,
+    isDemoMode,
+    pendingRounds,
+    queueRestored,
+    queueStorageKey,
+  ]);
 
   useEffect(() => {
     fetchBoard();
@@ -259,6 +318,32 @@ const PlinkoPage: React.FC = () => {
     path: round.path || round.Path,
     createdAt: new Date(round.createdAtUtc || round.CreatedAtUtc || new Date()),
   });
+
+  const restoreQueuedRounds = (storageKey: string) => {
+    try {
+      const storedValue = localStorage.getItem(storageKey);
+      if (!storedValue) return null;
+
+      const parsed = JSON.parse(storedValue) as StoredPlinkoQueue;
+      if (!Array.isArray(parsed.pendingRounds) || parsed.pendingRounds.length === 0) {
+        localStorage.removeItem(storageKey);
+        return null;
+      }
+
+      return {
+        pendingRounds: parsed.pendingRounds.map((round) => ({
+          ...round,
+          createdAt: new Date(round.createdAt),
+        })),
+        activeBatch: parsed.activeBatch,
+        balance: Number(parsed.balance || 0),
+        freebetBalance: Number(parsed.freebetBalance || 0),
+      };
+    } catch {
+      localStorage.removeItem(storageKey);
+      return null;
+    }
+  };
 
   const chargeDisplayedWalletForBatch = () => {
     if (isDemoMode) {
@@ -388,13 +473,7 @@ const PlinkoPage: React.FC = () => {
         };
       });
       setHistory((current) => [round, ...current].slice(0, 8));
-      if (isDemoMode) {
-        setBalance(
-          (current) => Math.round((current + round.payout) * 100) / 100,
-        );
-      } else {
-        fetchWalletBalance();
-      }
+      setBalance((current) => toMoney(current + round.payout));
     }, delayMs + dropDurationMs);
   };
 
