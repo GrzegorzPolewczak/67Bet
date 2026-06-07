@@ -9,8 +9,8 @@ namespace _67Bet.Betting.Domain.Entities.VirtualRacing
         public Guid HorseId { get; private set; }
         public decimal Odds { get; private set; }
 
-        public VirtualRace Race { get; private set; }
-        public Horse Horse { get; private set; }
+        public VirtualRace Race { get; private set; } = null!;
+        public Horse Horse { get; private set; } = null!;
 
         protected VirtualRaceParticipant() { } // EF Core
 
