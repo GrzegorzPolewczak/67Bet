@@ -46,6 +46,9 @@ public static class DependencyInjection
         services.AddScoped<ISelfExclusionRepository, SelfExclusionRepository>();
         services.AddScoped<IResponsibleGamblingActivityRepository, ResponsibleGamblingActivityRepository>();
 
+        // Roulette
+        services.AddScoped<IRouletteRoundRepository, EfRouletteRoundRepository>();
+
         return services;
     }
 }

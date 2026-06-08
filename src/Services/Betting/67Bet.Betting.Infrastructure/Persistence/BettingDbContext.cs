@@ -4,6 +4,7 @@
  */
 using Microsoft.EntityFrameworkCore;
 using _67Bet.Betting.Domain.Entities;
+using _67Bet.Betting.Domain.Entities.Roulette;
 using _67Bet.Betting.Domain.Entities.VirtualRacing;
 using _67Bet.Betting.Domain.Entities.Gamification;
 using _67Bet.Betting.Domain.Entities.ResponsibleGambling;
@@ -34,6 +35,10 @@ public class BettingDbContext : DbContext
     public DbSet<ResponsibleGamblingLimit> ResponsibleGamblingLimits => Set<ResponsibleGamblingLimit>();
     public DbSet<SelfExclusion> SelfExclusions => Set<SelfExclusion>();
     public DbSet<ResponsibleGamblingActivity> ResponsibleGamblingActivities => Set<ResponsibleGamblingActivity>();
+
+    // Roulette
+    public DbSet<RouletteRound> RouletteRounds => Set<RouletteRound>();
+    public DbSet<RouletteBet> RouletteBets => Set<RouletteBet>();
 
     public BettingDbContext(DbContextOptions<BettingDbContext> options) : base(options) { }
 
@@ -173,6 +178,28 @@ public class BettingDbContext : DbContext
             builder.HasKey(activity => activity.Id);
             builder.HasIndex(activity => new { activity.UserId, activity.OccurredAtUtc });
             builder.Property(activity => activity.Amount).HasColumnType("decimal(18,2)");
+        });
+
+        modelBuilder.Entity<RouletteRound>(builder =>
+        {
+            builder.HasKey(r => r.Id);
+            builder.HasIndex(r => r.UserId);
+            builder.Property(r => r.TotalStake).HasColumnType("decimal(18,2)");
+            builder.Property(r => r.TotalPayout).HasColumnType("decimal(18,2)");
+            builder.Property(r => r.CreatedAtUtc).HasColumnType("datetime(6)");
+            builder.HasMany(r => r.Bets)
+                   .WithOne()
+                   .HasForeignKey("RouletteRoundId")
+                   .OnDelete(DeleteBehavior.Cascade);
+            builder.Navigation(r => r.Bets).HasField("_bets");
+        });
+
+        modelBuilder.Entity<RouletteBet>(builder =>
+        {
+            builder.HasKey(b => b.Id);
+            builder.Property(b => b.BetType).HasConversion<int>();
+            builder.Property(b => b.Stake).HasColumnType("decimal(18,2)");
+            builder.Property(b => b.Payout).HasColumnType("decimal(18,2)");
         });
     }
 }

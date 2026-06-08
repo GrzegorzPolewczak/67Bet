@@ -4,7 +4,7 @@ using System.Security.Claims;
 using _67Bet.Betting.Application.DTOs;
 using _67Bet.Betting.Application.Interfaces;
 using _67Bet.Betting.Application.Services;
-using _67Bet.Betting.Infrastructure.Repositories;
+using _67Bet.Betting.Domain.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,14 +18,12 @@ public sealed class RouletteController : ControllerBase
     private const string LocalWalletBaseUrl = "http://localhost:5200/api/";
     private const string ProductionWalletBaseUrl = "https://67bet-wallet-api-h9f5epe3heb2dwe0.swedencentral-01.azurewebsites.net/api/";
 
-    private static readonly InMemoryRouletteRoundRepository RoundRepository = new();
-
     private readonly IRouletteService _rouletteService;
 
-    public RouletteController(IResponsibleGamblingService responsibleGamblingService)
+    public RouletteController(IResponsibleGamblingService responsibleGamblingService, IRouletteRoundRepository roundRepository)
     {
         var walletBaseUrl = Environment.GetEnvironmentVariable("ROULETTE_WALLET_API_URL") ?? GetDefaultWalletBaseUrl();
-        _rouletteService = new RouletteService(RoundRepository, new HttpRouletteWalletGateway(walletBaseUrl), responsibleGamblingService);
+        _rouletteService = new RouletteService(roundRepository, new HttpRouletteWalletGateway(walletBaseUrl), responsibleGamblingService);
     }
 
     [HttpPost("play")]

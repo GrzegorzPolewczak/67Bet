@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using _67Bet.Betting.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using _67Bet.Betting.Infrastructure.Persistence;
 namespace _67Bet.Betting.Infrastructure.Migrations
 {
     [DbContext(typeof(BettingDbContext))]
-    partial class BettingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260608064557_AddRoulette")]
+    partial class AddRoulette
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,32 +24,6 @@ namespace _67Bet.Betting.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("_67Bet.Betting.Domain.Entities.AiGenerationLog", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("EventId")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("varchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AiGenerationLog");
-                });
 
             modelBuilder.Entity("_67Bet.Betting.Domain.Entities.AiMatchInsight", b =>
                 {
