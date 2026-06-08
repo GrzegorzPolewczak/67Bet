@@ -177,6 +177,10 @@ const RoulettePage: React.FC = () => {
       .get("/wallet/balance")
       .then((r) => setBalance(Number(r.data.balance ?? r.data.Balance ?? 0)))
       .catch(() => {});
+    bettingApi
+      .get<RouletteRoundDto[]>("/roulette/history?limit=10")
+      .then((r) => setHistory(r.data))
+      .catch(() => {});
   }, [isAuthenticated]);
 
   const addBet = (betType: BetType, chosenNumber?: number) => {
