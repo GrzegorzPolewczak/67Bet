@@ -1,4 +1,8 @@
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "./app/store";
+import { getCurrentUser } from "./features/auth/authSlice";
 import MainLayout from "./components/layout/MainLayout";
 import Home from "./features/betting/Home";
 import SportPage from "./features/betting/SportPage";
@@ -22,6 +26,15 @@ import DepositSuccessPage from "./features/wallet/DepositSuccessPage";
 import WithdrawPage from "./features/wallet/WithdrawPage";
 
 function App() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { token, user } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (token && !user) {
+      dispatch(getCurrentUser());
+    }
+  }, [token, user, dispatch]);
+
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
