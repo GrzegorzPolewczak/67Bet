@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "../../app/store";
-import {
-  User,
-  Mail,
-  Shield,
-  Bell,
-  Save,
-  ChevronLeft,
-} from "lucide-react";
+import { User, Mail, Shield, Bell, Save, ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -96,8 +89,6 @@ const SettingsPage: React.FC = () => {
               </label>
             </div>
           </section>
-
-
 
           <button
             onClick={handleSave}

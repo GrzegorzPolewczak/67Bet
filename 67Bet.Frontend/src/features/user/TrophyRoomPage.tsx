@@ -14,7 +14,10 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { fetchGamificationProgress, fetchAchievements } from "../../features/gamification/gamificationSlice";
+import {
+  fetchGamificationProgress,
+  fetchAchievements,
+} from "../../features/gamification/gamificationSlice";
 
 const TrophyRoomPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,7 +48,8 @@ const TrophyRoomPage: React.FC = () => {
     {
       type: "TotalBets",
       title: "Matches Placed",
-      description: "Place slips on sports events to gain experience and climb tiers.",
+      description:
+        "Place slips on sports events to gain experience and climb tiers.",
       icon: Trophy,
       color: "from-orange-500 to-amber-600",
       textColor: "text-orange-500",
@@ -55,7 +59,8 @@ const TrophyRoomPage: React.FC = () => {
     {
       type: "HighOdds",
       title: "Sniper (Highest Win Odds)",
-      description: "Hit winning slips with high multipliers to prove your precision.",
+      description:
+        "Hit winning slips with high multipliers to prove your precision.",
       icon: Zap,
       color: "from-red-500 to-pink-600",
       textColor: "text-red-500",
@@ -75,7 +80,8 @@ const TrophyRoomPage: React.FC = () => {
     {
       type: "LoginStreak",
       title: "Daily Bettor",
-      description: "Log in consecutively to build your streak and show consistency.",
+      description:
+        "Log in consecutively to build your streak and show consistency.",
       icon: Flame,
       color: "from-amber-500 to-yellow-600",
       textColor: "text-amber-500",
@@ -102,11 +108,16 @@ const TrophyRoomPage: React.FC = () => {
 
   const getTierName = (index: number) => {
     switch (index) {
-      case 0: return "Bronze";
-      case 1: return "Silver";
-      case 2: return "Gold";
-      case 3: return "Diamond";
-      default: return "";
+      case 0:
+        return "Bronze";
+      case 1:
+        return "Silver";
+      case 2:
+        return "Gold";
+      case 3:
+        return "Diamond";
+      default:
+        return "";
     }
   };
 
@@ -124,7 +135,8 @@ const TrophyRoomPage: React.FC = () => {
           <Award className="w-8 h-8 text-primary-500" /> Trophy Room
         </h1>
         <p className="text-gray-400 text-sm">
-          Track your progression level, XP stats, and unlock stages of achievements.
+          Track your progression level, XP stats, and unlock stages of
+          achievements.
         </p>
       </div>
 
@@ -133,26 +145,38 @@ const TrophyRoomPage: React.FC = () => {
         {/* Big Progression Card */}
         <section className="md:col-span-2 bg-dark-800 border border-dark-700 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 rounded-full blur-3xl -z-10" />
-          
+
           <div>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1">Current Status</p>
+                <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1">
+                  Current Status
+                </p>
                 <h2 className="text-4xl font-black text-white flex items-baseline gap-2">
-                  Level <span className="text-primary-500 text-5xl">{currentLevel}</span>
+                  Level{" "}
+                  <span className="text-primary-500 text-5xl">
+                    {currentLevel}
+                  </span>
                 </h2>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1">Total Experience</p>
-                <p className="text-xl font-black text-white">{currentCount.toLocaleString()} XP</p>
+                <p className="text-[10px] text-gray-500 uppercase font-black tracking-wider mb-1">
+                  Total Experience
+                </p>
+                <p className="text-xl font-black text-white">
+                  {currentCount.toLocaleString()} XP
+                </p>
               </div>
             </div>
 
             <div className="space-y-2 mb-4">
               <div className="flex justify-between items-end text-xs">
-                <span className="text-gray-400 font-bold">Progress to Level {currentLevel + 1}</span>
+                <span className="text-gray-400 font-bold">
+                  Progress to Level {currentLevel + 1}
+                </span>
                 <span className="font-mono text-white font-black">
-                  {Math.max(0, relativeXpInLevel).toLocaleString()} / {relativeXpNeededForNext.toLocaleString()} XP
+                  {Math.max(0, relativeXpInLevel).toLocaleString()} /{" "}
+                  {relativeXpNeededForNext.toLocaleString()} XP
                 </span>
               </div>
               <div className="w-full bg-dark-900 h-4 rounded-full overflow-hidden border border-dark-700 p-0.5">
@@ -165,7 +189,9 @@ const TrophyRoomPage: React.FC = () => {
           </div>
 
           <div className="border-t border-dark-700/50 pt-4 mt-6 flex justify-between items-center text-xs">
-            <span className="text-gray-500 font-bold">Remaining to Level Up:</span>
+            <span className="text-gray-500 font-bold">
+              Remaining to Level Up:
+            </span>
             <span className="text-primary-400 font-black tracking-wider font-mono bg-primary-500/10 px-3 py-1 rounded-lg border border-primary-500/20">
               {(nextLevelXp - currentCount).toLocaleString()} XP
             </span>
@@ -180,27 +206,34 @@ const TrophyRoomPage: React.FC = () => {
           <div className="space-y-4">
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-orange-500" /> Placed Bets
+                <CheckSquare className="w-3.5 h-3.5 text-orange-500" /> Placed
+                Bets
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Earn <strong>1 XP</strong> for every <strong>1 PLN</strong> staked on any sports slip.
+                Earn <strong>1 XP</strong> for every <strong>1 PLN</strong>{" "}
+                staked on any sports slip.
               </p>
             </div>
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-accent-success" /> Winning Bets
+                <CheckSquare className="w-3.5 h-3.5 text-accent-success" />{" "}
+                Winning Bets
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
                 Earn bonus XP on winning slips based on multipliers: <br />
-                <span className="font-mono text-gray-400">XP = Stake * (Odds - 1) * 0.5</span>
+                <span className="font-mono text-gray-400">
+                  XP = Stake * (Odds - 1) * 0.5
+                </span>
               </p>
             </div>
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-amber-500" /> Daily Login
+                <CheckSquare className="w-3.5 h-3.5 text-amber-500" /> Daily
+                Login
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Claim a <strong>+20 XP boost</strong> by logging in and checking your dashboard daily.
+                Claim a <strong>+20 XP boost</strong> by logging in and checking
+                your dashboard daily.
               </p>
             </div>
           </div>
@@ -219,18 +252,27 @@ const TrophyRoomPage: React.FC = () => {
               .filter((a) => a.type === cat.type)
               .sort((a, b) => a.threshold - b.threshold);
 
-            const unlockedCount = catAchievements.filter((a) => a.isUnlocked).length;
+            const unlockedCount = catAchievements.filter(
+              (a) => a.isUnlocked,
+            ).length;
             const nextAchievement = catAchievements.find((a) => !a.isUnlocked);
             const currentVal = catAchievements[0]?.currentProgress ?? 0;
 
-            let threshold = nextAchievement?.threshold ?? (catAchievements[catAchievements.length - 1]?.threshold || 100);
-            let percent = nextAchievement ? (Number(currentVal) / Number(threshold)) * 100 : 100;
+            let threshold =
+              nextAchievement?.threshold ??
+              (catAchievements[catAchievements.length - 1]?.threshold || 100);
+            let percent = nextAchievement
+              ? (Number(currentVal) / Number(threshold)) * 100
+              : 100;
             percent = Math.min(100, Math.max(0, percent));
 
             const IconComp = cat.icon;
 
             return (
-              <div key={cat.type} className="bg-dark-800 border border-dark-700 rounded-3xl p-6 flex flex-col justify-between gap-6 hover:border-dark-600 transition-colors">
+              <div
+                key={cat.type}
+                className="bg-dark-800 border border-dark-700 rounded-3xl p-6 flex flex-col justify-between gap-6 hover:border-dark-600 transition-colors"
+              >
                 <div>
                   {/* Stages dots on top */}
                   <div className="flex items-center justify-between border-b border-dark-700/50 pb-4 mb-4">
@@ -264,8 +306,12 @@ const TrophyRoomPage: React.FC = () => {
                       <IconComp className={`w-6 h-6 ${cat.textColor}`} />
                     </div>
                     <div>
-                      <h3 className="font-black text-white text-lg leading-tight mb-1">{cat.title}</h3>
-                      <p className="text-xs text-gray-400 leading-normal">{cat.description}</p>
+                      <h3 className="font-black text-white text-lg leading-tight mb-1">
+                        {cat.title}
+                      </h3>
+                      <p className="text-xs text-gray-400 leading-normal">
+                        {cat.description}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -276,16 +322,23 @@ const TrophyRoomPage: React.FC = () => {
                     {nextAchievement ? (
                       <>
                         <span className="text-gray-500 font-bold">
-                          Next Rank: <span className={cat.textColor}>{nextAchievement.name.split("(")[1]?.replace(")", "") || "Next"}</span>
+                          Next Rank:{" "}
+                          <span className={cat.textColor}>
+                            {nextAchievement.name
+                              .split("(")[1]
+                              ?.replace(")", "") || "Next"}
+                          </span>
                         </span>
                         <span className="font-mono text-white font-bold">
-                          {Number(currentVal).toLocaleString()} / {Number(threshold).toLocaleString()} {cat.unit}
+                          {Number(currentVal).toLocaleString()} /{" "}
+                          {Number(threshold).toLocaleString()} {cat.unit}
                         </span>
                       </>
                     ) : (
                       <>
                         <span className="text-accent-success font-black uppercase tracking-wider flex items-center gap-1">
-                          <Check className="w-3.5 h-3.5 stroke-[3.5px]" /> Diamond Rank Maxed!
+                          <Check className="w-3.5 h-3.5 stroke-[3.5px]" />{" "}
+                          Diamond Rank Maxed!
                         </span>
                         <span className="font-mono text-gray-500 font-bold">
                           {Number(currentVal).toLocaleString()} {cat.unit}
