@@ -74,8 +74,12 @@ const ReferralsPage: React.FC = () => {
   } else {
     const currentSegmentStart = milestonesWithZero[segmentIndex];
     const currentSegmentEnd = milestonesWithZero[segmentIndex + 1];
-    const segmentProgress = (currentCount - currentSegmentStart) / (currentSegmentEnd - currentSegmentStart);
-    progress = ((segmentIndex + segmentProgress) / (milestonesWithZero.length - 1)) * 100;
+    const segmentProgress =
+      (currentCount - currentSegmentStart) /
+      (currentSegmentEnd - currentSegmentStart);
+    progress =
+      ((segmentIndex + segmentProgress) / (milestonesWithZero.length - 1)) *
+      100;
   }
 
   return (
@@ -201,7 +205,9 @@ const ReferralsPage: React.FC = () => {
 
               {referralStatus?.usedReferralCode && (
                 <div className="mb-6 p-4 bg-primary-500/10 border border-primary-500/30 rounded-xl flex items-center justify-between text-xs">
-                  <span className="text-gray-400 font-bold">Used Referral Code:</span>
+                  <span className="text-gray-400 font-bold">
+                    Used Referral Code:
+                  </span>
                   <span className="text-primary-400 font-black tracking-wider uppercase bg-dark-800 px-3 py-1 rounded-lg">
                     {referralStatus.usedReferralCode}
                   </span>
