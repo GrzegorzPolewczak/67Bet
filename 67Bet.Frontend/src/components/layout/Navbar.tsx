@@ -191,6 +191,11 @@ const Navbar: React.FC = () => {
                     style={{ width: `${progress?.progressPercentage || 0}%` }}
                   ></div>
                 </div>
+                {progress && (
+                  <span className="text-[8px] text-gray-500 font-bold mt-1 font-mono tracking-tight">
+                    {progress.nextLevelXp - progress.experiencePoints} XP left
+                  </span>
+                )}
               </div>
               <Link
                 to="/settings"

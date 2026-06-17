@@ -111,16 +111,45 @@ using (var scope = app.Services.CreateScope())
         }
 
         // Seed Achievements
+        var existingAchievements = context.Achievements.ToList();
+        if (existingAchievements.Any(a => a.Name.Contains("Debiutant") || a.Name.Contains("Snajper") || a.Name.Contains("Rekordzista")))
+        {
+            context.Achievements.RemoveRange(existingAchievements);
+            var userAchievements = context.UserAchievements.ToList();
+            context.UserAchievements.RemoveRange(userAchievements);
+            context.SaveChanges();
+            existingAchievements.Clear();
+        }
+
         if (!context.Achievements.Any())
         {
             context.Achievements.AddRange(
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Debiutant Brąz", "Postaw 1 zakład", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 1, "icon-bet-1"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Debiutant Srebro", "Postaw 10 zakładów", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 10, "icon-bet-10"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Snajper", "Wygraj kupon z kursem min. 2.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 2.0m, "icon-odds-2"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Rekordzista", "Łączna suma wygranych 100 zł", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 100, "icon-win-100")
+                // TotalBets (First Bets)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("First Bets (Bronze)", "Place 25 bets", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 25, "icon-bet-25"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("First Bets (Silver)", "Place 100 bets", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 100, "icon-bet-100"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("First Bets (Gold)", "Place 250 bets", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 250, "icon-bet-250"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("First Bets (Diamond)", "Place 750 bets", _67Bet.Betting.Domain.Enums.AchievementType.TotalBets, 750, "icon-bet-750"),
+
+                // HighOdds (Sniper)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Sniper (Bronze)", "Win a bet with odds at least 2.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 2.0m, "icon-odds-2"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Sniper (Silver)", "Win a bet with odds at least 5.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 5.0m, "icon-odds-5"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Sniper (Gold)", "Win a bet with odds at least 10.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 10.0m, "icon-odds-10"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Sniper (Diamond)", "Win a bet with odds at least 50.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 50.0m, "icon-odds-50"),
+
+                // TotalWinnings (High Roller)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Bronze)", "Reach total winnings of $100", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 100, "icon-win-100"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Silver)", "Reach total winnings of $500", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 500, "icon-win-500"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Gold)", "Reach total winnings of $2500", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 2500, "icon-win-2500"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Diamond)", "Reach total winnings of $10000", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 10000, "icon-win-10000"),
+
+                // LoginStreak (Daily Bettor)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Bronze)", "Log in for 3 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 3, "icon-streak-3"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Silver)", "Log in for 7 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 7, "icon-streak-7"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Gold)", "Log in for 14 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 14, "icon-streak-14"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Diamond)", "Log in for 30 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 30, "icon-streak-30")
             );
             context.SaveChanges();
-            Console.WriteLine("Successfully seeded initial achievements.");
+            Console.WriteLine("Successfully seeded initial English multi-stage achievements.");
         }
     }
     catch (Exception ex)

@@ -108,7 +108,8 @@ public class GamificationService : IGamificationService
                 a.Threshold,
                 ua?.IsUnlocked ?? false,
                 ua?.UnlockedAt,
-                a.IconUrl
+                a.IconUrl,
+                a.Type.ToString()
             ));
         }
 
