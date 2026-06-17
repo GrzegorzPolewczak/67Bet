@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Wallet.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
@@ -160,10 +160,10 @@ public class WalletController : ControllerBase
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
-            throw new UnauthorizedAccessException("Brak identyfikatora uĹĽytkownika w tokenie.");
+            throw new UnauthorizedAccessException("User ID missing from token.");
 
         if (!Guid.TryParse(userIdClaim.Value, out var userId))
-            throw new UnauthorizedAccessException("NieprawidĹ‚owy format identyfikatora uĹĽytkownika.");
+            throw new UnauthorizedAccessException("Invalid user ID format.");
 
         return userId;
     }

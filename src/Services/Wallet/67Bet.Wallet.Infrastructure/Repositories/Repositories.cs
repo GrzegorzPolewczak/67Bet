@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Implementacje repozytoriĂłw dla moduĹ‚u Wallet.
  * ObsĹ‚uguje zapis transakcji oraz aktualizacjÄ™ salda portfeli uĹĽytkownikĂłw.
  */
@@ -144,6 +144,11 @@ namespace _67Bet.Wallet.Infrastructure.Repositories
         public async Task<int> GetUsageCountForReferralAsync(Guid codeId)
         {
             return await _dbSet.CountAsync(ucu => ucu.CodeId == codeId);
+        }
+
+        public async Task<UserCodeUsage?> GetUsedReferralAsync(Guid userId)
+        {
+            return await _dbSet.FirstOrDefaultAsync(ucu => ucu.UserId == userId && ucu.IsReferral);
         }
     }
 }

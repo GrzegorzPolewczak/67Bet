@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -34,10 +34,10 @@ namespace _67Bet.Wallet.Application.Services
         public async Task CreateCreatorCodeAsync(Guid userId, string code)
         {
             var existing = await _referralRepository.GetByUserIdAsync(userId);
-            if (existing != null) throw new InvalidOperationException("UĹĽytkownik posiada juĹĽ kod twĂłrcy.");
+            if (existing != null) throw new InvalidOperationException("User already has a creator code.");
 
             var codeExists = await _referralRepository.GetByCodeAsync(code);
-            if (codeExists != null) throw new InvalidOperationException("Ten kod jest juĹĽ zajÄ™ty.");
+            if (codeExists != null) throw new InvalidOperationException("This code is already taken.");
 
             var referralCode = new ReferralCode(userId, code);
             await _referralRepository.AddAsync(referralCode);
@@ -51,10 +51,10 @@ namespace _67Bet.Wallet.Application.Services
             var promo = await _promoRepository.GetByCodeAsync(code);
             if (promo != null)
             {
-                if (!promo.IsActive) throw new InvalidOperationException("Kod promocyjny jest nieaktywny.");
+                if (!promo.IsActive) throw new InvalidOperationException("Promo code is inactive.");
 
                 var alreadyUsed = await _usageRepository.HasUsedCodeAsync(userId, promo.Id);
-                if (alreadyUsed) throw new InvalidOperationException("Kod zostaĹ‚ juĹĽ wykorzystany na tym koncie.");
+                if (alreadyUsed) throw new InvalidOperationException("This code has already been used on this account.");
 
                 await _walletService.DepositFreebetAsync(userId, promo.RewardAmount);
                 await _usageRepository.AddAsync(new UserCodeUsage(userId, promo.Id, false));
@@ -65,10 +65,10 @@ namespace _67Bet.Wallet.Application.Services
             var creatorCode = await _referralRepository.GetByCodeAsync(code);
             if (creatorCode != null)
             {
-                if (creatorCode.UserId == userId) throw new InvalidOperationException("Nie moĹĽesz uĹĽyÄ‡ wĹ‚asnego kodu.");
+                if (creatorCode.UserId == userId) throw new InvalidOperationException("You cannot use your own referral code.");
 
                 var hasUsedReferral = await _usageRepository.HasUsedAnyReferralAsync(userId);
-                if (hasUsedReferral) throw new InvalidOperationException("MoĹĽesz uĹĽyÄ‡ kodu polecenia tylko raz.");
+                if (hasUsedReferral) throw new InvalidOperationException("You can only use a referral code once.");
 
                 await _walletService.DepositFreebetAsync(userId, _referralReward);
                 await _usageRepository.AddAsync(new UserCodeUsage(userId, creatorCode.Id, true));
@@ -81,7 +81,7 @@ namespace _67Bet.Wallet.Application.Services
                 return;
             }
 
-            throw new InvalidOperationException("NieprawidĹ‚owy kod.");
+            throw new InvalidOperationException("Invalid code.");
         }
 
         public async Task<ReferralStatusDto> GetReferralStatusAsync(Guid userId)
@@ -89,11 +89,23 @@ namespace _67Bet.Wallet.Application.Services
             var code = await _referralRepository.GetByUserIdAsync(userId);
             var hasUsedReferral = await _usageRepository.HasUsedAnyReferralAsync(userId);
 
+            string? usedReferralCode = null;
+            if (hasUsedReferral)
+            {
+                var usage = await _usageRepository.GetUsedReferralAsync(userId);
+                if (usage != null)
+                {
+                    var refCode = await _referralRepository.GetByIdAsync(usage.CodeId);
+                    usedReferralCode = refCode?.Code;
+                }
+            }
+
             return new ReferralStatusDto
             {
                 MyCode = code?.Code,
                 ReferralCount = code?.UsageCount ?? 0,
                 HasUsedReferral = hasUsedReferral,
+                UsedReferralCode = usedReferralCode,
                 NextMilestone = _milestones.FirstOrDefault(m => m > (code?.UsageCount ?? 0))
             };
         }
@@ -101,7 +113,7 @@ namespace _67Bet.Wallet.Application.Services
         public async Task CreatePromoCodeAsync(string code, decimal reward)
         {
             var existing = await _promoRepository.GetByCodeAsync(code);
-            if (existing != null) throw new InvalidOperationException("Kod promo juĹĽ istnieje.");
+            if (existing != null) throw new InvalidOperationException("Promo code already exists.");
 
             var promo = new PromoCode(code, reward);
             await _promoRepository.AddAsync(promo);
@@ -110,7 +122,7 @@ namespace _67Bet.Wallet.Application.Services
         public async Task DeactivatePromoCodeAsync(string code)
         {
             var promo = await _promoRepository.GetByCodeAsync(code);
-            if (promo == null) throw new InvalidOperationException("Kod promo nie istnieje.");
+            if (promo == null) throw new InvalidOperationException("Promo code does not exist.");
 
             promo.Deactivate();
             await _promoRepository.UpdateAsync(promo);
@@ -119,7 +131,7 @@ namespace _67Bet.Wallet.Application.Services
         public async Task ActivatePromoCodeAsync(string code)
         {
             var promo = await _promoRepository.GetByCodeAsync(code);
-            if (promo == null) throw new InvalidOperationException("Kod promo nie istnieje.");
+            if (promo == null) throw new InvalidOperationException("Promo code does not exist.");
 
             promo.Activate();
             await _promoRepository.UpdateAsync(promo);

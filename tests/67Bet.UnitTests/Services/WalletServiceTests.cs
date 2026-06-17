@@ -110,7 +110,7 @@ public class WalletServiceTests
         // Act & Assert
         await _walletService.Invoking(s => s.WithdrawAsync(userId, 50))
             .Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Portfel nie istnieje.");
+            .WithMessage("Wallet does not exist.");
     }
 
     [Fact]

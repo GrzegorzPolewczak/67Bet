@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -164,6 +164,36 @@ namespace _67Bet.UnitTests.Services
             // Assert
             result.Should().HaveCount(2);
             result.First().Code.Should().Be("PROMO1");
+        }
+
+        [Fact]
+        public async Task GetReferralStatusAsync_ShouldReturnUsedCode_WhenUserHasActivatedReferral()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            var creatorId = Guid.NewGuid();
+            var referralCodeId = Guid.NewGuid();
+            var usedCode = "FRIEND123";
+
+            var myReferralCode = new ReferralCode(userId, "MYCODE");
+            var creatorCode = new ReferralCode(creatorId, usedCode);
+            typeof(ReferralCode).GetProperty("Id")?.SetValue(creatorCode, referralCodeId);
+
+            var codeUsage = new UserCodeUsage(userId, referralCodeId, true);
+
+            _referralRepoMock.Setup(r => r.GetByUserIdAsync(userId)).ReturnsAsync(myReferralCode);
+            _usageRepoMock.Setup(r => r.HasUsedAnyReferralAsync(userId)).ReturnsAsync(true);
+            _usageRepoMock.Setup(r => r.GetUsedReferralAsync(userId)).ReturnsAsync(codeUsage);
+            _referralRepoMock.Setup(r => r.GetByIdAsync(referralCodeId)).ReturnsAsync(creatorCode);
+
+            // Act
+            var result = await _referralService.GetReferralStatusAsync(userId);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.MyCode.Should().Be("MYCODE");
+            result.HasUsedReferral.Should().BeTrue();
+            result.UsedReferralCode.Should().Be("FRIEND123");
         }
     }
 }

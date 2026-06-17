@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace _67Bet.Wallet.Application.DTOs
@@ -9,6 +9,7 @@ namespace _67Bet.Wallet.Application.DTOs
         public int ReferralCount { get; set; }
         public int NextMilestone { get; set; }
         public bool HasUsedReferral { get; set; }
+        public string? UsedReferralCode { get; set; }
         public List<int> Milestones { get; set; } = new() { 5, 15, 25, 50, 100, 250 };
     }
 }

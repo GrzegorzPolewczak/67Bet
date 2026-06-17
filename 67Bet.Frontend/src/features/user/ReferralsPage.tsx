@@ -58,7 +58,29 @@ const ReferralsPage: React.FC = () => {
     referralStatus?.nextMilestone ||
     milestones.find((m: number) => m > currentCount) ||
     250;
-  const progress = (currentCount / nextMilestone) * 100;
+
+  // Segmented progress calculation
+  const milestonesWithZero = [0, ...milestones];
+  let segmentIndex = 0;
+  for (let i = 0; i < milestonesWithZero.length - 1; i++) {
+    if (currentCount >= milestonesWithZero[i]) {
+      segmentIndex = i;
+    }
+  }
+
+  let progress = 0;
+  if (currentCount >= 250) {
+    progress = 100;
+  } else {
+    const currentSegmentStart = milestonesWithZero[segmentIndex];
+    const currentSegmentEnd = milestonesWithZero[segmentIndex + 1];
+    const segmentProgress =
+      (currentCount - currentSegmentStart) /
+      (currentSegmentEnd - currentSegmentStart);
+    progress =
+      ((segmentIndex + segmentProgress) / (milestonesWithZero.length - 1)) *
+      100;
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-12">
@@ -158,7 +180,7 @@ const ReferralsPage: React.FC = () => {
                     />
                   </div>
                   <div className="flex justify-between mt-2">
-                    {milestones.map((m: number) => (
+                    {milestonesWithZero.map((m: number) => (
                       <span
                         key={m}
                         className={`text-[8px] font-bold ${currentCount >= m ? "text-primary-500" : "text-gray-600"}`}
@@ -180,6 +202,17 @@ const ReferralsPage: React.FC = () => {
                 Have a friend's referral code or a promotional coupon? Enter it
                 below to claim your bonus.
               </p>
+
+              {referralStatus?.usedReferralCode && (
+                <div className="mb-6 p-4 bg-primary-500/10 border border-primary-500/30 rounded-xl flex items-center justify-between text-xs">
+                  <span className="text-gray-400 font-bold">
+                    Used Referral Code:
+                  </span>
+                  <span className="text-primary-400 font-black tracking-wider uppercase bg-dark-800 px-3 py-1 rounded-lg">
+                    {referralStatus.usedReferralCode}
+                  </span>
+                </div>
+              )}
 
               <div className="space-y-4">
                 <input

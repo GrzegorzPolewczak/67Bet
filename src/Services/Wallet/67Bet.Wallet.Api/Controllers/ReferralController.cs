@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using _67Bet.Wallet.Application.Interfaces;
 using _67Bet.Wallet.Application.DTOs;
@@ -50,7 +50,7 @@ namespace _67Bet.Wallet.Api.Controllers
             try
             {
                 await _referralService.ApplyCodeAsync(userId, code);
-                return Ok(new { message = "Kod zaakceptowany! Bonus Freebet dodany do konta." });
+                return Ok(new { message = "Code accepted! Freebet bonus added to account." });
             }
             catch (InvalidOperationException ex)
             {

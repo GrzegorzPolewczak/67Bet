@@ -61,7 +61,7 @@ public class WalletService : IWalletService
     public async Task WithdrawAsync(Guid userId, decimal amount)
     {
         var wallet = await _walletRepository.GetByUserIdAsync(userId);
-        if (wallet == null) throw new InvalidOperationException("Portfel nie istnieje.");
+        if (wallet == null) throw new InvalidOperationException("Wallet does not exist.");
 
         wallet.Withdraw(amount);
 
