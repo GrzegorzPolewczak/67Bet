@@ -17,6 +17,7 @@ export type Achievement = {
   isUnlocked: boolean;
   unlockedAt?: string;
   iconUrl: string;
+  type: string;
 };
 
 export const getMyProgress = async (): Promise<UserProgress> => {

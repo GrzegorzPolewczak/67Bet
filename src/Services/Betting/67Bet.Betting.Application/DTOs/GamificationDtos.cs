@@ -25,7 +25,8 @@ public record UserAchievementDto(
     decimal Threshold,
     bool IsUnlocked,
     DateTime? UnlockedAt,
-    string IconUrl
+    string IconUrl,
+    string Type
 );
 
 public record GamificationUpdateNotification(
