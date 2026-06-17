@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Interfejsy repozytoriĂłw dla moduĹ‚u portfela (Wallet).
  * Kontrakty dla operacji na portfelach i historii transakcji.
  */
@@ -37,4 +37,5 @@ public interface IUserCodeUsageRepository : IRepository<UserCodeUsage>
     Task<bool> HasUsedCodeAsync(Guid userId, Guid codeId);
     Task<bool> HasUsedAnyReferralAsync(Guid userId);
     Task<int> GetUsageCountForReferralAsync(Guid codeId);
+    Task<UserCodeUsage?> GetUsedReferralAsync(Guid userId);
 }
