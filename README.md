@@ -2,18 +2,17 @@
 
 ![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![React](https://img.shields.io/badge/React-TypeScript-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-![ML.NET](https://img.shields.io/badge/ML.NET-Machine_Learning-5C2D91?style=for-the-badge&logo=microsoft&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)
 
-Zaawansowany system do obsługi zakładów sportowych, symulujący rzeczywiste środowisko platformy bukmacherskiej. System wykorzystuje architekturę hybrydową, integrując przetwarzanie w czasie rzeczywistym (Real-time), spójność transakcyjną oraz modele sztucznej inteligencji oparte na ML.NET do dynamicznego wyznaczania kursów. Całość backendu napisana jest w 100% w C#.
+Zaawansowany system do obsługi zakładów sportowych, symulujący rzeczywiste środowisko platformy bukmacherskiej. System wykorzystuje architekturę hybrydową, integrując przetwarzanie w czasie rzeczywistym (Real-time), spójność transakcyjną oraz kursy pobierane z zewnętrznych API sportowych, wzbogacone o podpowiedzi meczowe generowane przez Gemini API. Całość backendu napisana jest w 100% w C#.
 
 ---
 
 ## 📖 Opis, Cel i Idea Projektu
 
 ### 💡 Idea Systemu
-Główną ideą stojącą za platformą **67Bet** jest zdefiniowanie na nowo sposobu, w jaki użytkownicy wchodzą w interakcję z systemami bukmacherskimi. Zamiast tworzyć kolejny, statyczny klon istniejących rozwiązań, aplikacja wprowadza inteligentne, wysoce responsywne środowisko napędzane algorytmami uczenia maszynowego (ML.NET). System zaciera granicę między tradycyjnym hazardem a rozwiązaniami społecznościowymi, dając graczom nie tylko możliwość obstawiania gotowych zdarzeń, ale również swobodę kreowania własnych, unikalnych rynków (Custom Bets). Całość została zaprojektowana tak, aby symulować w 100% profesjonalne, komercyjne środowisko o wysokiej dostępności.
+Główną ideą stojącą za platformą **67Bet** jest zdefiniowanie na nowo sposobu, w jaki użytkownicy wchodzą w interakcję z systemami bukmacherskimi. Zamiast tworzyć kolejny, statyczny klon istniejących rozwiązań, aplikacja wprowadza inteligentne, wysoce responsywne środowisko z kursami z zewnętrznych API sportowych i podpowiedziami meczowymi generowanymi przez Gemini API. System zaciera granicę między tradycyjnym hazardem a rozwiązaniami społecznościowymi, dając graczom nie tylko możliwość obstawiania gotowych zdarzeń, ale również swobodę kreowania własnych, unikalnych rynków (Custom Bets). Całość została zaprojektowana tak, aby symulować w 100% profesjonalne, komercyjne środowisko o wysokiej dostępności.
 
 ### 🎯 Cel Projektu
 Głównym celem inżynierskim jest zaprojektowanie, zaimplementowanie i przetestowanie wysoce skalowalnej architektury webowej w ekosystemie **.NET 10**, która sprosta wyzwaniom narzucanym przez systemy czasu rzeczywistego (Real-time). Aplikacja musi gwarantować absolutną spójność danych finansowych (ACID), bezopóźnieniową dystrybucję zmieniających się kursów (SignalR) oraz odporność na problemy współbieżności (np. jednoczesne postawienie tysięcy zakładów na to samo zdarzenie).
@@ -32,14 +31,24 @@ System **67Bet** oferuje zaawansowane możliwości zarówno dla graczy, jak i ad
     - **Kupony Multi-Bet (AKO):** Możliwość łączenia wielu zdarzeń w jeden kupon z automatycznym przeliczaniem kursu skumulowanego.
     - **Live Betting:** Obstawianie w czasie rzeczywistym dzięki WebSockets (SignalR).
 - **Custom Bet Request:** Unikalna funkcja zgłaszania własnych propozycji zakładów do indywidualnej wyceny przez model AI i akceptacji administratora.
+- **Freebet:** Wirtualne zakłady bez ryzyka — wymagana stawka nie pochodzi z głównego salda, wypłata wynosi 70% potencjalnej wygranej.
+- **Gry Kasynowe:**
+    - **Ruletka:** Pełna symulacja ruletki europejskiej (0–36) z obsługą wielu rodzajów zakładów w jednej rundzie (max 10).
+    - **Plinko:** Gra z kulą i multiplierami — konfigurowalne ryzyko (Low/Medium/High) i liczba rzędów (8–16), deterministyczna ścieżka kuli.
+    - **Virtual Racing (Wyścigi Wirtualne):** Symulowane wyścigi konne z dynamicznie generowaną stawką uczestników i automatycznym rozliczaniem.
+- **Gamifikacja:** System punktów doświadczenia (XP), poziomów (formuła `100 × Level^1.5`) i osiągnięć odblokowywanych za aktywność na platformie.
+- **Odpowiedzialny Hazard:** Ustawianie limitów stawek dziennych/tygodniowych i depozytów, dobrowolne samowykluczenie (self-exclusion) oraz dziennik aktywności hazardowej.
+- **KYC (Know Your Customer):** Weryfikacja tożsamości użytkownika — sesja KYC z cyklem Pending → Completed/Failed.
+- **Kody Promocyjne i Referral:** Jednorazowe kody promocyjne zasilające portfel oraz system poleceń (referral) z unikalnym kodem per użytkownik.
 
 ### 🛡️ Panel Administratora
 - **Zarządzanie Custom Betami:** Przeglądanie propozycji od graczy, akceptacja/odrzucanie i opcjonalna korekta kursów wygenerowanych przez AI.
 - **Moderacja i Bezpieczeństwo:** System RBAC (Admin, User), blokowanie kont, monitorowanie limitów i wykrywanie podejrzanych wzorców zakładów.
 - **Nadzór nad Ofertą:** Dynamiczne otwieranie i zamykanie rynków, ręczne wprowadzanie wyników zdarzeń oraz funkcja *Manual Override* dla kursów.
-- **Analityka Biznesowa:** Monitorowanie marży, obrotu (GGR) oraz skuteczności predykcyjnej modeli ML.NET.
+- **Analityka Biznesowa:** Monitorowanie marży, obrotu (GGR) oraz statystyk systemu.
 ### ⚙️ Silnik Systemowy (Core)
-- 🧠 **Native AI Oddsmaker:** Autonomiczne generowanie kursów w oparciu o modele ML.NET trenowane na danych historycznych.
+- 📡 **External Odds Engine:** Kursy pobierane w czasie rzeczywistym z zewnętrznych API sportowych (TheOddsApi, PandaScore, ApiSports) i synchronizowane z ofertą platformy.
+- 🧠 **AI Match Insights:** Podpowiedzi i analizy meczowe generowane przez Gemini API, dostępne dla użytkownika przy każdym wydarzeniu.
 - ⚡ **Real-time Engine:** Błyskawiczna dystrybucja zmian kursów bez konieczności przeładowywania strony (SignalR).
 - 🤖 **Settlement Engine:** Automatyczny system rozliczania tysięcy kuponów w ułamku sekundy po zatwierdzeniu wyniku zdarzenia.
 
@@ -52,7 +61,7 @@ Mikroserwisy w oparciu o zasady **Clean Architecture**. Zastosowanie jednolitego
 
 Zdecydowano się na architekturę mikroserwisową, aby zapewnić skalowalność i separację odpowiedzialności poszczególnych modułów systemu bukmacherskiego.
 
-Podział na usługi: System zostanie podzielony na niezależne serwisy (np. IdentityService, BettingService, OddsService, WalletService).
+Podział na usługi: System podzielony jest na niezależne serwisy: **IdentityService**, **BettingService**, **OddsService**, **WalletService**, **CustomBetService**.
 
 Technologie: Każdy mikroserwis oparty jest na .NET 10 z niezależną instancją bazy MySQL.
 
@@ -79,12 +88,14 @@ Implementacja kodu przez Cline po akceptacji logiki.
 ### Stos Technologiczny
 - **Frontend:** React (TypeScript), Tailwind CSS, Redux Toolkit, SignalR Client.
 - **Backend (Core & API):** .NET 10 (ASP.NET Core Web API), Entity Framework Core.
-- **Baza Danych & Cache:** MySQL (Główne dane), Redis (Cache dla kursów "live").
+- **Baza Danych:** MySQL (wszystkie mikroserwisy, niezależne instancje).
+- **Zewnętrzne API Kursów:** TheOddsApi, PandaScore, ApiSports.
+- **AI:** Google Gemini API.
 ---
 
 ## 🗄️ Model Danych (High-Level)
 
-Baza danych PostgreSQL została zaprojektowana z myślą o elastyczności. Zamiast dedykowanych tabel dla każdego sportu, wykorzystano kolumnę `metadata` typu `JSONB` w tabeli `Events`. Rozdzielono również warstwę analityczną od rynkowej: tabela `Outcomes` przechowuje zarówno czyste prawdopodobieństwo z modelu ML.NET (`probability`), jak i finalny kurs dla gracza (`current_price`). Umożliwia to łatwe audytowanie skuteczności sztucznej inteligencji.
+Baza danych MySQL została zaprojektowana z myślą o elastyczności. Zamiast dedykowanych tabel dla każdego sportu, wykorzystano kolumnę `metadata` typu `longtext` (JSON) w tabeli `Events`. Rozdzielono również warstwę analityczną od rynkowej: tabela `Outcomes` przechowuje zarówno czyste prawdopodobieństwo z modelu AI (`probability`), jak i finalny kurs dla gracza (`current_price`). Umożliwia to łatwe audytowanie skuteczności sztucznej inteligencji.
 
 ---
 
@@ -147,7 +158,12 @@ Celem aplikacji jest odwzorowanie najważniejszych procesów występujących w s
 - obsługa wirtualnego portfela,
 - historia zakładów i transakcji,
 - administracyjne rozliczanie wyników,
-- kontrola dostępu na podstawie ról.
+- kontrola dostępu na podstawie ról,
+- gry kasynowe (ruletka, plinko, wyścigi wirtualne),
+- system gamifikacji (poziomy XP, osiągnięcia),
+- odpowiedzialny hazard (limity, samowykluczenie),
+- weryfikacja tożsamości użytkownika (KYC),
+- system kodów promocyjnych i poleceń (referral).
 
 System działa w środowisku testowym i edukacyjnym. Oznacza to, że aplikacja nie obsługuje prawdziwych płatności, prawdziwych wypłat ani rzeczywistego hazardu. Wszystkie środki widoczne w portfelu użytkownika mają charakter wirtualny i służą wyłącznie do symulacji działania platformy.
 
@@ -207,7 +223,17 @@ Użytkownik może:
 - sprawdzać aktywne kupony,
 - przeglądać historię zakładów,
 - sprawdzać status rozliczenia kuponu,
-- przeglądać historię transakcji portfela.
+- przeglądać historię transakcji portfela,
+- korzystać z Freebetów (wirtualnych zakładów bez ryzyka z wypłatą 70% wygranej),
+- grać w Ruletkę (zakłady na numery, kolory, parzystość),
+- grać w Plinko (konfigurowalny poziom ryzyka i liczba rzędów),
+- oglądać i obstawiać Wirtualne Wyścigi Konne,
+- śledzić swój poziom, punkty doświadczenia (XP) i odblokowane osiągnięcia,
+- ustawiać limity odpowiedzialnego hazardu (dzienna stawka, tygodniowa strata, depozyt),
+- zgłosić dobrowolne samowykluczenie z platformy (self-exclusion),
+- przejść weryfikację tożsamości (KYC),
+- aktywować kod promocyjny zasilający portfel,
+- udostępniać własny kod referralowy i śledzić liczbę poleceń.
 
 Użytkownik nie ma dostępu do funkcji administracyjnych. Nie może dodawać wydarzeń, zmieniać kursów, rozliczać kuponów ani zarządzać kontami innych użytkowników.
 
@@ -240,7 +266,9 @@ Administrator może:
 - przeglądać aktywne i zakończone kupony,
 - sprawdzać historię transakcji,
 - wykonywać korekty administracyjne w uzasadnionych przypadkach,
-- przeglądać podstawowe statystyki działania systemu.
+- przeglądać podstawowe statystyki działania systemu,
+- zarządzać kodami promocyjnymi (tworzenie, aktywacja, dezaktywacja),
+- przeglądać sesje KYC użytkowników i zarządzać ich statusem weryfikacji.
 
 Administrator odpowiada za poprawność danych prezentowanych użytkownikom. Szczególnie ważne są operacje związane ze zmianą kursów, zamykaniem rynków i rozliczaniem kuponów, ponieważ mają one wpływ na saldo użytkowników oraz historię zakładów.
 
@@ -314,5 +342,79 @@ Użytkownik może:
 
 ---
 
+### 3.4.3. Moduł Gier Kasynowych
 
+Moduł gier kasynowych rozszerza platformę o trzy niezależne gry losowe, korzystające ze wspólnego portfela użytkownika.
+
+#### Ruletka
+
+Symulacja ruletki europejskiej (liczby 0–36). Użytkownik może w jednej rundzie postawić do 10 zakładów różnych typów (na konkretny numer, kolor, parzystość, dziesiątkę itp.). Po potwierdzeniu zakładów system losuje wynik, rozlicza każdy zakład osobno i wypłaca sumę wygranych.
+
+#### Plinko
+
+Gra polegająca na puszczeniu kuli przez planszę z kołkami. Konfigurowalne parametry:
+- **Ryzyko:** Low, Medium, High (różne tabele multiplierów).
+- **Rzędy:** 8–16 (wpływa na liczbę możliwych slotów i wysokość multiplierów).
+
+System deterministycznie oblicza ścieżkę kuli, wyznacza slot lądowania i mnoży stawkę przez odpowiedni multiplier.
+
+#### Virtual Racing (Wyścigi Wirtualne)
+
+Symulowane wyścigi konne z dynamicznie generowanymi uczestnikami i kursami. Użytkownik obstawia konia przed startem wyścigu. System rozstrzyga wynik wyścigu i automatycznie rozlicza zakłady.
+
+---
+
+### 3.4.4. Moduł Gamifikacji
+
+Moduł gamifikacji nagradza użytkowników za aktywność na platformie poprzez system punktów doświadczenia i osiągnięć.
+
+#### System XP i Poziomów
+
+Każda aktywność (postawiony zakład, wygrana, codzienny login) przyznaje punkty doświadczenia (XP). Wymagana liczba XP do awansu na kolejny poziom rośnie według formuły `100 × Level^1.5`. System automatycznie wykrywa awans po każdym naliczeniu punktów.
+
+#### Osiągnięcia
+
+Osiągnięcia są odblokowane jednorazowo po spełnieniu określonego progu (np. łączna kwota zakładów, liczba wygranych). Każde osiągnięcie ma przypisany typ, próg i opis wyświetlany w profilu użytkownika.
+
+---
+
+### 3.4.5. Moduł Odpowiedzialnego Hazardu
+
+Moduł odpowiedzialnego hazardu implementuje mechanizmy ochrony gracza wymagane przez regulacje branżowe.
+
+#### Limity
+
+Użytkownik może ustawić następujące typy limitów:
+- **Dzienna stawka** — maksymalna łączna kwota zakładów w ciągu doby.
+- **Dzienny depozyt** — maksymalna kwota wpłat w ciągu doby.
+- **Tygodniowa strata** — maksymalna łączna strata w ciągu tygodnia.
+- **Pojedyncza stawka** — maksymalna kwota jednego zakładu.
+
+Obniżenie limitu wchodzi w życie natychmiast. Podwyższenie limitu wymaga okresu oczekiwania (cooling-off), aby zapobiec impulsywnym decyzjom.
+
+#### Samowykluczenie (Self-Exclusion)
+
+Użytkownik może dobrowolnie wykluczyć się z platformy na określony czas. Aktywne samowykluczenie blokuje możliwość obstawiania i wpłat.
+
+---
+
+### 3.4.6. Moduł KYC (Know Your Customer)
+
+Moduł KYC obsługuje proces weryfikacji tożsamości użytkownika.
+
+Sesja KYC przechodzi przez stany: **Pending → Completed / Failed**. Po pozytywnej weryfikacji (`IsKycVerified = true`) użytkownik uzyskuje pełny dostęp do funkcji wymagających potwierdzenia tożsamości. Administrator może przeglądać sesje i zarządzać ich statusem.
+
+---
+
+### 3.4.7. Moduł Kodów Promocyjnych i Systemu Poleceń
+
+#### Kody Promocyjne
+
+Administrator tworzy kody promocyjne z określoną kwotą nagrody. Użytkownik aktywuje kod jednorazowo — saldo portfela zostaje zasilone o wartość kodu. Zużyte lub wycofane kody nie mogą być ponownie użyte.
+
+#### System Poleceń (Referral)
+
+Każdy użytkownik otrzymuje unikalny kod referralowy (max 10 znaków). Po rejestracji nowego użytkownika z tym kodem licznik użyć kodu zostaje zwiększony, a obie strony mogą otrzymać nagrodę zgodnie z konfiguracją systemu.
+
+---
 
