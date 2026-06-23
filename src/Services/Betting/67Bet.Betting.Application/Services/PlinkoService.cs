@@ -15,14 +15,17 @@ public sealed class PlinkoService : IPlinkoService
     private readonly IPlinkoRoundRepository _roundRepository;
     private readonly IPlinkoWalletGateway _walletGateway;
     private readonly IResponsibleGamblingService? _responsibleGamblingService;
+    private readonly IGamificationService _gamificationService;
 
     public PlinkoService(
         IPlinkoRoundRepository roundRepository,
         IPlinkoWalletGateway walletGateway,
+        IGamificationService gamificationService,
         IResponsibleGamblingService? responsibleGamblingService = null)
     {
         _roundRepository = roundRepository;
         _walletGateway = walletGateway;
+        _gamificationService = gamificationService;
         _responsibleGamblingService = responsibleGamblingService;
     }
 
@@ -66,6 +69,7 @@ public sealed class PlinkoService : IPlinkoService
         var round = new PlinkoRound(userId, request.Stake, request.RiskLevel, request.Rows, landingSlot, multiplier, new string(pathMoves));
 
         await _roundRepository.AddAsync(round);
+        await _gamificationService.AwardXpForPlinkoPlayAsync(userId, round.Stake, round.Payout);
         return ToDto(round);
     }
 

@@ -5,6 +5,7 @@ using _67Bet.Betting.Domain.Entities.Plinko;
 using _67Bet.Betting.Domain.Enums;
 using _67Bet.Betting.Domain.Repositories;
 using FluentAssertions;
+using Moq;
 
 namespace _67Bet.UnitTests.Services;
 
@@ -41,7 +42,7 @@ public class PlinkoServiceTests
     {
         var repository = new FakePlinkoRoundRepository();
         var wallet = new FakePlinkoWalletGateway(true);
-        var service = new PlinkoService(repository, wallet);
+        var service = new PlinkoService(repository, wallet, new Mock<IGamificationService>().Object);
 
         var result = await service.PlayAsync(Guid.NewGuid(), new PlinkoPlayRequest(25m, PlinkoRiskLevel.Low, 10), "token");
 
@@ -60,7 +61,7 @@ public class PlinkoServiceTests
     {
         var repository = new FakePlinkoRoundRepository();
         var wallet = new FakePlinkoWalletGateway(true);
-        var service = new PlinkoService(repository, wallet);
+        var service = new PlinkoService(repository, wallet, new Mock<IGamificationService>().Object);
 
         var result = await service.PlayAsync(Guid.NewGuid(), new PlinkoPlayRequest(25m, PlinkoRiskLevel.Low, 10, 5m), "token");
 
@@ -76,7 +77,7 @@ public class PlinkoServiceTests
         var userId = Guid.NewGuid();
         var repository = new FakePlinkoRoundRepository();
         var wallet = new FakePlinkoWalletGateway(true);
-        var service = new PlinkoService(repository, wallet);
+        var service = new PlinkoService(repository, wallet, new Mock<IGamificationService>().Object);
         var round = await service.PlayAsync(userId, new PlinkoPlayRequest(25m, PlinkoRiskLevel.Low, 10), "token");
 
         var settled = await service.SettleRoundAsync(userId, round.Id, "token");
@@ -95,7 +96,7 @@ public class PlinkoServiceTests
         var repository = new FakePlinkoRoundRepository();
         var wallet = new FakePlinkoWalletGateway(true);
         var responsibleGambling = new FakeResponsibleGamblingService();
-        var service = new PlinkoService(repository, wallet, responsibleGambling);
+        var service = new PlinkoService(repository, wallet, new Mock<IGamificationService>().Object, responsibleGambling);
 
         var round = await service.PlayAsync(userId, new PlinkoPlayRequest(25m, PlinkoRiskLevel.Low, 10, 5m), "token");
         await service.SettleRoundAsync(userId, round.Id, "token");
@@ -111,7 +112,7 @@ public class PlinkoServiceTests
     public async Task PlayAsync_WhenWalletRejectsStake_ThrowsAndDoesNotStoreRound()
     {
         var repository = new FakePlinkoRoundRepository();
-        var service = new PlinkoService(repository, new FakePlinkoWalletGateway(false));
+        var service = new PlinkoService(repository, new FakePlinkoWalletGateway(false), new Mock<IGamificationService>().Object);
 
         var act = () => service.PlayAsync(Guid.NewGuid(), new PlinkoPlayRequest(100m, PlinkoRiskLevel.High, 12), null);
 
@@ -127,7 +128,7 @@ public class PlinkoServiceTests
         var repository = new FakePlinkoRoundRepository();
         await repository.AddAsync(new PlinkoRound(userId, 10m, PlinkoRiskLevel.Low, 8, 4, 1.2m, "LRLRLRLR"));
         await repository.AddAsync(new PlinkoRound(Guid.NewGuid(), 50m, PlinkoRiskLevel.High, 8, 1, 3m, "LLLLLLLR"));
-        var service = new PlinkoService(repository, new FakePlinkoWalletGateway(true));
+        var service = new PlinkoService(repository, new FakePlinkoWalletGateway(true), new Mock<IGamificationService>().Object);
 
         var history = await service.GetHistoryAsync(userId, 10);
 
@@ -137,7 +138,7 @@ public class PlinkoServiceTests
 
     private static PlinkoService CreateService()
     {
-        return new PlinkoService(new FakePlinkoRoundRepository(), new FakePlinkoWalletGateway(true));
+        return new PlinkoService(new FakePlinkoRoundRepository(), new FakePlinkoWalletGateway(true), new Mock<IGamificationService>().Object);
     }
 
     private sealed class FakePlinkoRoundRepository : IPlinkoRoundRepository

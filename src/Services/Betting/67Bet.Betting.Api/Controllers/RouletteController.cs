@@ -20,10 +20,10 @@ public sealed class RouletteController : ControllerBase
 
     private readonly IRouletteService _rouletteService;
 
-    public RouletteController(IResponsibleGamblingService responsibleGamblingService, IRouletteRoundRepository roundRepository)
+    public RouletteController(IResponsibleGamblingService responsibleGamblingService, IRouletteRoundRepository roundRepository, IGamificationService gamificationService)
     {
         var walletBaseUrl = Environment.GetEnvironmentVariable("ROULETTE_WALLET_API_URL") ?? GetDefaultWalletBaseUrl();
-        _rouletteService = new RouletteService(roundRepository, new HttpRouletteWalletGateway(walletBaseUrl), responsibleGamblingService);
+        _rouletteService = new RouletteService(roundRepository, new HttpRouletteWalletGateway(walletBaseUrl), gamificationService, responsibleGamblingService);
     }
 
     [HttpPost("play")]

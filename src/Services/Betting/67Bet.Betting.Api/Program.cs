@@ -112,7 +112,8 @@ using (var scope = app.Services.CreateScope())
 
         // Seed Achievements
         var existingAchievements = context.Achievements.ToList();
-        if (existingAchievements.Any(a => a.Name.Contains("Debiutant") || a.Name.Contains("Snajper") || a.Name.Contains("Rekordzista")))
+        if (existingAchievements.Any(a => a.Name.Contains("Debiutant") || a.Name.Contains("Snajper") || a.Name.Contains("Rekordzista"))
+            || !existingAchievements.Any(a => a.Type == _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds))
         {
             context.Achievements.RemoveRange(existingAchievements);
             var userAchievements = context.UserAchievements.ToList();
@@ -146,7 +147,25 @@ using (var scope = app.Services.CreateScope())
                 new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Bronze)", "Log in for 3 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 3, "icon-streak-3"),
                 new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Silver)", "Log in for 7 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 7, "icon-streak-7"),
                 new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Gold)", "Log in for 14 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 14, "icon-streak-14"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Diamond)", "Log in for 30 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 30, "icon-streak-30")
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Diamond)", "Log in for 30 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 30, "icon-streak-30"),
+
+                // PlinkoRounds (Plinko Master)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Plinko Master (Bronze)", "Play 25 Plinko rounds", _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds, 25, "icon-plinko-25"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Plinko Master (Silver)", "Play 100 Plinko rounds", _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds, 100, "icon-plinko-100"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Plinko Master (Gold)", "Play 250 Plinko rounds", _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds, 250, "icon-plinko-250"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Plinko Master (Diamond)", "Play 750 Plinko rounds", _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds, 750, "icon-plinko-750"),
+
+                // RouletteSpins (Wheel Spinner)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Wheel Spinner (Bronze)", "Spin the Roulette wheel 25 times", _67Bet.Betting.Domain.Enums.AchievementType.RouletteSpins, 25, "icon-roulette-25"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Wheel Spinner (Silver)", "Spin the Roulette wheel 100 times", _67Bet.Betting.Domain.Enums.AchievementType.RouletteSpins, 100, "icon-roulette-100"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Wheel Spinner (Gold)", "Spin the Roulette wheel 250 times", _67Bet.Betting.Domain.Enums.AchievementType.RouletteSpins, 250, "icon-roulette-250"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Wheel Spinner (Diamond)", "Spin the Roulette wheel 750 times", _67Bet.Betting.Domain.Enums.AchievementType.RouletteSpins, 750, "icon-roulette-750"),
+
+                // GreenRoulette (Lucky Zero)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Lucky Zero", "Land on green (0) in Roulette", _67Bet.Betting.Domain.Enums.AchievementType.GreenRoulette, 1, "icon-green-roulette"),
+
+                // KycVerification (Verified Bettor)
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Verified Bettor", "Verify your account identity (KYC)", _67Bet.Betting.Domain.Enums.AchievementType.KycVerification, 1, "icon-verified")
             );
             context.SaveChanges();
             Console.WriteLine("Successfully seeded initial English multi-stage achievements.");
