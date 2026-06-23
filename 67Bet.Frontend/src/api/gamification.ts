@@ -37,3 +37,7 @@ export const getMyAchievements = async (): Promise<Achievement[]> => {
 export const processDailyLogin = async (): Promise<void> => {
   await api.betting.post("/gamification/me/daily-login");
 };
+
+export const claimKycAchievement = async (): Promise<void> => {
+  await api.betting.post("/gamification/me/claim-kyc-achievement");
+};

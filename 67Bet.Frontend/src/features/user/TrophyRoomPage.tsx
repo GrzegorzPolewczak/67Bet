@@ -12,23 +12,37 @@ import {
   Zap,
   Info,
   CheckSquare,
+  Dices,
+  CircleDot,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   fetchGamificationProgress,
   fetchAchievements,
 } from "../../features/gamification/gamificationSlice";
+import { claimKycAchievement } from "../../api/gamification";
 
 const TrophyRoomPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { progress, achievements } = useSelector(
     (state: RootState) => state.gamification,
   );
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
-    dispatch(fetchGamificationProgress());
-    dispatch(fetchAchievements());
-  }, [dispatch]);
+    const claimKycAndFetch = async () => {
+      if (user?.isKycVerified) {
+        try {
+          await claimKycAchievement();
+        } catch (e) {
+          console.error("Failed to claim KYC achievement", e);
+        }
+      }
+      dispatch(fetchGamificationProgress());
+      dispatch(fetchAchievements());
+    };
+    claimKycAndFetch();
+  }, [dispatch, user?.isKycVerified]);
 
   const currentCount = progress?.experiencePoints || 0;
   const currentLevel = progress?.currentLevel || 1;
@@ -88,7 +102,31 @@ const TrophyRoomPage: React.FC = () => {
       bgLight: "bg-amber-500/10 border-amber-500/20",
       unit: "days",
     },
+    {
+      type: "PlinkoRounds",
+      title: "Plinko Master",
+      description: "Play Plinko rounds to test your luck on the board.",
+      icon: Dices,
+      color: "from-blue-500 to-indigo-600",
+      textColor: "text-blue-500",
+      bgLight: "bg-blue-500/10 border-blue-500/20",
+      unit: "rounds",
+    },
+    {
+      type: "RouletteSpins",
+      title: "Wheel Spinner",
+      description: "Spin the Roulette wheel to target major payouts.",
+      icon: CircleDot,
+      color: "from-purple-500 to-violet-600",
+      textColor: "text-purple-500",
+      bgLight: "bg-purple-500/10 border-purple-500/20",
+      unit: "spins",
+    },
   ];
+
+  const specialAchievements = achievements.filter(
+    (a) => a.type === "GreenRoulette" || a.type === "KycVerification",
+  );
 
   const getTierColor = (index: number, isUnlocked: boolean) => {
     if (!isUnlocked) return "border-dark-600 bg-dark-900 text-gray-700";
@@ -206,34 +244,39 @@ const TrophyRoomPage: React.FC = () => {
           <div className="space-y-4">
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-orange-500" /> Placed
-                Bets
+                <CheckSquare className="w-3.5 h-3.5 text-orange-500" /> Staking
+                Games
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
                 Earn <strong>1 XP</strong> for every <strong>1 PLN</strong>{" "}
-                staked on any sports slip.
+                staked on sports slips, Plinko, or Roulette.
               </p>
             </div>
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-accent-success" />{" "}
-                Winning Bets
+                <CheckSquare className="w-3.5 h-3.5 text-accent-success" /> Game
+                Wins
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Earn bonus XP on winning slips based on multipliers: <br />
+                Bonus XP on sports slips:{" "}
                 <span className="font-mono text-gray-400">
-                  XP = Stake * (Odds - 1) * 0.5
+                  Stake * (Odds - 1) * 0.5
                 </span>
+                . Plinko/Roulette net profits:{" "}
+                <span className="font-mono text-gray-400">
+                  (Payout - Stake) * 0.5
+                </span>
+                .
               </p>
             </div>
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-amber-500" /> Daily
-                Login
+                <CheckSquare className="w-3.5 h-3.5 text-amber-500" /> Account
+                Verification
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Claim a <strong>+20 XP boost</strong> by logging in and checking
-                your dashboard daily.
+                Complete KYC identity verification to claim a{" "}
+                <strong>+250 XP bonus</strong> and unlock a unique achievement.
               </p>
             </div>
           </div>
@@ -358,6 +401,75 @@ const TrophyRoomPage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Special Achievements Section */}
+      {specialAchievements.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-xl font-black text-white flex items-center gap-2">
+            <Star className="w-5 h-5 text-primary-500" /> Special Achievements
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {specialAchievements.map((ach) => {
+              const isUnlocked = ach.isUnlocked;
+              return (
+                <div
+                  key={ach.achievementId}
+                  className={`bg-dark-800 border border-dark-700 rounded-3xl p-6 flex items-center gap-4 hover:border-dark-600 transition-colors ${
+                    isUnlocked ? "relative overflow-hidden" : "opacity-75"
+                  }`}
+                >
+                  {isUnlocked && (
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-primary-500/5 rounded-full blur-xl pointer-events-none" />
+                  )}
+
+                  <div
+                    className={`p-4 rounded-2xl flex items-center justify-center shrink-0 border transition-all ${
+                      isUnlocked
+                        ? "border-primary-500/30 bg-primary-500/10 text-primary-500 shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+                        : "border-dark-600 bg-dark-900 text-gray-700"
+                    }`}
+                  >
+                    <Award className="w-8 h-8" />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="min-w-0">
+                        <h3
+                          className={`font-black text-lg truncate ${isUnlocked ? "text-white" : "text-gray-500"}`}
+                        >
+                          {ach.name}
+                        </h3>
+                        <p
+                          className={`text-xs leading-normal ${isUnlocked ? "text-gray-400" : "text-gray-600"}`}
+                        >
+                          {ach.description}
+                        </p>
+                      </div>
+                      {isUnlocked ? (
+                        <span className="text-[10px] text-accent-success bg-accent-success/10 px-2 py-0.5 rounded border border-accent-success/20 font-black uppercase tracking-wider whitespace-nowrap shrink-0">
+                          Unlocked
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-gray-500 bg-dark-900 px-2 py-0.5 rounded border border-dark-700 font-bold uppercase tracking-wider whitespace-nowrap shrink-0">
+                          Locked
+                        </span>
+                      )}
+                    </div>
+                    {isUnlocked && ach.unlockedAt && (
+                      <p className="text-[9px] text-gray-600 mt-2 font-medium">
+                        Unlocked on{" "}
+                        {new Date(ach.unlockedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

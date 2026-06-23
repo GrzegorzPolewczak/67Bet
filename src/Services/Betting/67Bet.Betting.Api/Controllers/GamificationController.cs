@@ -41,6 +41,14 @@ public class GamificationController : ControllerBase
         return Ok(new { message = "Daily login processed successfully." });
     }
 
+    [HttpPost("me/claim-kyc-achievement")]
+    public async Task<IActionResult> ClaimKycAchievement()
+    {
+        var userId = GetUserId();
+        await _gamificationService.AwardXpForKycVerificationAsync(userId);
+        return Ok(new { message = "KYC achievement processed successfully." });
+    }
+
     [Authorize(Roles = "Admin")]
     [HttpPost("admin/award-xp")]
     public async Task<IActionResult> AwardXp(Guid userId, long amount)

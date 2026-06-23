@@ -7,6 +7,9 @@ public interface IGamificationService
     Task AwardXpForBetAsync(Guid userId, decimal stake);
     Task AwardXpForWinAsync(Guid userId, decimal stake, decimal odds);
     Task ProcessDailyLoginAsync(Guid userId);
+    Task AwardXpForPlinkoPlayAsync(Guid userId, decimal stake, decimal payout);
+    Task AwardXpForRoulettePlayAsync(Guid userId, decimal stake, decimal payout, int spinResult);
+    Task AwardXpForKycVerificationAsync(Guid userId);
     Task<UserGamificationDto> GetUserProgressAsync(Guid userId);
     Task<IEnumerable<UserAchievementDto>> GetUserAchievementsAsync(Guid userId);
 }

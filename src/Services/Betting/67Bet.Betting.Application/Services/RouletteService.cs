@@ -12,14 +12,17 @@ public sealed class RouletteService : IRouletteService
     private readonly IRouletteRoundRepository _roundRepository;
     private readonly IRouletteWalletGateway _walletGateway;
     private readonly IResponsibleGamblingService? _responsibleGamblingService;
+    private readonly IGamificationService _gamificationService;
 
     public RouletteService(
         IRouletteRoundRepository roundRepository,
         IRouletteWalletGateway walletGateway,
+        IGamificationService gamificationService,
         IResponsibleGamblingService? responsibleGamblingService = null)
     {
         _roundRepository = roundRepository;
         _walletGateway = walletGateway;
+        _gamificationService = gamificationService;
         _responsibleGamblingService = responsibleGamblingService;
     }
 
@@ -58,6 +61,7 @@ public sealed class RouletteService : IRouletteService
         var round = new RouletteRound(userId, bets, spinResult);
 
         await _roundRepository.AddAsync(round);
+        await _gamificationService.AwardXpForRoulettePlayAsync(userId, round.TotalStake, round.TotalPayout, round.SpinResult);
         return ToDto(round);
     }
 

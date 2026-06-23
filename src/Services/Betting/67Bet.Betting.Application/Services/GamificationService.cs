@@ -70,6 +70,86 @@ public class GamificationService : IGamificationService
         }
     }
 
+    public async Task AwardXpForPlinkoPlayAsync(Guid userId, decimal stake, decimal payout)
+    {
+        var gamification = await GetOrCreateUserGamificationAsync(userId);
+        long xpToAdd = (long)stake; // 1 XP per 1 unit of stake
+        if (payout > stake)
+        {
+            xpToAdd += (long)((payout - stake) * 0.5m);
+        }
+
+        if (xpToAdd > 0)
+        {
+            bool leveledUp = gamification.AddExperience(xpToAdd);
+            await _gamificationRepo.UpdateAsync(gamification);
+            _logger.LogInformation("Awarded {XP} XP to user {UserId} for Plinko play. Level Up: {LeveledUp}", xpToAdd, userId, leveledUp);
+        }
+
+        await UpdateAchievementProgressAsync(userId, AchievementType.PlinkoRounds, 1);
+        if (payout > 0)
+        {
+            await UpdateAchievementProgressAsync(userId, AchievementType.TotalWinnings, payout);
+        }
+    }
+
+    public async Task AwardXpForRoulettePlayAsync(Guid userId, decimal stake, decimal payout, int spinResult)
+    {
+        var gamification = await GetOrCreateUserGamificationAsync(userId);
+        long xpToAdd = (long)stake; // 1 XP per 1 unit of stake
+        if (payout > stake)
+        {
+            xpToAdd += (long)((payout - stake) * 0.5m);
+        }
+
+        if (xpToAdd > 0)
+        {
+            bool leveledUp = gamification.AddExperience(xpToAdd);
+            await _gamificationRepo.UpdateAsync(gamification);
+            _logger.LogInformation("Awarded {XP} XP to user {UserId} for Roulette play. Level Up: {LeveledUp}", xpToAdd, userId, leveledUp);
+        }
+
+        await UpdateAchievementProgressAsync(userId, AchievementType.RouletteSpins, 1);
+        if (payout > 0)
+        {
+            await UpdateAchievementProgressAsync(userId, AchievementType.TotalWinnings, payout);
+        }
+
+        if (spinResult == 0)
+        {
+            await UpdateAchievementProgressAsync(userId, AchievementType.GreenRoulette, 1);
+        }
+    }
+
+    public async Task AwardXpForKycVerificationAsync(Guid userId)
+    {
+        var achievements = (await _achievementRepo.GetAllAsync()).Where(a => a.Type == AchievementType.KycVerification);
+        foreach (var a in achievements)
+        {
+            var ua = await _userAchievementRepo.GetSpecificAsync(userId, a.Id);
+            if (ua == null || !ua.IsUnlocked)
+            {
+                if (ua == null)
+                {
+                    ua = new UserAchievement(userId, a.Id);
+                    await _userAchievementRepo.AddAsync(ua);
+                }
+
+                bool unlocked = ua.UpdateProgress(a.Threshold, a.Threshold);
+                if (unlocked)
+                {
+                    await _userAchievementRepo.UpdateAsync(ua);
+                    _logger.LogInformation("User {UserId} unlocked KycVerification achievement.", userId);
+
+                    var gamification = await GetOrCreateUserGamificationAsync(userId);
+                    bool leveledUp = gamification.AddExperience(250);
+                    await _gamificationRepo.UpdateAsync(gamification);
+                    _logger.LogInformation("Awarded 250 XP to user {UserId} for KYC verification. Level Up: {LeveledUp}", userId, leveledUp);
+                }
+            }
+        }
+    }
+
     public async Task<UserGamificationDto> GetUserProgressAsync(Guid userId)
     {
         var g = await GetOrCreateUserGamificationAsync(userId);

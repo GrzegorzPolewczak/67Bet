@@ -4,6 +4,7 @@ using _67Bet.Betting.Application.Services;
 using _67Bet.Betting.Domain.Entities.Roulette;
 using _67Bet.Betting.Domain.Repositories;
 using FluentAssertions;
+using Moq;
 
 namespace _67Bet.UnitTests.Services;
 
@@ -14,7 +15,7 @@ public class RouletteServiceTests
     {
         var repo = new FakeRouletteRoundRepository();
         var wallet = new FakeRouletteWalletGateway(true);
-        var service = new RouletteService(repo, wallet);
+        var service = new RouletteService(repo, wallet, new Mock<IGamificationService>().Object);
 
         var result = await service.PlayAsync(Guid.NewGuid(),
             new RoulettePlayRequest(new[] { new RouletteBetRequest(RouletteBetType.Red, null, 10m) }),
@@ -32,7 +33,7 @@ public class RouletteServiceTests
     {
         var repo = new FakeRouletteRoundRepository();
         var wallet = new FakeRouletteWalletGateway(true);
-        var service = new RouletteService(repo, wallet);
+        var service = new RouletteService(repo, wallet, new Mock<IGamificationService>().Object);
 
         var result = await service.PlayAsync(Guid.NewGuid(), new RoulettePlayRequest(new[]
         {
@@ -50,7 +51,7 @@ public class RouletteServiceTests
     public async Task PlayAsync_WhenWalletRejectsStake_ThrowsAndDoesNotStoreRound()
     {
         var repo = new FakeRouletteRoundRepository();
-        var service = new RouletteService(repo, new FakeRouletteWalletGateway(false));
+        var service = new RouletteService(repo, new FakeRouletteWalletGateway(false), new Mock<IGamificationService>().Object);
 
         var act = () => service.PlayAsync(Guid.NewGuid(),
             new RoulettePlayRequest(new[] { new RouletteBetRequest(RouletteBetType.Black, null, 20m) }),
@@ -64,7 +65,7 @@ public class RouletteServiceTests
     [Fact]
     public async Task PlayAsync_WhenNoBetsProvided_Throws()
     {
-        var service = new RouletteService(new FakeRouletteRoundRepository(), new FakeRouletteWalletGateway(true));
+        var service = new RouletteService(new FakeRouletteRoundRepository(), new FakeRouletteWalletGateway(true), new Mock<IGamificationService>().Object);
 
         var act = () => service.PlayAsync(Guid.NewGuid(),
             new RoulettePlayRequest(Array.Empty<RouletteBetRequest>()),
@@ -80,7 +81,7 @@ public class RouletteServiceTests
         var userId = Guid.NewGuid();
         var repo = new FakeRouletteRoundRepository();
         var wallet = new FakeRouletteWalletGateway(true);
-        var service = new RouletteService(repo, wallet);
+        var service = new RouletteService(repo, wallet, new Mock<IGamificationService>().Object);
         var round = await service.PlayAsync(userId,
             new RoulettePlayRequest(new[] { new RouletteBetRequest(RouletteBetType.Red, null, 10m) }),
             "token");
@@ -99,7 +100,7 @@ public class RouletteServiceTests
         var userId = Guid.NewGuid();
         var repo = new FakeRouletteRoundRepository();
         var wallet = new FakeRouletteWalletGateway(true);
-        var service = new RouletteService(repo, wallet);
+        var service = new RouletteService(repo, wallet, new Mock<IGamificationService>().Object);
         await service.PlayAsync(userId,
             new RoulettePlayRequest(new[] { new RouletteBetRequest(RouletteBetType.Red, null, 5m) }), "token");
         await service.PlayAsync(Guid.NewGuid(),

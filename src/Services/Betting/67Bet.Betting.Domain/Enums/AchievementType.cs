@@ -5,5 +5,9 @@ public enum AchievementType
     TotalBets,
     HighOdds,
     TotalWinnings,
-    LoginStreak
+    LoginStreak,
+    PlinkoRounds,
+    RouletteSpins,
+    GreenRoulette,
+    KycVerification
 }
