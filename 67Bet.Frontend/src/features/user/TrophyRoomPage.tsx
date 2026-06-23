@@ -125,7 +125,7 @@ const TrophyRoomPage: React.FC = () => {
   ];
 
   const specialAchievements = achievements.filter(
-    (a) => a.type === "GreenRoulette" || a.type === "KycVerification"
+    (a) => a.type === "GreenRoulette" || a.type === "KycVerification",
   );
 
   const getTierColor = (index: number, isUnlocked: boolean) => {
@@ -244,26 +244,39 @@ const TrophyRoomPage: React.FC = () => {
           <div className="space-y-4">
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-orange-500" /> Staking Games
+                <CheckSquare className="w-3.5 h-3.5 text-orange-500" /> Staking
+                Games
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Earn <strong>1 XP</strong> for every <strong>1 PLN</strong> staked on sports slips, Plinko, or Roulette.
+                Earn <strong>1 XP</strong> for every <strong>1 PLN</strong>{" "}
+                staked on sports slips, Plinko, or Roulette.
               </p>
             </div>
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-accent-success" /> Game Wins
+                <CheckSquare className="w-3.5 h-3.5 text-accent-success" /> Game
+                Wins
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Bonus XP on sports slips: <span className="font-mono text-gray-400">Stake * (Odds - 1) * 0.5</span>. Plinko/Roulette net profits: <span className="font-mono text-gray-400">(Payout - Stake) * 0.5</span>.
+                Bonus XP on sports slips:{" "}
+                <span className="font-mono text-gray-400">
+                  Stake * (Odds - 1) * 0.5
+                </span>
+                . Plinko/Roulette net profits:{" "}
+                <span className="font-mono text-gray-400">
+                  (Payout - Stake) * 0.5
+                </span>
+                .
               </p>
             </div>
             <div className="bg-dark-900 p-3 rounded-xl border border-dark-700">
               <h4 className="text-xs font-bold text-gray-300 flex items-center gap-1.5 mb-1">
-                <CheckSquare className="w-3.5 h-3.5 text-amber-500" /> Account Verification
+                <CheckSquare className="w-3.5 h-3.5 text-amber-500" /> Account
+                Verification
               </h4>
               <p className="text-[10px] text-gray-500 leading-relaxed">
-                Complete KYC identity verification to claim a <strong>+250 XP bonus</strong> and unlock a unique achievement.
+                Complete KYC identity verification to claim a{" "}
+                <strong>+250 XP bonus</strong> and unlock a unique achievement.
               </p>
             </div>
           </div>
@@ -423,10 +436,14 @@ const TrophyRoomPage: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
-                        <h3 className={`font-black text-lg truncate ${isUnlocked ? "text-white" : "text-gray-500"}`}>
+                        <h3
+                          className={`font-black text-lg truncate ${isUnlocked ? "text-white" : "text-gray-500"}`}
+                        >
                           {ach.name}
                         </h3>
-                        <p className={`text-xs leading-normal ${isUnlocked ? "text-gray-400" : "text-gray-600"}`}>
+                        <p
+                          className={`text-xs leading-normal ${isUnlocked ? "text-gray-400" : "text-gray-600"}`}
+                        >
                           {ach.description}
                         </p>
                       </div>
@@ -442,7 +459,8 @@ const TrophyRoomPage: React.FC = () => {
                     </div>
                     {isUnlocked && ach.unlockedAt && (
                       <p className="text-[9px] text-gray-600 mt-2 font-medium">
-                        Unlocked on {new Date(ach.unlockedAt).toLocaleDateString()}
+                        Unlocked on{" "}
+                        {new Date(ach.unlockedAt).toLocaleDateString()}
                       </p>
                     )}
                   </div>
