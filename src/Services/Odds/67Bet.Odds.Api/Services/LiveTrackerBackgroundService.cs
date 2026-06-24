@@ -48,7 +48,7 @@ public class LiveTrackerBackgroundService : BackgroundService
 
                         if (realState == null)
                         {
-                            realState = SimulateState(evt);
+                            realState = CreateFallbackState(evt);
                         }
 
                         if (string.IsNullOrEmpty(realState.StreamUrl))
@@ -92,50 +92,32 @@ public class LiveTrackerBackgroundService : BackgroundService
         return $"https://www.youtube.com/embed?listType=search&list={searchQuery}&autoplay=1&mute=1";
     }
 
-    private static readonly ConcurrentDictionary<string, LiveMatchStateDto> _mockStates = new();
-    private static readonly Random _random = new();
-    private static readonly string[] _zones = { "HomeBox", "HomeDef", "Midfield", "AwayDef", "AwayBox" };
-    private static readonly string[] _actions = { "Safe Possession", "Dangerous Attack", "Free Kick", "Corner Kick", "Throw-in", "Shot on Target", "Goal Kick" };
-
-    private LiveMatchStateDto SimulateState(dynamic evt)
+    private LiveMatchStateDto CreateFallbackState(dynamic evt)
     {
         string matchId = evt.ExternalId;
         string sportKey = evt.SportKey;
-        bool isSoccer = sportKey.Contains("soccer");
-        var actions = isSoccer ? _actions : new[] { "Attacking", "Defending", "Time Out", "Free Throws" };
+        string recentScores = evt.RecentScores ?? "0-0";
+        string homeScore = "0";
+        string awayScore = "0";
 
-        var state = _mockStates.GetOrAdd(matchId, _ => new LiveMatchStateDto
+        if (!string.IsNullOrEmpty(recentScores) && recentScores.Contains("-"))
+        {
+            var parts = recentScores.Split('-');
+            if (parts.Length == 2)
+            {
+                homeScore = parts[0].Trim();
+                awayScore = parts[1].Trim();
+            }
+        }
+
+        return new LiveMatchStateDto
         {
             MatchId = matchId,
             SportKey = sportKey,
-            CurrentTime = "1'",
-            Score = new Dictionary<string, string> { { "Home", "0" }, { "Away", "0" } }
-        });
-
-        // Simulate time advancing
-        if (int.TryParse(state.CurrentTime.Replace("'", ""), out int min))
-        {
-            if (min < 90) state.CurrentTime = $"{min + 1}'";
-        }
-
-        // Simulate score chance
-        if (_random.NextDouble() < 0.05)
-        {
-            if (_random.NextDouble() > 0.5)
-            {
-                int s = int.Parse(state.Score["Home"]);
-                state.Score["Home"] = (s + 1).ToString();
-            }
-            else
-            {
-                int s = int.Parse(state.Score["Away"]);
-                state.Score["Away"] = (s + 1).ToString();
-            }
-        }
-
-        state.CurrentAction = actions[_random.Next(actions.Length)];
-        state.CurrentZone = _zones[_random.Next(_zones.Length)];
-
-        return state;
+            CurrentTime = "Live",
+            CurrentAction = "Match in progress",
+            CurrentZone = "Midfield",
+            Score = new Dictionary<string, string> { { "Home", homeScore }, { "Away", awayScore } }
+        };
     }
 }
