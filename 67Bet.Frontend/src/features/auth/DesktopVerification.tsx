@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import * as signalR from "@microsoft/signalr";
 import { identityApi } from "../../api/axios";
 import { useDispatch } from "react-redux";
-import { setKycVerified } from "./authSlice";
+import { setKycVerified, refreshTokenAsync } from "./authSlice";
 
 const DesktopVerification: React.FC = () => {
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -33,6 +33,7 @@ const DesktopVerification: React.FC = () => {
         connection.on("VerificationCompleted", () => {
           setIsVerified(true);
           dispatch(setKycVerified()); // Sync the global state!
+          dispatch(refreshTokenAsync() as any); // Fetch new token with updated KYC claim
         });
 
         await connection.start();

@@ -60,6 +60,22 @@ public class AuthController : ControllerBase
         return Ok(user.ToDto());
     }
 
+    [Authorize]
+    [HttpPost("refresh")]
+    public async Task<ActionResult<string>> RefreshToken()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null) return Unauthorized();
+
+        var userId = Guid.Parse(userIdClaim.Value);
+        var user = await _identityService.GetUserByIdAsync(userId);
+
+        if (user == null) return NotFound("Użytkownik nie znaleziony.");
+
+        var token = GenerateJwtToken(user);
+        return Ok(token);
+    }
+
     private string GenerateJwtToken(_67Bet.Identity.Domain.Entities.User user)
     {
         var jwtSettings = _configuration.GetSection("Jwt");

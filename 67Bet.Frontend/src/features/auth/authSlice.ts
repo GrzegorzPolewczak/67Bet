@@ -41,6 +41,18 @@ export const getCurrentUser = createAsyncThunk(
   },
 );
 
+export const refreshTokenAsync = createAsyncThunk(
+  "auth/refreshToken",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await identityApi.post("/auth/refresh");
+      return response.data; // This is the new token string
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || "Failed to refresh token");
+    }
+  },
+);
+
 export const loginAsync = createAsyncThunk(
   "auth/login",
   async (
@@ -142,6 +154,10 @@ const authSlice = createSlice({
         state.token = null;
         state.isAuthenticated = false;
         localStorage.removeItem("token");
+      })
+      .addCase(refreshTokenAsync.fulfilled, (state, action) => {
+        state.token = action.payload;
+        localStorage.setItem("token", action.payload);
       });
   },
 });
