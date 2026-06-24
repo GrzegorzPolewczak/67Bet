@@ -128,15 +128,15 @@ const BetSlip: React.FC = () => {
               Stake
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">
-                $
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">
+                PLN
               </span>
               <input
                 type="number"
                 value={stake || ""}
                 onChange={(e) => dispatch(setStake(Number(e.target.value)))}
                 placeholder="0.00"
-                className="w-full bg-dark-900 border border-dark-600 rounded-lg py-3 pl-8 pr-4 text-sm font-bold focus:outline-none focus:border-primary-500 transition-colors"
+                className="w-full bg-dark-900 border border-dark-600 rounded-lg py-3 pl-12 pr-4 text-sm font-bold focus:outline-none focus:border-primary-500 transition-colors"
                 disabled={loading}
               />
             </div>
@@ -148,7 +148,7 @@ const BetSlip: React.FC = () => {
                 Potential Payout
               </span>
               <span className="text-lg font-black text-accent-success">
-                ${Number(potentialPayout).toFixed(2)}
+                {Number(potentialPayout).toFixed(2)} PLN
               </span>
             </div>
 

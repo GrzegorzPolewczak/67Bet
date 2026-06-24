@@ -113,7 +113,8 @@ using (var scope = app.Services.CreateScope())
         // Seed Achievements
         var existingAchievements = context.Achievements.ToList();
         if (existingAchievements.Any(a => a.Name.Contains("Debiutant") || a.Name.Contains("Snajper") || a.Name.Contains("Rekordzista"))
-            || !existingAchievements.Any(a => a.Type == _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds))
+            || !existingAchievements.Any(a => a.Type == _67Bet.Betting.Domain.Enums.AchievementType.PlinkoRounds)
+            || existingAchievements.Any(a => a.Description.Contains("$")))
         {
             context.Achievements.RemoveRange(existingAchievements);
             var userAchievements = context.UserAchievements.ToList();
@@ -138,10 +139,10 @@ using (var scope = app.Services.CreateScope())
                 new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Sniper (Diamond)", "Win a bet with odds at least 50.0", _67Bet.Betting.Domain.Enums.AchievementType.HighOdds, 50.0m, "icon-odds-50"),
 
                 // TotalWinnings (High Roller)
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Bronze)", "Reach total winnings of $100", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 100, "icon-win-100"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Silver)", "Reach total winnings of $500", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 500, "icon-win-500"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Gold)", "Reach total winnings of $2500", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 2500, "icon-win-2500"),
-                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Diamond)", "Reach total winnings of $10000", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 10000, "icon-win-10000"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Bronze)", "Reach total winnings of 100 PLN", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 100, "icon-win-100"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Silver)", "Reach total winnings of 500 PLN", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 500, "icon-win-500"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Gold)", "Reach total winnings of 2500 PLN", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 2500, "icon-win-2500"),
+                new _67Bet.Betting.Domain.Entities.Gamification.Achievement("High Roller (Diamond)", "Reach total winnings of 10000 PLN", _67Bet.Betting.Domain.Enums.AchievementType.TotalWinnings, 10000, "icon-win-10000"),
 
                 // LoginStreak (Daily Bettor)
                 new _67Bet.Betting.Domain.Entities.Gamification.Achievement("Daily Bettor (Bronze)", "Log in for 3 consecutive days", _67Bet.Betting.Domain.Enums.AchievementType.LoginStreak, 3, "icon-streak-3"),

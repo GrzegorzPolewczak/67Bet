@@ -288,7 +288,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-1">
-                        Freebet Reward ($)
+                        Freebet Reward (PLN)
                       </label>
                       <input
                         type="number"
@@ -333,7 +333,7 @@ const AdminDashboard: React.FC = () => {
                             {promo.code}
                           </p>
                           <p className="text-xs font-bold text-primary-500">
-                            ${promo.rewardAmount.toFixed(2)} Bonus
+                            {promo.rewardAmount.toFixed(2)} PLN Bonus
                           </p>
                         </div>
                       </div>
