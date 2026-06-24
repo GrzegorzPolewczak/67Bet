@@ -75,21 +75,21 @@ interface RouletteRoundDto {
 }
 
 function betLabel(betType: BetType, chosenNumber?: number): string {
-  if (betType === "StraightUp") return `Numer ${chosenNumber}`;
+  if (betType === "StraightUp") return `Number ${chosenNumber}`;
   const map: Record<BetType, string> = {
     StraightUp: "",
-    Red: "Rouge",
-    Black: "Noir",
-    Even: "Pair",
-    Odd: "Impair",
-    Low: "Manque (1–18)",
-    High: "Passe (19–36)",
-    DozenFirst: "1ère douzaine (1–12)",
-    DozenSecond: "2ème douzaine (13–24)",
-    DozenThird: "3ème douzaine (25–36)",
-    ColumnFirst: "Colonne 1",
-    ColumnSecond: "Colonne 2",
-    ColumnThird: "Colonne 3",
+    Red: "Red",
+    Black: "Black",
+    Even: "Even",
+    Odd: "Odd",
+    Low: "Low (1–18)",
+    High: "High (19–36)",
+    DozenFirst: "1st Dozen (1–12)",
+    DozenSecond: "2nd Dozen (13–24)",
+    DozenThird: "3rd Dozen (25–36)",
+    ColumnFirst: "Column 1",
+    ColumnSecond: "Column 2",
+    ColumnThird: "Column 3",
   };
   return map[betType];
 }
@@ -126,10 +126,10 @@ const NUMBER_GRID: number[][] = [
 
 const OUTSIDE_BETS: [BetType, string, string][] = [
   ["Low", "1–18", "bg-dark-700 border-dark-600 text-gray-200"],
-  ["Even", "Pair", "bg-dark-700 border-dark-600 text-gray-200"],
-  ["Red", "Rouge", "bg-red-600 border-red-400 text-white"],
-  ["Black", "Noir", "bg-zinc-900 border-zinc-700 text-white"],
-  ["Odd", "Impair", "bg-dark-700 border-dark-600 text-gray-200"],
+  ["Even", "Even", "bg-dark-700 border-dark-600 text-gray-200"],
+  ["Red", "Red", "bg-red-600 border-red-400 text-white"],
+  ["Black", "Black", "bg-zinc-900 border-zinc-700 text-white"],
+  ["Odd", "Odd", "bg-dark-700 border-dark-600 text-gray-200"],
   ["High", "19–36", "bg-dark-700 border-dark-600 text-gray-200"],
 ];
 
@@ -146,10 +146,10 @@ const COLUMN_BETS: [BetType, string][] = [
 ];
 
 const QUICK_BETS: [BetType, string][] = [
-  ["Red", "Rouge"],
-  ["Black", "Noir"],
-  ["Even", "Pair"],
-  ["Odd", "Impair"],
+  ["Red", "Red"],
+  ["Black", "Black"],
+  ["Even", "Even"],
+  ["Odd", "Odd"],
   ["Low", "1–18"],
   ["High", "19–36"],
   ["DozenFirst", "1–12"],
@@ -185,11 +185,11 @@ const RoulettePage: React.FC = () => {
 
   const addBet = (betType: BetType, chosenNumber?: number) => {
     if (stake <= 0) {
-      setError("Stawka musi być większa od zera.");
+      setError("Stake must be greater than zero.");
       return;
     }
     if (bets.length >= 10) {
-      setError("Maksymalnie 10 zakładów na jedną rundę.");
+      setError("Maximum 10 bets per round.");
       return;
     }
     setBets((prev) => [
@@ -210,11 +210,11 @@ const RoulettePage: React.FC = () => {
 
   const spin = async () => {
     if (bets.length === 0) {
-      setError("Postaw przynajmniej jeden zakład.");
+      setError("Place at least one bet.");
       return;
     }
     if (!isAuthenticated) {
-      setError("Zaloguj się, aby grać.");
+      setError("Please log in to play.");
       return;
     }
 
@@ -247,7 +247,7 @@ const RoulettePage: React.FC = () => {
       setHistory((prev) => [round, ...prev].slice(0, 10));
     } catch (err) {
       setSpinAnim(false);
-      setError(getApiError(err, "Błąd podczas kręcenia. Spróbuj ponownie."));
+      setError(getApiError(err, "Error during spinning. Please try again."));
     } finally {
       setIsSpinning(false);
     }
@@ -274,8 +274,7 @@ const RoulettePage: React.FC = () => {
             </h1>
           </div>
           <p className="text-gray-400 text-base">
-            Europejska ruletka. Postaw zakłady na stole i zakręć kołem. Kurs
-            35:1 na numer, 1:1 na kolor/parzystość, 2:1 na dziesiątkę/kolumnę.
+            European Roulette. Place your bets on the table and spin the wheel. Payout: 35:1 on a single number, 1:1 on color/evenness, 2:1 on dozen/column.
           </p>
         </div>
         {isAuthenticated && (
@@ -283,7 +282,7 @@ const RoulettePage: React.FC = () => {
             <Coins className="w-6 h-6 text-accent-success" />
             <div>
               <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
-                Saldo
+                Balance
               </p>
               <p className="text-xl font-black text-white">
                 {balance.toFixed(2)} PLN
@@ -303,7 +302,7 @@ const RoulettePage: React.FC = () => {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-8">
         {/* Betting table */}
         <div className="bg-dark-800 rounded-3xl border border-dark-700 p-6 space-y-5">
-          <h2 className="text-xl font-black text-white">Stół do gry</h2>
+          <h2 className="text-xl font-black text-white">Betting Table</h2>
 
           <div className="overflow-x-auto">
             <div className="min-w-[620px] space-y-1">
@@ -368,7 +367,7 @@ const RoulettePage: React.FC = () => {
           {/* Quick bet selector */}
           <div className="bg-dark-900 rounded-2xl border border-dark-700 p-4">
             <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3">
-              Szybkie zakłady
+              Quick Bets
             </p>
             <div className="flex flex-wrap gap-2">
               {QUICK_BETS.map(([type, label]) => (
@@ -395,7 +394,7 @@ const RoulettePage: React.FC = () => {
           {/* Spin result */}
           <div className="bg-dark-800 rounded-3xl border border-dark-700 p-6 text-center">
             <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-5">
-              {spinAnim ? "Kręci się..." : "Ostatni wynik"}
+              {spinAnim ? "Spinning..." : "Last Result"}
             </p>
             <motion.div
               animate={
@@ -432,7 +431,7 @@ const RoulettePage: React.FC = () => {
                       : `${(lastRound.totalPayout - lastRound.totalStake).toFixed(2)} PLN`}
                   </p>
                   <p className="text-xs text-gray-500">
-                    Stawka {lastRound.totalStake.toFixed(2)} · Wypłata{" "}
+                    Stake {lastRound.totalStake.toFixed(2)} · Payout{" "}
                     {lastRound.totalPayout.toFixed(2)} PLN
                   </p>
                   <div className="mt-3 space-y-1">
@@ -463,7 +462,7 @@ const RoulettePage: React.FC = () => {
           {/* Stake */}
           <div className="bg-dark-800 rounded-3xl border border-dark-700 p-6">
             <label className="block text-xs font-black text-gray-500 uppercase tracking-widest mb-2">
-              Stawka
+              Stake
             </label>
             <input
               type="number"
@@ -490,21 +489,21 @@ const RoulettePage: React.FC = () => {
           <div className="bg-dark-800 rounded-3xl border border-dark-700 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-black text-white">
-                Zakłady ({bets.length}/10)
+                Bets ({bets.length}/10)
               </h3>
               {bets.length > 0 && (
                 <button
                   onClick={() => setBets([])}
                   className="text-xs text-gray-500 hover:text-red-400 font-bold transition-colors"
                 >
-                  Wyczyść
+                  Clear
                 </button>
               )}
             </div>
 
             {bets.length === 0 ? (
               <p className="text-center text-gray-500 text-sm py-6">
-                Kliknij liczbę lub zakład zewnętrzny, aby dodać.
+                Click a number or outside bet to add.
               </p>
             ) : (
               <div className="space-y-2">
@@ -540,7 +539,7 @@ const RoulettePage: React.FC = () => {
                   ))}
                 </AnimatePresence>
                 <div className="flex justify-between text-sm font-black text-white pt-2 border-t border-dark-700">
-                  <span>Łączna stawka</span>
+                  <span>Total Stake</span>
                   <span className="text-red-400">
                     {totalStake.toFixed(2)} PLN
                   </span>
@@ -558,12 +557,12 @@ const RoulettePage: React.FC = () => {
             <div className="relative z-10 flex items-center justify-center gap-3 text-lg tracking-wide uppercase">
               {isSpinning ? (
                 <>
-                  <RefreshCw className="w-6 h-6 animate-spin" /> Kręci się...
+                  <RefreshCw className="w-6 h-6 animate-spin" /> Spinning...
                 </>
               ) : (
                 <>
                   <span className="text-2xl">🎯</span>
-                  {isAuthenticated ? "Zakręć!" : "Zaloguj się"}
+                  {isAuthenticated ? "Spin!" : "Log In"}
                 </>
               )}
             </div>
@@ -575,12 +574,12 @@ const RoulettePage: React.FC = () => {
       <div className="bg-dark-800 rounded-3xl border border-dark-700 p-6">
         <div className="flex items-center gap-3 mb-5">
           <Trophy className="w-6 h-6 text-yellow-500" />
-          <h2 className="text-2xl font-black text-white">Historia rund</h2>
+          <h2 className="text-2xl font-black text-white">Round History</h2>
         </div>
 
         {history.length === 0 ? (
           <div className="bg-dark-900 border border-dark-700 rounded-2xl p-10 text-center text-gray-500 font-bold">
-            Brak rozegranych rund.
+            No rounds played yet.
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -612,7 +611,7 @@ const RoulettePage: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">
-                  {round.totalStake.toFixed(2)} PLN · {round.bets.length} zak.
+                  {round.totalStake.toFixed(2)} PLN · {round.bets.length} {round.bets.length === 1 ? "bet" : "bets"}
                 </p>
               </motion.div>
             ))}

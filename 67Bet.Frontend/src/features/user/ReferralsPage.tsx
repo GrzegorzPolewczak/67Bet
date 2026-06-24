@@ -256,7 +256,7 @@ const ReferralsPage: React.FC = () => {
             </div>
             <h4 className="font-bold text-white mb-1">Freebets</h4>
             <p className="text-xs text-gray-400">
-              Every referral grants a $20 Freebet for both you and your friend.
+              Every referral grants a 20 PLN Freebet for both you and your friend.
             </p>
           </div>
           <div className="bg-dark-800 border border-dark-700 p-6 rounded-3xl">
