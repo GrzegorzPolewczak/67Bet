@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CircleDot,
@@ -10,7 +10,8 @@ import {
   AlertCircle,
   SlidersHorizontal,
 } from "lucide-react";
-import type { RootState } from "../../app/store";
+import type { RootState, AppDispatch } from "../../app/store";
+import { fetchBalanceAsync } from "../wallet/walletSlice";
 import { bettingApi, walletApi } from "../../api/axios";
 
 type RiskLevel = "Low" | "Medium" | "High";
@@ -178,6 +179,7 @@ const createBallAnimation = (round: PlinkoRound) => {
 };
 
 const PlinkoPage: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth,
   );
@@ -281,6 +283,8 @@ const PlinkoPage: React.FC = () => {
           response.data.freebetBalance || response.data.FreebetBalance || 0,
         ),
       );
+      // Sync with Redux store for global navbar updates
+      dispatch(fetchBalanceAsync());
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -337,6 +341,7 @@ const PlinkoPage: React.FC = () => {
     try {
       await bettingApi.post(`/plinko/${round.id}/settle`);
       setBalance((current) => toMoney(current + round.payout));
+      dispatch(fetchBalanceAsync());
     } catch (err: any) {
       setError(
         err.response?.data?.error ||
@@ -494,6 +499,7 @@ const PlinkoPage: React.FC = () => {
         ...responses.map((response) => mapRound(response.data, batchId)),
       ]);
       chargeDisplayedWalletForBatch(purchasedBallCount);
+      if (!isDemoMode) dispatch(fetchBalanceAsync());
 
       if (failedPurchase) {
         setError(

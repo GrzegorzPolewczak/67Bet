@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Coins,
@@ -9,7 +9,8 @@ import {
   X,
   ChevronRight,
 } from "lucide-react";
-import type { RootState } from "../../app/store";
+import type { RootState, AppDispatch } from "../../app/store";
+import { fetchBalanceAsync } from "../wallet/walletSlice";
 import { bettingApi, walletApi } from "../../api/axios";
 
 const RED_NUMBERS = new Set([
@@ -161,6 +162,7 @@ const QUICK_BETS: [BetType, string][] = [
 ];
 
 const RoulettePage: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const [balance, setBalance] = useState(0);
   const [stake, setStake] = useState(10);
@@ -175,7 +177,10 @@ const RoulettePage: React.FC = () => {
     if (!isAuthenticated) return;
     walletApi
       .get("/wallet/balance")
-      .then((r) => setBalance(Number(r.data.balance ?? r.data.Balance ?? 0)))
+      .then((r) => {
+        setBalance(Number(r.data.balance ?? r.data.Balance ?? 0));
+        dispatch(fetchBalanceAsync());
+      })
       .catch(() => {});
     bettingApi
       .get<RouletteRoundDto[]>("/roulette/history?limit=10")
@@ -235,6 +240,7 @@ const RoulettePage: React.FC = () => {
         },
       );
       const round = response.data;
+      dispatch(fetchBalanceAsync());
 
       await new Promise((res) => setTimeout(res, 2200));
       setSpinAnim(false);
@@ -244,6 +250,7 @@ const RoulettePage: React.FC = () => {
 
       await bettingApi.post(`/roulette/${round.id}/settle`);
       setBalance((prev) => Math.round((prev + round.totalPayout) * 100) / 100);
+      dispatch(fetchBalanceAsync());
       setHistory((prev) => [round, ...prev].slice(0, 10));
     } catch (err) {
       setSpinAnim(false);
