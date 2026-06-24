@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "./app/store";
 import { getCurrentUser } from "./features/auth/authSlice";
 import MainLayout from "./components/layout/MainLayout";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 import Home from "./features/betting/Home";
 import SportPage from "./features/betting/SportPage";
 import MatchDetailsView from "./features/betting/MatchDetailsView";
@@ -46,20 +47,22 @@ function App() {
         <Route path="virtual-racing" element={<VirtualRacingPage />} />
         <Route path="plinko" element={<PlinkoPage />} />
         <Route path="roulette" element={<RoulettePage />} />
-        <Route path="settings" element={<SettingsPage />} />
-        <Route path="referrals" element={<ReferralsPage />} />
-        <Route path="trophies" element={<TrophyRoomPage />} />
-        <Route
-          path="responsible-gambling"
-          element={<ResponsibleGamblingPage />}
-        />
-        <Route path="history" element={<BetHistoryPage />} />
         <Route path="share-ticket/:id" element={<SharedTicketPage />} />
-        <Route path="deposit" element={<DepositPage />} />
-        <Route path="deposit-success" element={<DepositSuccessPage />} />
-        <Route path="withdraw" element={<WithdrawPage />} />
-        <Route path="admin/dashboard" element={<AdminDashboard />} />
-        <Route path="kyc-verify" element={<DesktopVerification />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="referrals" element={<ReferralsPage />} />
+          <Route path="trophies" element={<TrophyRoomPage />} />
+          <Route
+            path="responsible-gambling"
+            element={<ResponsibleGamblingPage />}
+          />
+          <Route path="history" element={<BetHistoryPage />} />
+          <Route path="deposit" element={<DepositPage />} />
+          <Route path="deposit-success" element={<DepositSuccessPage />} />
+          <Route path="withdraw" element={<WithdrawPage />} />
+          <Route path="admin/dashboard" element={<AdminDashboard />} />
+          <Route path="kyc-verify" element={<DesktopVerification />} />
+        </Route>
       </Route>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

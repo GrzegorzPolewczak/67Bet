@@ -85,7 +85,8 @@ const Sidebar: React.FC = () => {
           </ul>
         </div>
 
-        <div className="pt-6 border-t border-dark-700">
+        {user && (
+          <div className="pt-6 border-t border-dark-700">
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">
             My Account
           </h3>
@@ -190,7 +191,8 @@ const Sidebar: React.FC = () => {
               </li>
             )}
           </ul>
-        </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-auto p-4">
