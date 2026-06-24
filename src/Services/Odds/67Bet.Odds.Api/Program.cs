@@ -20,6 +20,7 @@ builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67B
 builder.Services.AddSingleton<_67Bet.Odds.Api.Services.ILiveMatchSimulator, _67Bet.Odds.Api.Services.DefaultSimulator>();
 builder.Services.AddSingleton<_67Bet.Odds.Api.Services.MatchSimulatorFactory>();
 builder.Services.AddHostedService<_67Bet.Odds.Api.Services.LiveTrackerBackgroundService>();
+builder.Services.AddHostedService<_67Bet.Odds.Api.Services.OddsSyncBackgroundService>();
 
 // Configure CORS (Oryginalna podwójna konfiguracja)
 builder.Services.AddCors(options =>

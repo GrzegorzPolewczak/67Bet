@@ -80,6 +80,7 @@ builder.Services.AddSwaggerGen(c =>
 // Register layers
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddHostedService<_67Bet.Betting.Api.Services.EventSettlementBackgroundWorker>();
 
 var app = builder.Build();
 

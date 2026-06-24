@@ -19,6 +19,7 @@ public interface IEventRepository : IRepository<Event>
 {
     Task<IEnumerable<Event>> GetActiveEventsAsync();
     Task<Event?> GetByExternalIdAsync(string externalId);
+    Task<IEnumerable<Event>> GetPastUnsettledEventsAsync();
 }
 
 public interface IMarketRepository : IRepository<Market>

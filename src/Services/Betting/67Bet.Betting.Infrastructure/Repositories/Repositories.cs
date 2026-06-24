@@ -49,11 +49,21 @@ public class EventRepository : EFRepository<Event, BettingDbContext>, IEventRepo
 
     public async Task<IEnumerable<Event>> GetActiveEventsAsync()
     {
+        var cutoffTime = DateTime.UtcNow.AddHours(-4);
         return await _dbSet
             .Include(e => e.Markets)
                 .ThenInclude(m => m.Outcomes)
-            .Where(e => e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live)
+            .Where(e => (e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live) && e.StartTime > cutoffTime)
             .OrderBy(e => e.StartTime)
+            .ToListAsync();
+    public async Task<IEnumerable<Event>> GetPastUnsettledEventsAsync()
+    {
+        // Unsettled = (Scheduled or Live) and StartTime < cutoff
+        var cutoffTime = DateTime.UtcNow.AddHours(-4);
+        return await _dbSet
+            .Include(e => e.Markets)
+                .ThenInclude(m => m.Outcomes)
+            .Where(e => (e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live) && e.StartTime <= cutoffTime)
             .ToListAsync();
     }
 }
