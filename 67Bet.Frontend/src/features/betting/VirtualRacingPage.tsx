@@ -503,7 +503,7 @@ const VirtualRacingPage: React.FC = () => {
                         }
                         title={
                           hasPendingSlipSelection
-                            ? "Najpierw postaw kupon albo usuń wybrany typ z kuponu."
+                            ? "Please place your bet or clear your betslip first."
                             : undefined
                         }
                         className="w-full relative overflow-hidden group bg-dark-700 hover:bg-dark-600 border-2 border-dark-600 text-white font-black py-5 md:py-6 rounded-2xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"

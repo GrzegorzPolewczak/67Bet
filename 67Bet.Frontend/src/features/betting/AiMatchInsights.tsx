@@ -22,7 +22,7 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
       setInsight(response.data.insight);
     } catch (err) {
       console.error("Error fetching AI insight:", err);
-      setError("Nie udało się pobrać analizy AI. Spróbuj ponownie później.");
+      setError("Failed to load AI insights. Please try again later.");
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +40,7 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
             onClick={handleFetchInsight}
             className="text-[10px] font-black bg-primary-600 hover:bg-primary-500 text-white px-3 py-1 rounded-lg transition-colors flex items-center gap-1 uppercase tracking-tighter"
           >
-            Zapytaj AI
+            Ask AI
           </button>
         )}
       </div>
@@ -56,7 +56,7 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
           >
             <Loader2 className="w-5 h-5 animate-spin text-primary-500" />
             <span className="text-xs font-medium italic">
-              Gemini analizuje dane meczowe...
+              Gemini is analyzing match data...
             </span>
           </motion.div>
         ) : insight ? (
@@ -87,8 +87,7 @@ const AiMatchInsights: React.FC<AiMatchInsightsProps> = ({ eventId }) => {
           </motion.div>
         ) : (
           <motion.div key="empty" className="text-xs text-gray-500 italic py-2">
-            Kliknij przycisk powyżej, aby wygenerować inteligentną analizę tego
-            spotkania.
+            Click the button above to generate smart insights for this match.
           </motion.div>
         )}
       </AnimatePresence>

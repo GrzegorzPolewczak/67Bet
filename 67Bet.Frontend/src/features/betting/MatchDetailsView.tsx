@@ -302,7 +302,7 @@ const MatchDetailsView: React.FC = () => {
                             title={
                               event.isBettable && outcome.isBettable
                                 ? undefined
-                                : "Kurs z zewnętrznego API jest tylko podglądem."
+                                : "Odds from external API are read-only."
                             }
                             onClick={() => {
                               if (

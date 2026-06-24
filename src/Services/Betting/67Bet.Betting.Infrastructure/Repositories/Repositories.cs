@@ -56,6 +56,8 @@ public class EventRepository : EFRepository<Event, BettingDbContext>, IEventRepo
             .Where(e => (e.Status == EventStatus.Scheduled || e.Status == EventStatus.Live) && e.StartTime > cutoffTime)
             .OrderBy(e => e.StartTime)
             .ToListAsync();
+    }
+
     public async Task<IEnumerable<Event>> GetPastUnsettledEventsAsync()
     {
         // Unsettled = (Scheduled or Live) and StartTime < cutoff

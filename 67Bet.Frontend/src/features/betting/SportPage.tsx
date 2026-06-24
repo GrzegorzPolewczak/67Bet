@@ -156,7 +156,7 @@ const SportPage: React.FC = () => {
                           title={
                             event.isBettable && outcome?.isBettable
                               ? undefined
-                              : "Kurs z zewnętrznego API jest tylko podglądem. Do kuponu można dodawać rynki z Betting API i Virtual Racing."
+                              : "Odds from external API are read-only. Add markets from Betting API and Virtual Racing to your ticket."
                           }
                           onClick={() => {
                             const market = event.markets[0];

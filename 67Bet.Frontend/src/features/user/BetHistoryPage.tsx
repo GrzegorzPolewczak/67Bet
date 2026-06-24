@@ -186,11 +186,11 @@ const BetHistoryPage: React.FC = () => {
                           {bet.eventName}
                         </p>
                         <p className="text-xs font-bold text-white">
-                          Obstawiono: {bet.marketName}: {bet.outcomeName}
+                          Bet: {bet.marketName}: {bet.outcomeName}
                         </p>
                         {isFinished && bet.winningOutcomeName && (
                           <p className="text-[11px] font-bold text-gray-300">
-                            Wynik: wygrał {bet.winningOutcomeName}
+                            Result: {bet.winningOutcomeName} won
                           </p>
                         )}
                         <div className="flex items-center gap-2 text-[10px] text-gray-500">
