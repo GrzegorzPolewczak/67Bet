@@ -22,6 +22,12 @@ public class TicketsController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<TicketDto>> PlaceTicket(PlaceTicketRequest request)
     {
+        var kycClaim = User.FindFirst("IsKycVerified");
+        if (kycClaim == null || !bool.TryParse(kycClaim.Value, out bool isVerified) || !isVerified)
+        {
+            return BadRequest(new { message = "You must complete KYC verification before placing a bet." });
+        }
+
         var userId = GetUserId();
         var ticket = await _bettingService.PlaceTicketAsync(userId, request.Stake, request.OutcomeIds);
         return Ok(ticket.ToDto());

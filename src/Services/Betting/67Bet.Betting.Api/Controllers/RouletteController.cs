@@ -29,6 +29,12 @@ public sealed class RouletteController : ControllerBase
     [HttpPost("play")]
     public async Task<ActionResult<RouletteRoundDto>> Play(RoulettePlayRequest request)
     {
+        var kycClaim = User.FindFirst("IsKycVerified");
+        if (kycClaim == null || !bool.TryParse(kycClaim.Value, out bool isVerified) || !isVerified)
+        {
+            return BadRequest(new { Error = "You must complete KYC verification before playing Roulette." });
+        }
+
         try
         {
             var result = await _rouletteService.PlayAsync(GetUserId(), request, GetBearerToken());

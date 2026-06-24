@@ -38,6 +38,12 @@ public sealed class PlinkoController : ControllerBase
     [HttpPost("play")]
     public async Task<ActionResult<PlinkoRoundDto>> Play(PlinkoPlayRequest request)
     {
+        var kycClaim = User.FindFirst("IsKycVerified");
+        if (kycClaim == null || !bool.TryParse(kycClaim.Value, out bool isVerified) || !isVerified)
+        {
+            return BadRequest(new { Error = "You must complete KYC verification before playing Plinko." });
+        }
+
         var result = await _plinkoService.PlayAsync(GetUserId(), request, GetBearerToken());
         return Ok(result);
     }
