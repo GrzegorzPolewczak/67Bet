@@ -12,6 +12,7 @@ import {
 import type { RootState, AppDispatch } from "../../app/store";
 import { fetchBalanceAsync } from "../wallet/walletSlice";
 import { bettingApi, walletApi } from "../../api/axios";
+import RouletteSlider from "./RouletteSlider";
 
 const RED_NUMBERS = new Set([
   1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
@@ -169,6 +170,8 @@ const RoulettePage: React.FC = () => {
   const [bets, setBets] = useState<PlacedBet[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinAnim, setSpinAnim] = useState(false);
+  const [targetNumber, setTargetNumber] = useState<number | null>(null);
+  const spinResolver = React.useRef<(() => void) | null>(null);
   const [lastRound, setLastRound] = useState<RouletteRoundDto | null>(null);
   const [history, setHistory] = useState<RouletteRoundDto[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -241,8 +244,13 @@ const RoulettePage: React.FC = () => {
       );
       const round = response.data;
       dispatch(fetchBalanceAsync());
+      
+      setTargetNumber(round.spinResult);
 
-      await new Promise((res) => setTimeout(res, 2200));
+      await new Promise<void>((resolve) => {
+        spinResolver.current = resolve;
+      });
+      
       setSpinAnim(false);
       setLastRound(round);
       setBalance((prev) => Math.round((prev - round.totalStake) * 100) / 100);
@@ -405,25 +413,24 @@ const RoulettePage: React.FC = () => {
             <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-5">
               {spinAnim ? "Spinning..." : "Last Result"}
             </p>
-            <motion.div
-              animate={
-                spinAnim ? { rotate: [0, 360, 720, 1080] } : { rotate: 0 }
-              }
-              transition={
-                spinAnim
-                  ? { duration: 2.2, ease: "easeOut" }
-                  : { duration: 0.3 }
-              }
-              className={`w-28 h-28 rounded-full mx-auto flex items-center justify-center text-4xl font-black border-4 transition-colors ${
-                spinAnim
-                  ? "border-yellow-400 bg-dark-900"
-                  : lastRound !== null
-                    ? spinResultColor(lastRound.spinResult)
-                    : "bg-dark-900 border-dark-700 text-gray-600"
-              }`}
-            >
-              {spinAnim ? "?" : lastRound !== null ? lastRound.spinResult : "–"}
-            </motion.div>
+            {spinAnim || lastRound !== null ? (
+              <div className="w-full mb-4">
+                <RouletteSlider
+                  spinAnim={spinAnim}
+                  targetNumber={targetNumber}
+                  onSpinEnd={() => {
+                    if (spinResolver.current) {
+                      spinResolver.current();
+                      spinResolver.current = null;
+                    }
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-28 h-28 rounded-full mx-auto flex items-center justify-center text-4xl font-black border-4 bg-dark-900 border-dark-700 text-gray-600 mb-4 transition-colors">
+                –
+              </div>
+            )}
 
             <AnimatePresence>
               {lastRound && !spinAnim && (
