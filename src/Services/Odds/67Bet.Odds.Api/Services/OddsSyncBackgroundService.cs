@@ -31,10 +31,10 @@ public class OddsSyncBackgroundService : BackgroundService
                 {
                     var integrationService = scope.ServiceProvider.GetRequiredService<IOddsIntegrationService>();
                     _logger.LogInformation("Starting automated external odds sync...");
-                    
+
                     var result = await integrationService.SyncExternalOddsAsync();
-                    
-                    _logger.LogInformation("Finished automated odds sync. Processed: {Processed}, Added: {Added}, Errors: {ErrorsCount}", 
+
+                    _logger.LogInformation("Finished automated odds sync. Processed: {Processed}, Added: {Added}, Errors: {ErrorsCount}",
                         result.EventsProcessed, result.NewEventsAdded, result.Errors.Count);
                 }
             }

@@ -244,13 +244,13 @@ const RoulettePage: React.FC = () => {
       );
       const round = response.data;
       dispatch(fetchBalanceAsync());
-      
+
       setTargetNumber(round.spinResult);
 
       await new Promise<void>((resolve) => {
         spinResolver.current = resolve;
       });
-      
+
       setSpinAnim(false);
       setLastRound(round);
       setBalance((prev) => Math.round((prev - round.totalStake) * 100) / 100);
