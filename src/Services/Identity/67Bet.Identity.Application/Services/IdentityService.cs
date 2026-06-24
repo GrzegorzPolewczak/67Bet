@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using _67Bet.Identity.Application.Interfaces;
 using _67Bet.Identity.Domain.Entities;
@@ -32,7 +32,7 @@ public class IdentityService : IIdentityService
     public async Task<User> RegisterAsync(string username, string email, string password)
     {
         var existingUser = await _userRepository.GetByEmailAsync(email);
-        if (existingUser != null) throw new InvalidOperationException("Użytkownik o tym adresie e-mail już istnieje.");
+        if (existingUser != null) throw new InvalidOperationException("User with this email already exists.");
 
         string passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
 

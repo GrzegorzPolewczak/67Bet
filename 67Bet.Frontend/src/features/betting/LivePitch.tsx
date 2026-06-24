@@ -12,7 +12,16 @@ interface LivePitchProps {
   currentTime?: string;
 }
 
-const LivePitch: React.FC<LivePitchProps> = ({ sportKey, zone, action, homeTeam, awayTeam, homeScore, awayScore, currentTime }) => {
+const LivePitch: React.FC<LivePitchProps> = ({
+  sportKey,
+  zone,
+  action,
+  homeTeam,
+  awayTeam,
+  homeScore,
+  awayScore,
+  currentTime,
+}) => {
   const isSoccer = sportKey.includes("soccer");
   const isBasketball = sportKey.includes("basketball");
   const isEsport = sportKey.includes("esport");
@@ -177,7 +186,8 @@ const LivePitch: React.FC<LivePitchProps> = ({ sportKey, zone, action, homeTeam,
                 </div>
               )}
               <div className="bg-primary-600 text-white font-black text-xl px-4 py-1 rounded-lg leading-none">
-                {homeScore} <span className="text-primary-300 mx-1">-</span> {awayScore}
+                {homeScore} <span className="text-primary-300 mx-1">-</span>{" "}
+                {awayScore}
               </div>
             </div>
             <div className="text-white font-bold text-sm md:text-base ml-4 text-left min-w-[100px] truncate">

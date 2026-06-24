@@ -87,96 +87,96 @@ const Sidebar: React.FC = () => {
 
         {user && (
           <div className="pt-6 border-t border-dark-700">
-          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">
-            My Account
-          </h3>
-          <ul className="space-y-1">
-            <li>
-              <NavLink
-                to="/history"
-                className={({ isActive }) => `
-                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
-                  ${
-                    isActive
-                      ? "bg-primary-600/10 text-primary-500"
-                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
-                  }
-                `}
-              >
-                <History className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
-                Bet History
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/trophies"
-                className={({ isActive }) => `
-                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
-                  ${
-                    isActive
-                      ? "bg-primary-600/10 text-primary-500"
-                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
-                  }
-                `}
-              >
-                <Award className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
-                Trophy Room
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/referrals"
-                className={({ isActive }) => `
-                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
-                  ${
-                    isActive
-                      ? "bg-primary-600/10 text-primary-500"
-                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
-                  }
-                `}
-              >
-                <Gift className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
-                Refs & Codes
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/settings"
-                className={({ isActive }) => `
-                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
-                  ${
-                    isActive
-                      ? "bg-primary-600/10 text-primary-500"
-                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
-                  }
-                `}
-              >
-                <Settings className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
-                Settings
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/responsible-gambling"
-                className={({ isActive }) => `
-                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
-                  ${
-                    isActive
-                      ? "bg-primary-600/10 text-primary-500"
-                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
-                  }
-                `}
-              >
-                <ShieldAlert className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
-                Play Limits
-              </NavLink>
-            </li>
-
-            {user?.role === "Admin" && (
+            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">
+              My Account
+            </h3>
+            <ul className="space-y-1">
               <li>
                 <NavLink
-                  to="/admin/dashboard"
+                  to="/history"
                   className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${
+                    isActive
+                      ? "bg-primary-600/10 text-primary-500"
+                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
+                  }
+                `}
+                >
+                  <History className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                  Bet History
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/trophies"
+                  className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${
+                    isActive
+                      ? "bg-primary-600/10 text-primary-500"
+                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
+                  }
+                `}
+                >
+                  <Award className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                  Trophy Room
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/referrals"
+                  className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${
+                    isActive
+                      ? "bg-primary-600/10 text-primary-500"
+                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
+                  }
+                `}
+                >
+                  <Gift className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                  Refs & Codes
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/settings"
+                  className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${
+                    isActive
+                      ? "bg-primary-600/10 text-primary-500"
+                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
+                  }
+                `}
+                >
+                  <Settings className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                  Settings
+                </NavLink>
+              </li>
+              <li>
+                <NavLink
+                  to="/responsible-gambling"
+                  className={({ isActive }) => `
+                  w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group
+                  ${
+                    isActive
+                      ? "bg-primary-600/10 text-primary-500"
+                      : "text-gray-300 hover:bg-dark-700 hover:text-white"
+                  }
+                `}
+                >
+                  <ShieldAlert className="w-5 h-5 text-gray-400 group-hover:text-primary-500" />
+                  Play Limits
+                </NavLink>
+              </li>
+
+              {user?.role === "Admin" && (
+                <li>
+                  <NavLink
+                    to="/admin/dashboard"
+                    className={({ isActive }) => `
                     w-full flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all text-sm font-medium group mt-4 border border-primary-500/30
                     ${
                       isActive
@@ -184,13 +184,13 @@ const Sidebar: React.FC = () => {
                         : "text-primary-400 hover:bg-primary-600/10 hover:text-primary-500"
                     }
                   `}
-                >
-                  <ShieldCheck className="w-5 h-5" />
-                  Admin Panel
-                </NavLink>
-              </li>
-            )}
-          </ul>
+                  >
+                    <ShieldCheck className="w-5 h-5" />
+                    Admin Panel
+                  </NavLink>
+                </li>
+              )}
+            </ul>
           </div>
         )}
       </div>

@@ -211,8 +211,16 @@ const MatchDetailsView: React.FC = () => {
                       action={currentMatch?.currentAction || "Waiting..."}
                       homeTeam={event.homeTeam}
                       awayTeam={event.awayTeam}
-                      homeScore={currentMatch?.score?.["Home"] || currentMatch?.score?.["home"] || 0}
-                      awayScore={currentMatch?.score?.["Away"] || currentMatch?.score?.["away"] || 0}
+                      homeScore={
+                        currentMatch?.score?.["Home"] ||
+                        currentMatch?.score?.["home"] ||
+                        0
+                      }
+                      awayScore={
+                        currentMatch?.score?.["Away"] ||
+                        currentMatch?.score?.["away"] ||
+                        0
+                      }
                       currentTime={currentMatch?.currentTime}
                     />
                   </motion.div>

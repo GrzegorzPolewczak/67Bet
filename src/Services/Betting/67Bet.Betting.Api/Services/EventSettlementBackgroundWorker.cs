@@ -36,7 +36,7 @@ public class EventSettlementBackgroundWorker : BackgroundService
                     var oddsClient = scope.ServiceProvider.GetRequiredService<IOddsServiceClient>();
 
                     var unsettledEvents = await eventRepo.GetPastUnsettledEventsAsync();
-                    
+
                     foreach (var evt in unsettledEvents)
                     {
                         var externalData = await GetExternalResultAsync(evt, oddsClient);
@@ -90,7 +90,7 @@ public class EventSettlementBackgroundWorker : BackgroundService
     {
         var winners = new System.Collections.Generic.List<Guid>();
         var matchWinnerMarket = evt.Markets.FirstOrDefault(m => m.Name.Contains("Winner") || m.Name.Contains("h2h"));
-        
+
         if (matchWinnerMarket == null) return winners;
 
         // Prosta heurystyka rozstrzygania na podstawie RecentScores np. "2-1" lub "120-110"
