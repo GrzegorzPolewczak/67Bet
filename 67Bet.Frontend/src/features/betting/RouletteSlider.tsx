@@ -70,7 +70,7 @@ const RouletteSlider: React.FC<RouletteSliderProps> = ({ spinAnim, targetNumber,
   }, [spinAnim, targetNumber]);
 
   return (
-    <div className="relative w-full h-32 bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden shadow-inner flex items-center">
+    <div ref={containerRef} className="relative w-full h-32 bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden shadow-inner flex items-center">
       {/* Center Pointer */}
       <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-yellow-400 z-10 -translate-x-1/2 shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
       <div className="absolute left-1/2 top-0 w-4 h-4 bg-yellow-400 z-10 -translate-x-1/2 rotate-45 -translate-y-2" />
