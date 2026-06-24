@@ -194,12 +194,12 @@ public class BettingService : IBettingService
     public async Task<Ticket> PlaceTicketAsync(Guid userId, decimal stake, IEnumerable<Guid> outcomeIds)
     {
         if (stake <= 0)
-            throw new ArgumentException("Stawka musi być większa od zera.");
+            throw new ArgumentException("Stake must be greater than zero.");
 
         var requestedOutcomeIds = outcomeIds?.Distinct().ToList() ?? new List<Guid>();
 
         if (!requestedOutcomeIds.Any())
-            throw new ArgumentException("Kupon musi zawierać przynajmniej jeden zakład.");
+            throw new ArgumentException("Ticket must contain at least one bet.");
 
         var validation = await _responsibleGamblingService.ValidateStakeAsync(userId, stake);
         if (!validation.IsAllowed)
@@ -229,14 +229,14 @@ public class BettingService : IBettingService
             }
 
             throw new InvalidOperationException(
-                $"Nie znaleziono aktywnego wyniku lub uczestnika wirtualnego wyścigu o ID: {outcomeId}");
+                $"Active outcome or virtual race participant with ID {outcomeId} was not found.");
         }
 
-        // Pobieramy środki dopiero po potwierdzeniu, że wszystkie outcomeIds istnieją.
-        // Dzięki temu nie zabieramy środków za kupon, którego backend i tak nie może utworzyć.
+        // We process the stake only after confirming all outcomeIds exist.
+        // This avoids taking funds for a ticket that the backend cannot create anyway.
         var stakeProcessed = await _walletService.ProcessStakeAsync(userId, stake);
         if (!stakeProcessed)
-            throw new InvalidOperationException("Niewystarczające środki na koncie użytkownika.");
+            throw new InvalidOperationException("Insufficient wallet balance.");
 
         await _responsibleGamblingService.RecordActivityAsync(
             userId,

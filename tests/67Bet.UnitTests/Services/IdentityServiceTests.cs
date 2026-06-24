@@ -56,7 +56,7 @@ public class IdentityServiceTests
         // Act & Assert
         await _identityService.Invoking(s => s.RegisterAsync("new", email, "password"))
             .Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Użytkownik o tym adresie e-mail już istnieje.");
+            .WithMessage("User with this email already exists.");
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using _67Bet.CustomBet.Application.Interfaces;
 using _67Bet.CustomBet.Domain.Entities;
 using _67Bet.CustomBet.Domain.Repositories;
@@ -44,7 +44,7 @@ public class CustomBetService : ICustomBetService
     public async Task AcceptRequestAsync(Guid requestId, decimal finalOdds, string? adminNote = null)
     {
         var request = await _customBetRepository.GetByIdAsync(requestId);
-        if (request == null) throw new InvalidOperationException("Wniosek nie istnieje.");
+        if (request == null) throw new InvalidOperationException("Request not found.");
 
         request.Accept(finalOdds, adminNote);
         await _customBetRepository.UpdateAsync(request);
@@ -53,7 +53,7 @@ public class CustomBetService : ICustomBetService
     public async Task RejectRequestAsync(Guid requestId, string reason)
     {
         var request = await _customBetRepository.GetByIdAsync(requestId);
-        if (request == null) throw new InvalidOperationException("Wniosek nie istnieje.");
+        if (request == null) throw new InvalidOperationException("Request not found.");
 
         request.Reject(reason);
         await _customBetRepository.UpdateAsync(request);

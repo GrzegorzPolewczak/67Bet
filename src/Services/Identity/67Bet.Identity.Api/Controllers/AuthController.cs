@@ -36,7 +36,7 @@ public class AuthController : ControllerBase
         var success = await _identityService.AuthenticateAsync(request.Email, request.Password);
         if (!success)
         {
-            return Unauthorized("Nieprawidłowy e-mail lub hasło.");
+            return Unauthorized("Invalid email or password.");
         }
 
         var user = await _identityService.GetUserByEmailAsync(request.Email);
@@ -55,7 +55,7 @@ public class AuthController : ControllerBase
         var userId = Guid.Parse(userIdClaim.Value);
         var user = await _identityService.GetUserByIdAsync(userId);
 
-        if (user == null) return NotFound("Użytkownik nie znaleziony.");
+        if (user == null) return NotFound("User not found.");
 
         return Ok(user.ToDto());
     }
