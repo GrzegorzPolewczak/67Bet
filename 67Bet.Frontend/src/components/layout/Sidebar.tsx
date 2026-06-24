@@ -55,8 +55,8 @@ const Sidebar: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   return (
-    <aside className="w-64 bg-dark-800 border-r border-dark-700 hidden lg:flex flex-col">
-      <div className="p-4 flex flex-col gap-6">
+    <aside className="w-64 bg-dark-800 border-r border-dark-700 hidden lg:flex flex-col overflow-y-auto">
+      <div className="p-4 flex flex-col gap-6 flex-1">
         <div>
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-4 mb-2">
             Sports
