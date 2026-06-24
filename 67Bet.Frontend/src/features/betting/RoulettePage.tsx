@@ -274,7 +274,9 @@ const RoulettePage: React.FC = () => {
             </h1>
           </div>
           <p className="text-gray-400 text-base">
-            European Roulette. Place your bets on the table and spin the wheel. Payout: 35:1 on a single number, 1:1 on color/evenness, 2:1 on dozen/column.
+            European Roulette. Place your bets on the table and spin the wheel.
+            Payout: 35:1 on a single number, 1:1 on color/evenness, 2:1 on
+            dozen/column.
           </p>
         </div>
         {isAuthenticated && (
@@ -611,7 +613,8 @@ const RoulettePage: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500">
-                  {round.totalStake.toFixed(2)} PLN · {round.bets.length} {round.bets.length === 1 ? "bet" : "bets"}
+                  {round.totalStake.toFixed(2)} PLN · {round.bets.length}{" "}
+                  {round.bets.length === 1 ? "bet" : "bets"}
                 </p>
               </motion.div>
             ))}
