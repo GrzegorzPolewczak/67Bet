@@ -193,11 +193,7 @@ const MatchDetailsView: React.FC = () => {
                     : "Live Action Tracker"}
                 </h2>
               </div>
-              {currentMatch && (
-                <div className="text-sm font-black text-primary-500 bg-primary-500/10 px-3 py-1 rounded-lg">
-                  {currentMatch.currentTime}
-                </div>
-              )}
+              {/* currentTime removed from here, moved to scoreboard */}
             </div>
 
             <div className="relative rounded-2xl overflow-hidden">
@@ -213,6 +209,11 @@ const MatchDetailsView: React.FC = () => {
                       sportKey={event.sportKey}
                       zone={currentMatch?.currentZone || "Midfield"}
                       action={currentMatch?.currentAction || "Waiting..."}
+                      homeTeam={event.homeTeam}
+                      awayTeam={event.awayTeam}
+                      homeScore={currentMatch?.score?.["Home"] || currentMatch?.score?.["home"] || 0}
+                      awayScore={currentMatch?.score?.["Away"] || currentMatch?.score?.["away"] || 0}
+                      currentTime={currentMatch?.currentTime}
                     />
                   </motion.div>
                 ) : (

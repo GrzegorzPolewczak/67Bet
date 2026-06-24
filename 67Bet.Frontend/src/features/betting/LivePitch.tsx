@@ -5,9 +5,14 @@ interface LivePitchProps {
   sportKey: string;
   zone: string;
   action: string;
+  homeTeam?: string;
+  awayTeam?: string;
+  homeScore?: string | number;
+  awayScore?: string | number;
+  currentTime?: string;
 }
 
-const LivePitch: React.FC<LivePitchProps> = ({ sportKey, zone, action }) => {
+const LivePitch: React.FC<LivePitchProps> = ({ sportKey, zone, action, homeTeam, awayTeam, homeScore, awayScore, currentTime }) => {
   const isSoccer = sportKey.includes("soccer");
   const isBasketball = sportKey.includes("basketball");
   const isEsport = sportKey.includes("esport");
@@ -158,6 +163,30 @@ const LivePitch: React.FC<LivePitchProps> = ({ sportKey, zone, action }) => {
     <div
       className={`relative w-full aspect-[16/9] rounded-2xl overflow-hidden border-2 border-dark-700 shadow-2xl transition-colors duration-700 ${isSoccer ? "bg-green-950" : isBasketball ? "bg-amber-950" : "bg-dark-900"}`}
     >
+      {/* Scoreboard Overlay */}
+      {(homeTeam || awayTeam) && (
+        <div className="absolute top-4 left-0 w-full flex flex-col items-center z-40">
+          <div className="bg-black/80 backdrop-blur-md border border-dark-600 rounded-2xl flex items-center px-6 py-2 shadow-xl">
+            <div className="text-white font-bold text-sm md:text-base mr-4 text-right min-w-[100px] truncate">
+              {homeTeam}
+            </div>
+            <div className="flex flex-col items-center">
+              {currentTime && (
+                <div className="text-[10px] font-black text-primary-400 mb-0.5 tracking-wider animate-pulse uppercase">
+                  {currentTime}
+                </div>
+              )}
+              <div className="bg-primary-600 text-white font-black text-xl px-4 py-1 rounded-lg leading-none">
+                {homeScore} <span className="text-primary-300 mx-1">-</span> {awayScore}
+              </div>
+            </div>
+            <div className="text-white font-bold text-sm md:text-base ml-4 text-left min-w-[100px] truncate">
+              {awayTeam}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Pitch Lines */}
       <div className="absolute inset-0 opacity-40">{renderLines()}</div>
 
