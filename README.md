@@ -30,7 +30,7 @@ System **67Bet** oferuje zaawansowane możliwości zarówno dla graczy, jak i ad
 - **Zaawansowane Obstawianie:**
     - **Kupony Multi-Bet (AKO):** Możliwość łączenia wielu zdarzeń w jeden kupon z automatycznym przeliczaniem kursu skumulowanego.
     - **Live Betting:** Obstawianie w czasie rzeczywistym dzięki WebSockets (SignalR).
-- **Custom Bet Request:** Unikalna funkcja zgłaszania własnych propozycji zakładów do indywidualnej wyceny przez model AI i akceptacji administratora.
+- **Custom Bet Request:** Unikalna funkcja zgłaszania własnych propozycji zakładów do indywidualnej wyceny i akceptacji przez administratora.
 - **Freebet:** Wirtualne zakłady bez ryzyka — wymagana stawka nie pochodzi z głównego salda, wypłata wynosi 70% potencjalnej wygranej.
 - **Gry Kasynowe:**
     - **Ruletka:** Pełna symulacja ruletki europejskiej (0–36) z obsługą wielu rodzajów zakładów w jednej rundzie (max 10).
