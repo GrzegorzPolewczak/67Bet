@@ -42,7 +42,7 @@ System **67Bet** oferuje zaawansowane możliwości zarówno dla graczy, jak i ad
 - **Kody Promocyjne i Referral:** Jednorazowe kody promocyjne zasilające portfel oraz system poleceń (referral) z unikalnym kodem per użytkownik.
 
 ### 🛡️ Panel Administratora
-- **Zarządzanie Custom Betami:** Przeglądanie propozycji od graczy, akceptacja/odrzucanie i opcjonalna korekta kursów wygenerowanych przez AI.
+- **Zarządzanie Custom Betami:** Przeglądanie propozycji od graczy, akceptacja/odrzucanie i opcjonalna korekta kursów.
 - **Moderacja i Bezpieczeństwo:** System RBAC (Admin, User), blokowanie kont, monitorowanie limitów i wykrywanie podejrzanych wzorców zakładów.
 - **Nadzór nad Ofertą:** Dynamiczne otwieranie i zamykanie rynków, ręczne wprowadzanie wyników zdarzeń oraz funkcja *Manual Override* dla kursów.
 - **Analityka Biznesowa:** Monitorowanie marży, obrotu (GGR) oraz statystyk systemu.
